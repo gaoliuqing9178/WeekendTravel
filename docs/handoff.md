@@ -1,8 +1,44 @@
 # Handoff
 
+## 2026-05-21 F1-sprint1-generator 更新
+
+F1-001 已完成并验证。`frontend/` 现在已经是 Vue 3 + Vite + Pinia + Naive UI 项目，`pnpm dev` 默认端口为 `5173`，`feature_list.json` 中 `F1-001` 已标记为 `verified`。
+
+本轮新增或更新：
+- `docs/contracts/F1-001-vue-skeleton.md`
+- `.gitignore`
+- `frontend/package.json`
+- `frontend/pnpm-lock.yaml`
+- `frontend/vite.config.ts`
+- `frontend/tsconfig.json`
+- `frontend/index.html`
+- `frontend/src/main.ts`
+- `frontend/src/App.vue`
+- `frontend/src/stores/planner.ts`
+- `frontend/src/styles/main.css`
+- `frontend/public/favicon.svg`
+- `frontend/.gitignore`
+- `frontend/README.md`
+
+验证命令：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast
+```
+
+验证结果：`pnpm typecheck` passed，`Verify passed.` 直接在当前沙盒 shell 运行 `.\verify.ps1 -Target frontend -Mode fast` 会因为找不到宿主全局 `pnpm` 失败；宿主 PowerShell 路径已验证通过。
+
+额外构建验证：`pnpm build` 通过，Vite 生产构建成功，主 JS chunk 约 290.51 kB / gzip 91.94 kB。
+
+UI 冒烟验证：`pnpm dev` 已启动并监听 `127.0.0.1:5173`；Playwright 打开页面可见 WeekendTravel 骨架，点击“开始预演”后 Pinia 状态从 `START/idle` 变为 `INTENT/connecting`，console 无 error/warning。
+
+下一步建议：
+- F1：推进 `F1-002`，实现 API client 和 mock fixture mode。
+- B1：后端仍未 scaffold，推进 `B1-001`。
+
 ## 当前状态
 
-Initializer 已把仓库整理成长期 agent 开发 harness。当前仍是初始化阶段，没有 scaffold 后端 Spring Boot 项目，也没有 scaffold 前端 Vue 项目。
+Initializer 已把仓库整理成长期 agent 开发 harness。当前仍是初始化阶段；后端 Spring Boot 项目尚未 scaffold，前端 F1-001 Vue 骨架已 scaffold 并通过验证。
 
 ## 已创建文件
 
@@ -36,9 +72,9 @@ Initializer 已把仓库整理成长期 agent 开发 harness。当前仍是初�
 ## 尚未实现内容
 
 - `backend/` 还没有 `pom.xml` 和 Spring Boot 源码。
-- `frontend/` 还没有 `package.json` 和 Vue 源码。
-- 还没有真实 API、SSE、状态机、Tool、POI 数据、UI 组件或 Playwright 测试。
-- `feature_list.json` 中所有功能仍是 `todo`，没有业务功能被标为 `verified`。
+- `frontend/` 已有 Vue/Vite/Pinia/Naive UI 骨架，但还没有 API client、fixture mode、真实 SSE、业务组件或 Playwright 测试。
+- 还没有真实 API、SSE、状态机、Tool、POI 数据或端到端联调。
+- `feature_list.json` 中 `F1-001` 已为 `verified`；其余功能仍按各自验证证据推进。
 
 ## 最高优先级下一步
 
@@ -51,10 +87,10 @@ Initializer 已把仓库整理成长期 agent 开发 harness。当前仍是初�
 
 前端优先：
 
-1. 创建 `docs/contracts/F1-001-vue-skeleton.md`。
-2. scaffold Vue 3 + Vite + Pinia + Naive UI 项目。
-3. 配置 `pnpm dev` 默认端口 `5173`。
-4. 跑 `.\verify.ps1 -Target frontend -Mode fast`。
+1. 创建 `docs/contracts/F1-002-api-client-fixtures.md`。
+2. 实现 API client，字段只使用 `docs/api-contract.md` 的 camelCase 契约。
+3. 实现 mock fixture mode，读取 `docs/fixtures/*.json` 和 `docs/fixtures/*.jsonl`。
+4. 跑 `.\verify.ps1 -Target frontend -Mode fast`，补充 fixture 解析或 build/typecheck 证据。
 
 ## 验证结果
 
@@ -93,7 +129,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target all
 结果：
 
 - `init.ps1` 成功运行：Java、Node、pnpm 可见；Maven 缺失；backend/frontend 均提示尚未初始化。
-- `verify.ps1` 成功运行脚本逻辑并返回失败：`backend\pom.xml` 缺失、`frontend\package.json` 缺失。这是当前真实未初始化状态，不是通过。
+- `verify.ps1` 在 initializer 阶段曾返回失败：`backend\pom.xml` 缺失、`frontend\package.json` 缺失。最新状态中，`frontend\package.json` 已由 F1-001 创建并通过 frontend fast 验证；`backend\pom.xml` 仍缺失。
 - `git status --short` 可运行，当前文件均为未跟踪；同时 Git 输出 `unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied`，这是宿主 Git 全局 ignore 读取权限警告，未阻塞本轮初始化。
 
 ## 已知冲突和处理
