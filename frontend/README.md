@@ -1,6 +1,6 @@
 # WeekendTravel Frontend
 
-前端根目录，当前尚未 scaffold Vue 项目。
+Vue 3 + Vite + Pinia + Naive UI 前端骨架。当前完成的是 F1-001，后续 API client、fixture mode、SSE 和业务组件由 F1-002 之后继续接入。
 
 ## 技术栈
 
@@ -12,37 +12,35 @@
 - SSE / EventSource
 - 默认端口：`5173`
 
-## 开工前读
+## 开发命令
 
-1. `../AGENTS.md`
-2. `../docs/frontend-contract.md`
-3. `../docs/api-contract.md`
-4. `../docs/fixtures/`
-5. `../feature_list.json`
-6. `../docs/handoff.md`
+```powershell
+pnpm install
+pnpm dev
+```
 
-## 独立开发方式
+访问地址：
 
-后端未完成前，前端必须能用这些 fixture 开发：
-
-- `../docs/fixtures/sse-events.jsonl`
-- `../docs/fixtures/plan-ready-family.json`
-- `../docs/fixtures/plan-ready-friends.json`
-
-fixture 字段已经按 `docs/api-contract.md` 统一为 camelCase。
-
-## 最小 Sprint 1 验收
-
-- 页面能启动。
-- 输入一句话后进入规划状态。
-- mock SSE 事件能渲染到日志面板。
-- `plan_ready` fixture 能渲染方案卡。
-- Plan B、CLARIFY、ADJUST、DONE、ERROR 状态都有可见 UI 状态。
+```text
+http://localhost:5173
+```
 
 ## 验证命令
 
+在仓库根目录运行：
+
 ```powershell
-..\verify.ps1 -Target frontend -Mode fast
+.\verify.ps1 -Target frontend -Mode fast
 ```
 
-当前没有 `package.json`，所以脚本应明确报告 `frontend not initialized yet`。
+如果当前 PowerShell 执行策略拦截 `.ps1`，使用：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast
+```
+
+## 后续接入边界
+
+- API 字段只以 `../docs/api-contract.md` 为准。
+- 后端未完成前，优先使用 `../docs/fixtures/` 做独立开发。
+- 不在前端暴露真实 token、key 或本机隐私路径。
