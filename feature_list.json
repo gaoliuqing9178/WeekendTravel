@@ -8,7 +8,7 @@
       "track": "backend",
       "owner": "B1",
       "title": "Spring Boot skeleton, GET /health, and CORS",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": [],
       "contract": "docs/contracts/B1-001-health-cors.md",
@@ -17,7 +17,13 @@
         "GET http://localhost:8000/health returns 200",
         "CORS allows http://localhost:5173"
       ],
-      "evidence": []
+      "evidence": [
+        "Contract doc added: docs/contracts/B1-001-health-cors.md",
+        "2026-05-21: ./backend/mvnw -f \"backend/pom.xml\" test -> BUILD SUCCESS",
+        "2026-05-21: powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"./verify.ps1\" -Target backend -Mode fast -> passed after verify.ps1 was updated to use backend/mvnw.cmd",
+        "2026-05-21: ./backend/mvnw -f \"backend/pom.xml\" spring-boot:run started on port 8000",
+        "2026-05-21: curl -i -H \"Origin: http://localhost:5173\" http://localhost:8000/health -> HTTP/1.1 200, Access-Control-Allow-Origin: http://localhost:5173, body contains status/service/timestamp"
+      ]
     },
     {
       "id": "B1-002",

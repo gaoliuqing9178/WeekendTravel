@@ -51,7 +51,31 @@
 - 使用 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target all -Mode fast` 成功运行脚本逻辑并返回失败：`backend\pom.xml` 缺失、`frontend\package.json` 缺失。这是当前真实未初始化状态，不是通过。
 - `git status --short` 可运行，当前文件均为未跟踪；Git 同时输出 `unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied` 权限警告，未阻塞本轮初始化。
 
-## 2026-05-21 设计文档补读
+## 2026-05-21 B1-001 health and CORS
+
+### 已完成
+
+- 在 `backend/` 内完成 Spring Boot + Maven 最小骨架落地。
+- 新增全局 CORS 配置 `backend/src/main/java/com/weekendtravel/backend/config/WebConfig.java`，允许 `http://localhost:5173`。
+- 新增 `GET /health` controller：`backend/src/main/java/com/weekendtravel/backend/controller/HealthController.java`。
+- 新增健康检查响应 DTO：`backend/src/main/java/com/weekendtravel/backend/dto/HealthResponse.java`。
+- 在 `backend/src/main/resources/application.properties` 中补充 `server.port=8000`。
+- 恢复并保留测试目录 `backend/src/test/`，测试文件验证健康检查返回约定字段。
+- 新增本轮 contract：`docs/contracts/B1-001-health-cors.md`。
+
+### 验证记录
+
+- `./backend/mvnw -f "backend/pom.xml" test` 通过，结果为 `BUILD SUCCESS`。
+- `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "./verify.ps1" -Target backend -Mode fast` 现已通过；脚本已改为调用 `backend/mvnw.cmd`，不再依赖全局 `mvn`。
+- `./backend/mvnw -f "backend/pom.xml" spring-boot:run` 成功启动服务，Tomcat 监听 `8000`。
+- `curl -i -H "Origin: http://localhost:5173" http://localhost:8000/health` 返回 `HTTP/1.1 200`，并包含 `Access-Control-Allow-Origin: http://localhost:5173`，响应体包含 `status`、`service`、`timestamp`。
+
+### 当前状态
+
+- `feature_list.json` 中 `B1-001` 已按真实运行证据标记为 `verified`。
+- 后端已不再是“未初始化”状态；下一优先任务应转到 `B1-002` SSE emitter and heartbeat 或 `B1-003` POST `/api/plan`。
+- `verify.ps1` 已改为使用 Maven Wrapper，与当前 backend 工作流一致。
+
 
 ### 已补充
 

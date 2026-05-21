@@ -1,2 +1,5 @@
+.claude
+.idea
+backend/target/
 .playwright-mcp/
 node_modules/

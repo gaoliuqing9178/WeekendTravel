@@ -29,19 +29,19 @@ function Invoke-BackendVerify {
     return
   }
 
-  if (-not (Test-CommandAvailable 'mvn')) {
-    Add-Failure "Maven command 'mvn' was not found. Install Maven or add it to PATH before backend verification."
+  if (-not (Test-Path -LiteralPath 'backend\mvnw.cmd')) {
+    Add-Failure "Maven Wrapper 'backend\mvnw.cmd' was not found. Regenerate the Spring Boot wrapper before backend verification."
     return
   }
 
   Push-Location 'backend'
   try {
-    Write-Host "[run] mvn test"
-    & mvn test
+    Write-Host "[run] .\mvnw.cmd test"
+    & .\mvnw.cmd test
     if ($LASTEXITCODE -ne 0) {
-      Add-Failure "mvn test failed with exit code $LASTEXITCODE."
+      Add-Failure "mvnw.cmd test failed with exit code $LASTEXITCODE."
     } else {
-      Write-Host "[ok] mvn test passed."
+      Write-Host "[ok] mvnw.cmd test passed."
     }
   } finally {
     Pop-Location
