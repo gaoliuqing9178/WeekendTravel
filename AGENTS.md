@@ -13,7 +13,7 @@ WeekendTravel 是一个“本地短时活动规划与执行 Agent”。用户输
 3. `docs/api-contract.md`
 4. `feature_list.json`
 5. `progress.md`
-6. `docs/handoff.md`
+6. 与本轮任务相关的 handoff：后端读 `backend/HANDOFF.md`，前端读 `frontend/F1-handoff.md`，联调或跨端任务两个都读
 7. 与本轮任务相关的 `docs/*-contract.md` 或 `docs/contracts/*.md`
 
 ## 开发位置
@@ -51,4 +51,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target all
 
 ## 什么叫完成
 
-每轮只推进一个清楚的小目标。完成必须同时满足：实现落地、运行或脚本验证有证据、`feature_list.json` 状态和证据同步、`progress.md` 与 `docs/handoff.md` 更新。没有验证证据的功能不能标为 `verified`。
+每轮只推进一个清楚的小目标。完成必须同时满足：实现落地、运行或脚本验证有证据、`feature_list.json` 状态和证据同步、`progress.md` 与对应 handoff 更新。后端任务更新 `backend/HANDOFF.md`，前端任务更新 `frontend/F1-handoff.md`，联调或跨端任务两个都更新。没有验证证据的功能不能标为 `verified`。

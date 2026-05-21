@@ -17,7 +17,7 @@
 - 验收路径已经执行。
 - 有命令输出、API 输出、截图、日志或 QA 报告作为证据。
 - `feature_list.json` 的 `evidence` 已更新。
-- `progress.md` 和 `docs/handoff.md` 已更新。
+- `progress.md` 和对应 handoff 已更新。后端任务更新 `backend/HANDOFF.md`，前端任务更新 `frontend/F1-handoff.md`，联调或跨端任务两个都更新。
 
 没有验证证据不能标记完成。
 
