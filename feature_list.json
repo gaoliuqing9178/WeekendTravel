@@ -1,0 +1,381 @@
+{
+  "project": "WeekendTravel",
+  "updatedAt": "2026-05-21",
+  "statusValues": ["todo", "in_progress", "blocked", "verified"],
+  "items": [
+    {
+      "id": "B1-001",
+      "track": "backend",
+      "owner": "B1",
+      "title": "Spring Boot skeleton, GET /health, and CORS",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": [],
+      "contract": "docs/contracts/B1-001-health-cors.md",
+      "acceptance": [
+        "backend/pom.xml exists and uses Java 17 + Spring Boot 3",
+        "GET http://localhost:8000/health returns 200",
+        "CORS allows http://localhost:5173"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B1-002",
+      "track": "backend",
+      "owner": "B1",
+      "title": "SSE emitter and heartbeat",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": ["B1-001"],
+      "contract": "docs/contracts/B1-002-sse-emitter.md",
+      "acceptance": [
+        "GET /api/plan/{planId}/stream returns text/event-stream",
+        "SSE stream sends heartbeat",
+        "SSE stream sends at least one mock state_change event"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B1-003",
+      "track": "backend",
+      "owner": "B1",
+      "title": "POST /api/plan returns planId",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": ["B1-001"],
+      "contract": "docs/contracts/B1-003-create-plan.md",
+      "acceptance": [
+        "POST /api/plan accepts text, scenario, and optional origin",
+        "Response uses camelCase planId and status",
+        "Invalid input returns the documented error shape"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B1-004",
+      "track": "backend",
+      "owner": "B1",
+      "title": "Agent state machine START to PACK",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": ["B1-002", "B1-003", "B2-002", "B2-003"],
+      "contract": "docs/contracts/B1-004-state-machine-start-pack.md",
+      "acceptance": [
+        "State machine includes START, INTENT, SKELETON, RECALL, VALIDATE, REPLAN, PACK",
+        "Demo family input can reach PACK with a mock plan",
+        "Every state transition emits state_change",
+        "Candidate ranking documents and applies score = 0.4 relevance + 0.3 distance + 0.2 rating + 0.1 availability health"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B1-005",
+      "track": "backend",
+      "owner": "B1",
+      "title": "Plan B and DEGRADE rules",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["B1-004", "B2-003"],
+      "contract": "docs/contracts/B1-005-plan-b-degrade.md",
+      "acceptance": [
+        "restaurantFull scenario triggers replan",
+        "routeTooFar scenario triggers replan",
+        "After replan limit, state enters DEGRADE with readable reason",
+        "Normal non-injected Plan B rate can be measured separately from injected Plan B trigger accuracy"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B1-006",
+      "track": "backend",
+      "owner": "B1",
+      "title": "CLARIFY and ADJUST states",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["B1-004"],
+      "contract": "docs/contracts/B1-006-clarify-adjust.md",
+      "acceptance": [
+        "Low confidence intent can enter CLARIFY",
+        "Clarify asks one question with 2-3 options and max 2 rounds",
+        "Adjust supports up to 3 local changes and emits adjust_result"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B2-001",
+      "track": "backend",
+      "owner": "B2",
+      "title": "POI mock data",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": [],
+      "contract": "docs/contracts/B2-001-poi-data.md",
+      "acceptance": [
+        "Initial POI JSON has at least 30 entries",
+        "Final POI JSON has at least 50 entries",
+        "Data covers family, friends, restaurant, dessert/cafe, and supplier categories"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B2-002",
+      "track": "backend",
+      "owner": "B2",
+      "title": "SearchTool and RouteTool",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": ["B2-001"],
+      "contract": "docs/contracts/B2-002-search-route-tools.md",
+      "acceptance": [
+        "SearchTool returns candidate POIs from local JSON",
+        "RouteTool returns distanceMinutes and route summary",
+        "Tools return latencyMs"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B2-003",
+      "track": "backend",
+      "owner": "B2",
+      "title": "AvailabilityTool and ScenarioFlags",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": ["B2-001"],
+      "contract": "docs/contracts/B2-003-availability-scenario-flags.md",
+      "acceptance": [
+        "AvailabilityTool reflects default POI availability",
+        "ScenarioFlags supports restaurantFull, routeTooFar, bookingFail, ageMismatch",
+        "POST /api/debug/scenario updates flags without restart"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B2-004",
+      "track": "backend",
+      "owner": "B2",
+      "title": "BookingTool / bookOrOrder",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["B2-003"],
+      "contract": "docs/contracts/B2-004-booking-tool.md",
+      "acceptance": [
+        "BookingTool returns mock confirmationNo on success",
+        "bookingFail scenario returns failed or manual action",
+        "Execution result matches docs/api-contract.md",
+        "bookOrOrder uses idempotencyKey to avoid duplicate mock orders",
+        "cancel_booking reverse operation is supported at the Tool layer"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "B2-005",
+      "track": "backend",
+      "owner": "B2",
+      "title": "MessageTool / composeShareMessage",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["B1-004"],
+      "contract": "docs/contracts/B2-005-message-tool.md",
+      "acceptance": [
+        "MessageTool can generate deterministic fallback share message",
+        "Future LLM use stays within docs/backend-contract.md boundary",
+        "shareMessage appears in Plan"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "F1-001",
+      "track": "frontend",
+      "owner": "F1",
+      "title": "Vue 3 + Vite + Pinia + Naive UI skeleton",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": [],
+      "contract": "docs/contracts/F1-001-vue-skeleton.md",
+      "acceptance": [
+        "frontend/package.json exists",
+        "pnpm dev starts on http://localhost:5173",
+        "Pinia and Naive UI are configured"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "F1-002",
+      "track": "frontend",
+      "owner": "F1",
+      "title": "API client and mock fixture mode",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": ["F1-001"],
+      "contract": "docs/contracts/F1-002-api-client-fixtures.md",
+      "acceptance": [
+        "API client uses docs/api-contract.md field names",
+        "Mock mode can load docs/fixtures/*.json and *.jsonl",
+        "No snake_case conversion exists unless documented in docs/api-contract.md"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "F1-003",
+      "track": "frontend",
+      "owner": "F1",
+      "title": "useSSE composable and log panel",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": ["F1-001", "F1-002"],
+      "contract": "docs/contracts/F1-003-sse-log-panel.md",
+      "acceptance": [
+        "useSSE connects to /api/plan/{planId}/stream",
+        "Fixture SSE events render in LogPanel",
+        "LogPanel auto-scrolls to latest event"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "F1-004",
+      "track": "frontend",
+      "owner": "F1",
+      "title": "InputPanel and POST /api/plan",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": ["F1-001", "F1-002"],
+      "contract": "docs/contracts/F1-004-input-plan-api.md",
+      "acceptance": [
+        "User can enter natural language input",
+        "Submit calls POST /api/plan in real API mode",
+        "Submit enters visible planning state"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "F1-005",
+      "track": "frontend",
+      "owner": "F1",
+      "title": "PlanCard, ConfirmButton, and ExecutionTracker",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["F1-002", "F1-003"],
+      "contract": "docs/contracts/F1-005-plan-card-execution.md",
+      "acceptance": [
+        "plan_ready fixture renders PlanCard",
+        "ConfirmButton is enabled only in CONFIRM state",
+        "execute_result updates action status in ExecutionTracker"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "F1-006",
+      "track": "frontend",
+      "owner": "F1",
+      "title": "ClarifyBubble",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["F1-003"],
+      "contract": "docs/contracts/F1-006-clarify-bubble.md",
+      "acceptance": [
+        "clarification_request renders exactly one bubble",
+        "Bubble shows question and 2-3 options",
+        "Reply calls POST /api/plan/{planId}/clarify in real API mode"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "F1-007",
+      "track": "frontend",
+      "owner": "F1",
+      "title": "AdjustPanel",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["F1-005"],
+      "contract": "docs/contracts/F1-007-adjust-panel.md",
+      "acceptance": [
+        "AdjustPanel appears only in CONFIRM state",
+        "PATCH /api/plan/{planId}/adjust is called in real API mode",
+        "Adjust count is limited to 3"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "F1-008",
+      "track": "frontend",
+      "owner": "F1",
+      "title": "Plan B highlight and error/degrade states",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["F1-003", "F1-005"],
+      "contract": "docs/contracts/F1-008-plan-b-error-states.md",
+      "acceptance": [
+        "replan event highlights Plan B in log panel",
+        "PlanCard shows Plan B badge and reason",
+        "DEGRADE, FAILED, DONE, and error states are visible"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "INT-001",
+      "track": "integration",
+      "owner": "B1/F1",
+      "title": "Sprint 1 integration: one input to SSE state_change",
+      "status": "todo",
+      "priority": "P0",
+      "dependsOn": ["B1-001", "B1-002", "B1-003", "F1-001", "F1-003", "F1-004"],
+      "contract": "docs/contracts/INT-001-one-input-sse.md",
+      "acceptance": [
+        "Frontend submits one demo input",
+        "Backend returns planId",
+        "Frontend receives and renders state_change from SSE"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "INT-002",
+      "track": "integration",
+      "owner": "B1/B2/F1",
+      "title": "Family scenario complete path",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["INT-001", "B1-004", "B1-005", "B2-004", "F1-005", "F1-008"],
+      "contract": "docs/contracts/INT-002-family-complete-path.md",
+      "acceptance": [
+        "Family demo input reaches plan_ready",
+        "Confirm executes mock actions",
+        "Flow reaches done or documented degrade state"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "INT-003",
+      "track": "integration",
+      "owner": "B1/B2/F1",
+      "title": "Friends scenario complete path",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["INT-001", "B1-004", "B2-004", "F1-005"],
+      "contract": "docs/contracts/INT-003-friends-complete-path.md",
+      "acceptance": [
+        "Friends demo input reaches plan_ready",
+        "Plan includes activity, dessert/cafe or photo stop, and restaurant",
+        "Confirm executes mock actions"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "QA-001",
+      "track": "qa",
+      "owner": "QA",
+      "title": "21 Golden Cases list and execution record",
+      "status": "todo",
+      "priority": "P1",
+      "dependsOn": ["INT-002", "INT-003"],
+      "contract": "docs/contracts/QA-001-golden-cases.md",
+      "acceptance": [
+        "7 family cases are listed and executed",
+        "7 friends cases are listed and executed",
+        "7 boundary cases are listed and executed",
+        "SLO metrics are recorded",
+        "Injected Plan B trigger accuracy and normal Plan B rate are reported as separate metrics"
+      ],
+      "evidence": []
+    }
+  ]
+}

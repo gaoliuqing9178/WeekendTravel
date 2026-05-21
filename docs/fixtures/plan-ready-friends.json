@@ -1,0 +1,93 @@
+{
+  "type": "plan_ready",
+  "planId": "plan_friends_fixture",
+  "plan": {
+    "planId": "plan_friends_fixture",
+    "scenario": "friends",
+    "status": "CONFIRM",
+    "isPlanB": false,
+    "planBReason": null,
+    "summary": "展览拍照、轻松 citywalk、晚餐聚会的朋友下午局",
+    "timeline": [
+      {
+        "order": 1,
+        "type": "activity",
+        "title": "城市影像展",
+        "poi": {
+          "id": "poi_friend_activity_001",
+          "name": "城市影像展",
+          "category": "activity",
+          "address": "艺文中心 2F",
+          "rating": 4.7,
+          "distanceMinutes": 14,
+          "tags": ["适合拍照", "室内", "朋友局"],
+          "availabilityStatus": "available",
+          "waitMinutes": 0
+        },
+        "startTime": "14:30",
+        "endTime": "16:00",
+        "notes": ["拍照点多", "适合 4 人同行"]
+      },
+      {
+        "order": 2,
+        "type": "dessert",
+        "title": "街角咖啡",
+        "poi": {
+          "id": "poi_friend_cafe_003",
+          "name": "街角咖啡",
+          "category": "cafe",
+          "address": "梧桐路 18 号",
+          "rating": 4.5,
+          "distanceMinutes": 8,
+          "tags": ["拍照", "甜品", "聊天"],
+          "availabilityStatus": "limited",
+          "waitMinutes": 10
+        },
+        "startTime": "16:15",
+        "endTime": "17:00",
+        "notes": ["适合中途休息和拍照"]
+      },
+      {
+        "order": 3,
+        "type": "restaurant",
+        "title": "暮色烤肉",
+        "poi": {
+          "id": "poi_friend_food_005",
+          "name": "暮色烤肉",
+          "category": "restaurant",
+          "address": "湖滨路 66 号",
+          "rating": 4.6,
+          "distanceMinutes": 11,
+          "tags": ["适合4人", "能订位", "氛围好"],
+          "availabilityStatus": "available",
+          "waitMinutes": 5
+        },
+        "startTime": "17:30",
+        "endTime": "19:00",
+        "notes": ["可订 4 人桌", "离前一站不远"]
+      }
+    ],
+    "actions": [
+      {
+        "actionId": "act_friends_001",
+        "actionType": "reserve_table",
+        "targetPoiId": "poi_friend_food_005",
+        "description": "预约 17:30 的 4 人桌",
+        "status": "pending",
+        "confirmationNo": null
+      },
+      {
+        "actionId": "act_friends_002",
+        "actionType": "send_message",
+        "targetPoiId": null,
+        "description": "生成朋友群出行消息",
+        "status": "pending",
+        "confirmationNo": null
+      }
+    ],
+    "shareMessage": "今天下午 14:30 先去城市影像展，16:15 去街角咖啡休息拍照，17:30 暮色烤肉 4 人桌。整体路线都在十几分钟内，比较轻松。",
+    "totalDurationHours": 4.5,
+    "replanCount": 0,
+    "createdAt": "2026-05-21T14:00:00+08:00"
+  }
+}

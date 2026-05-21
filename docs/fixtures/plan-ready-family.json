@@ -1,0 +1,101 @@
+{
+  "type": "plan_ready",
+  "planId": "plan_family_fixture",
+  "plan": {
+    "planId": "plan_family_fixture",
+    "scenario": "family",
+    "status": "CONFIRM",
+    "isPlanB": true,
+    "planBReason": "原餐厅排队预计 70 分钟，已切换到可订位低卡餐厅",
+    "summary": "亲子室内活动、低负担晚餐和回家路线",
+    "timeline": [
+      {
+        "order": 1,
+        "type": "activity",
+        "title": "奇妙亲子乐园",
+        "poi": {
+          "id": "poi_family_activity_001",
+          "name": "奇妙亲子乐园",
+          "category": "activity",
+          "address": "万象城 L3",
+          "rating": 4.6,
+          "distanceMinutes": 15,
+          "tags": ["适合5岁", "室内", "不太累", "有儿童设施"],
+          "availabilityStatus": "available",
+          "waitMinutes": 5
+        },
+        "startTime": "14:00",
+        "endTime": "16:30",
+        "notes": ["适合 5 岁儿童", "室内活动，天气影响小"]
+      },
+      {
+        "order": 2,
+        "type": "restaurant",
+        "title": "轻食家庭餐厅",
+        "poi": {
+          "id": "poi_family_food_002",
+          "name": "轻食家庭餐厅",
+          "category": "restaurant",
+          "address": "湖滨银泰 4F",
+          "rating": 4.5,
+          "distanceMinutes": 12,
+          "tags": ["低卡", "儿童椅", "可订位", "少油少糖"],
+          "availabilityStatus": "available",
+          "waitMinutes": 5
+        },
+        "startTime": "17:00",
+        "endTime": "18:10",
+        "notes": ["已避开排队 70 分钟的原餐厅", "可备注儿童椅和低油低糖"]
+      },
+      {
+        "order": 3,
+        "type": "transit",
+        "title": "回家路线",
+        "poi": {
+          "id": "route_home_001",
+          "name": "打车回家",
+          "category": "transit",
+          "address": "从湖滨银泰返回当前位置",
+          "rating": 0,
+          "distanceMinutes": 18,
+          "tags": ["少步行", "适合孩子"],
+          "availabilityStatus": "available",
+          "waitMinutes": 3
+        },
+        "startTime": "18:10",
+        "endTime": "18:35",
+        "notes": ["尽量减少孩子晚间步行"]
+      }
+    ],
+    "actions": [
+      {
+        "actionId": "act_family_001",
+        "actionType": "reserve_table",
+        "targetPoiId": "poi_family_food_002",
+        "description": "预约 17:00 的 2 大 1 小座位",
+        "status": "pending",
+        "confirmationNo": null
+      },
+      {
+        "actionId": "act_family_002",
+        "actionType": "add_note",
+        "targetPoiId": "poi_family_food_002",
+        "description": "备注儿童椅和少油少糖",
+        "status": "pending",
+        "confirmationNo": null
+      },
+      {
+        "actionId": "act_family_003",
+        "actionType": "send_message",
+        "targetPoiId": null,
+        "description": "生成家庭出行消息",
+        "status": "pending",
+        "confirmationNo": null
+      }
+    ],
+    "shareMessage": "今天下午先去奇妙亲子乐园，17:00 去轻食家庭餐厅，餐厅已备注儿童椅和少油少糖。整体都在 20 分钟范围内，孩子不会太累。",
+    "totalDurationHours": 4.2,
+    "replanCount": 1,
+    "createdAt": "2026-05-21T14:00:00+08:00"
+  }
+}
