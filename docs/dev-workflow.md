@@ -4,18 +4,18 @@
 
 1. 读 `AGENTS.md`。
 2. 按任务读取相关 docs，至少确认 `docs/api-contract.md` 是否影响本轮。
-3. 查看 `feature_list.json`、`progress.md`、`docs/handoff.md`。
+3. 查看 `feature_list.json`、`progress.md`、与本轮任务相关的 handoff：后端任务读 `backend/HANDOFF.md`，前端任务读 `frontend/F1-handoff.md`，联调或跨端任务两个都读。
 4. 选择一个小目标，优先选 P0 且依赖已满足的任务。
 5. 写或更新 `docs/contracts/*.md`，明确本轮目标和不做什么。
 6. 实现最小可验证改动。
 7. 运行验证命令，优先真实运行路径。
-8. 把证据写回 `feature_list.json`、`progress.md`、`docs/handoff.md`。
+8. 把证据写回 `feature_list.json`、`progress.md`、与本轮任务相关的 handoff。后端任务写 `backend/HANDOFF.md`，前端任务写 `frontend/F1-handoff.md`，联调或跨端任务两个都写。
 
 不要只在聊天里交接。重要结论必须写入仓库文件。
 
 ## 前端任务怎么启动
 
-1. 读 `docs/frontend-contract.md` 和 `docs/api-contract.md`。
+1. 读 `docs/frontend-contract.md`、`docs/api-contract.md` 和 `frontend/F1-handoff.md`。
 2. 读 `docs/fixtures/`，确认 UI 能先用 fixture 开发。
 3. 从 `feature_list.json` 选择一个 F1 小任务。
 4. 写本轮 contract，例如 `docs/contracts/F1-003-sse-log-panel.md`。
@@ -30,7 +30,7 @@
 
 ## 后端任务怎么启动
 
-1. 读 `docs/backend-contract.md` 和 `docs/api-contract.md`。
+1. 读 `docs/backend-contract.md`、`docs/api-contract.md` 和 `backend/HANDOFF.md`。
 2. 从 `feature_list.json` 选择一个 B1 或 B2 小任务。
 3. 写本轮 contract，例如 `docs/contracts/B1-001-health-cors.md`。
 4. 在 `backend/` 内实现。
@@ -44,7 +44,7 @@
 
 ## 联调任务怎么启动
 
-1. 确认前后端都按同一版 `docs/api-contract.md`。
+1. 确认前后端都按同一版 `docs/api-contract.md`，并同时查看 `backend/HANDOFF.md` 和 `frontend/F1-handoff.md`。
 2. 跑：
 
 ```powershell
