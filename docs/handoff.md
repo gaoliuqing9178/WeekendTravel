@@ -1,5 +1,41 @@
 # Handoff
 
+## 2026-05-21 F1-sprint1-generator 更新
+
+F1-001 已完成并验证。`frontend/` 现在已经是 Vue 3 + Vite + Pinia + Naive UI 项目，`pnpm dev` 默认端口为 `5173`，`feature_list.json` 中 `F1-001` 已标记为 `verified`。
+
+本轮新增或更新：
+- `docs/contracts/F1-001-vue-skeleton.md`
+- `.gitignore`
+- `frontend/package.json`
+- `frontend/pnpm-lock.yaml`
+- `frontend/vite.config.ts`
+- `frontend/tsconfig.json`
+- `frontend/index.html`
+- `frontend/src/main.ts`
+- `frontend/src/App.vue`
+- `frontend/src/stores/planner.ts`
+- `frontend/src/styles/main.css`
+- `frontend/public/favicon.svg`
+- `frontend/.gitignore`
+- `frontend/README.md`
+
+验证命令：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast
+```
+
+验证结果：`pnpm typecheck` passed，`Verify passed.` 直接在当前沙盒 shell 运行 `.\verify.ps1 -Target frontend -Mode fast` 会因为找不到宿主全局 `pnpm` 失败；宿主 PowerShell 路径已验证通过。
+
+额外构建验证：`pnpm build` 通过，Vite 生产构建成功，主 JS chunk 约 290.51 kB / gzip 91.94 kB。
+
+UI 冒烟验证：`pnpm dev` 已启动并监听 `127.0.0.1:5173`；Playwright 打开页面可见 WeekendTravel 骨架，点击“开始预演”后 Pinia 状态从 `START/idle` 变为 `INTENT/connecting`，console 无 error/warning。
+
+下一步建议：
+- F1：推进 `F1-002`，实现 API client 和 mock fixture mode。
+- B1：后端仍未 scaffold，推进 `B1-001`。
+
 ## 当前状态
 
 Initializer 已把仓库整理成长期 agent 开发 harness。前端仍未 scaffold，但后端已经完成 B1-001 的最小初始化：Spring Boot + Maven 项目已存在，`GET /health`、全局 CORS 和基础测试已落地，默认端口已固定为 `8000`。

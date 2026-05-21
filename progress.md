@@ -87,3 +87,37 @@
 - Golden Case 仍以 21 条为准。
 - Demo 场景仍只有 `family` 和 `friends`。
 - API 字段名仍统一 camelCase；部分动作枚举值保留工具语义 lower_snake_case。
+
+## 2026-05-21 F1-sprint1-generator
+
+### 已完成
+
+- 创建 `docs/contracts/F1-001-vue-skeleton.md`，明确本轮只交付 Vue 前端骨架，不接入真实 API / SSE / OpenAI。
+- 在 `frontend/` scaffold Vue 3 + Vite + Pinia + Naive UI 项目，并保留 Tailwind CSS 入口以匹配前端技术栈。
+- 配置 `vite.config.ts`：`server.port = 5173`、`strictPort = true`，`pnpm dev` 默认访问 `http://localhost:5173`。
+- 创建 Pinia store `src/stores/planner.ts`，包含 `planId`、`agentState`、用户输入、场景、origin、SSE 状态占位和日志事件数组占位。
+- 页面 `src/App.vue` 使用 Naive UI 组件渲染输入区、场景切换、状态摘要和日志占位，不调用后端。
+- 通过宿主 npm 安装全局 `pnpm`，并在 `frontend/` 生成 `pnpm-lock.yaml`。
+- 新增 `frontend/.gitignore`，忽略 `node_modules/`、`dist/` 和本地生成物。
+- 新增根 `.gitignore`，忽略 Playwright MCP 本地快照目录 `.playwright-mcp/`。
+- 将 `feature_list.json` 中 `F1-001` 标记为 `verified` 并写入验证证据。
+
+### 验证记录
+
+- 直接运行 `.\verify.ps1 -Target frontend -Mode fast` 时，当前沙盒 shell 找不到宿主全局 `pnpm`，脚本按预期失败在环境检查。
+- 使用宿主 PowerShell 运行：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast
+```
+
+结果：
+- `pnpm typecheck` passed。
+- `Verify passed.`
+- 额外运行 `pnpm build` 通过，Vite 生产构建成功，主 JS chunk 约 290.51 kB / gzip 91.94 kB。
+- 已启动 `pnpm dev`，监听 `127.0.0.1:5173`；Playwright 打开页面可见 WeekendTravel 骨架，点击“开始预演”后 Pinia 状态从 `START/idle` 变为 `INTENT/connecting`，console 无 error/warning。
+
+### 下一步
+
+- F1 下一步建议推进 `F1-002`：API client 和 mock fixture mode。
+- 后端仍未 scaffold，`B1-001` 仍是后端方向的下一步。

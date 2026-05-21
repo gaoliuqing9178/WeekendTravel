@@ -194,7 +194,7 @@
       "track": "frontend",
       "owner": "F1",
       "title": "Vue 3 + Vite + Pinia + Naive UI skeleton",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": [],
       "contract": "docs/contracts/F1-001-vue-skeleton.md",
@@ -203,7 +203,10 @@
         "pnpm dev starts on http://localhost:5173",
         "Pinia and Naive UI are configured"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-21: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target frontend -Mode fast -> pnpm typecheck passed; Verify passed.",
+        "2026-05-21: pnpm dev listens on 127.0.0.1:5173; Playwright page smoke passed with START/idle -> INTENT/connecting and 0 console errors."
+      ]
     },
     {
       "id": "F1-002",
