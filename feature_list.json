@@ -255,7 +255,7 @@
       "track": "frontend",
       "owner": "F1",
       "title": "API client and mock fixture mode",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["F1-001"],
       "contract": "docs/contracts/F1-002-api-client-fixtures.md",
@@ -264,7 +264,12 @@
         "Mock mode can load docs/fixtures/*.json and *.jsonl",
         "No snake_case conversion exists unless documented in docs/api-contract.md"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-22: Generator added contract docs/contracts/F1-002-api-client-fixtures.md, typed frontend API client, mock fixture loader, fixture parser, and verify:fixtures script.",
+        "2026-05-22: Generator development check passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target frontend -Mode fast -> fixture parsing and pnpm typecheck passed; npm run build also passed.",
+        "2026-05-22: Independent evaluator subagent Hooke (019e4dd8-6378-79b2-a8d6-9f89bcadb13d) verified fast frontend harness, camelCase-only field usage, Playwright MCP interaction, and Chrome DevTools MCP browser diagnostics.",
+        "2026-05-22: Evaluator evidence written to docs/qa/F1-002-api-client-fixtures.md with screenshots docs/qa/F1-002-devtools-confirm.png, docs/qa/F1-002-devtools-confirm-root.png, and docs/qa/F1-002-playwright-confirm.png."
+      ]
     },
     {
       "id": "F1-003",

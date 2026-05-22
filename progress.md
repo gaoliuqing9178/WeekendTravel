@@ -1,5 +1,41 @@
 # Progress
 
+## 2026-05-22 F1-002 API client and mock fixture mode
+
+### 已完成
+
+- 新增 `docs/contracts/F1-002-api-client-fixtures.md`，明确本轮只交付 API client、mock fixture mode 和 fixture 解析验证，不抢做完整 SSE composable 或 PlanCard。
+- 新增 `frontend/src/api/types.ts`，按 `docs/api-contract.md` 建立 `Scenario`、`AgentState`、`Plan`、`TimeSlot`、`ActionItem`、REST request / response 和 SSE payload 类型。
+- 新增 `frontend/src/api/client.ts`，支持默认 `mock` mode 和 `VITE_API_MODE=real` 的真实 API mode；真实路径只使用 `docs/api-contract.md` 里的 REST / SSE 端点。
+- 新增 `frontend/src/api/fixtures.ts`，通过 Vite raw import 读取 `docs/fixtures/plan-ready-family.json`、`docs/fixtures/plan-ready-friends.json` 和 `docs/fixtures/sse-events.jsonl`，并做 camelCase key、plan_ready 和 SSE frame 基础校验。
+- 新增 `frontend/scripts/verify-fixtures.mjs` 和 `frontend/package.json` 的 `verify:fixtures`，把 fixture JSON / JSONL 解析纳入前端 fast verify。
+- 更新 `verify.ps1`，当前 `.\verify.ps1 -Target frontend -Mode fast` 会先跑 `pnpm verify:fixtures`，再跑 `pnpm typecheck`。
+- 更新 `frontend/src/stores/planner.ts` 和 `frontend/src/App.vue`，点击“开始预演”后默认使用 mock client 加载 fixture，显示 `CONFIRM` / `closed` 状态、Plan ID、Plan B 摘要和 fixture 日志预览。
+- 在 `feature_list.json` 将 `F1-002` 标记为 `verified` 并写入 evaluator 证据。
+
+### 验证记录
+
+- Generator 开发侧准备检查：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast` 通过，输出覆盖：
+  - `docs/fixtures/plan-ready-family.json -> plan_family_fixture`
+  - `docs/fixtures/plan-ready-friends.json -> plan_friends_fixture`
+  - `docs/fixtures/sse-events.jsonl -> 23 JSONL events`
+  - `pnpm typecheck passed`
+  - `Verify passed.`
+- Generator 额外构建检查：`npm run build` 通过，Vite production build 成功。
+- Generator 字段检查：`rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures` 无命中。
+- 独立 evaluator 子代理 Hooke (`019e4dd8-6378-79b2-a8d6-9f89bcadb13d`) 已完成验证并放行。
+- Evaluator 验证范围包含：`docs/contracts/F1-002-api-client-fixtures.md`、`docs/api-contract.md`、`frontend/src/api/*`、`frontend/scripts/verify-fixtures.mjs`、`verify.ps1`、`frontend/src/stores/planner.ts`、`frontend/src/App.vue`。
+- Evaluator 运行前端 fast verify 通过，并确认 fixture 解析、`pnpm typecheck` 和 `Verify passed.`。
+- Evaluator 使用 Playwright MCP 打开 `http://127.0.0.1:5173` 并点击“开始预演”，确认页面进入 `CONFIRM` / `closed`，可见 `plan_family_fixture`、Plan B 和 summary，console 错误 / 警告为 0。
+- Evaluator 使用 Chrome DevTools MCP 复核 snapshot、console、network、DOM：三份 fixture raw import 均为 200，页面含 `CONFIRM`、`closed`、Plan B alert 和 fixture 日志。
+- QA 报告：`docs/qa/F1-002-api-client-fixtures.md`。
+- 截图证据：`docs/qa/F1-002-devtools-confirm.png`、`docs/qa/F1-002-devtools-confirm-root.png`、`docs/qa/F1-002-playwright-confirm.png`。
+
+### 当前状态
+
+- `F1-002` 已完成并 verified。
+- 下一步 F1 小目标应推进 `F1-003`：`useSSE` composable and log panel，把当前 fixture 解析能力接到真实日志面板和流式事件分发。
+
 ## 2026-05-22 WF-002 前端 evaluator 浏览器 MCP 规则
 
 ### 已完成
