@@ -1,6 +1,6 @@
 # WeekendTravel Frontend
 
-Vue 3 + Vite + Pinia + Naive UI 前端骨架。当前完成的是 F1-001，后续 API client、fixture mode、SSE 和业务组件由 F1-002 之后继续接入。
+Vue 3 + Vite + Pinia + Naive UI 前端骨架。当前已完成 F1-001 和 F1-002，具备基础工作台、API client 和 mock fixture mode；完整 SSE 日志面板和业务组件由 F1-003 之后继续接入。
 
 ## 技术栈
 
@@ -16,6 +16,7 @@ Vue 3 + Vite + Pinia + Naive UI 前端骨架。当前完成的是 F1-001，后�
 
 ```powershell
 pnpm install
+pnpm verify:fixtures
 pnpm dev
 ```
 
@@ -42,5 +43,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target fro
 ## 后续接入边界
 
 - API 字段只以 `../docs/api-contract.md` 为准。
-- 后端未完成前，优先使用 `../docs/fixtures/` 做独立开发。
+- 后端未完成前，优先使用 `../docs/fixtures/` 做独立开发；默认 API mode 为 `mock`，可用 `VITE_API_MODE=real` 切换真实后端。
 - 不在前端暴露真实 token、key 或本机隐私路径。

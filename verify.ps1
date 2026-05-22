@@ -74,6 +74,16 @@ function Invoke-FrontendVerify {
 
   Push-Location 'frontend'
   try {
+    if ($scriptNames -contains 'verify:fixtures') {
+      Write-Host "[run] pnpm verify:fixtures"
+      & pnpm verify:fixtures
+      if ($LASTEXITCODE -ne 0) {
+        Add-Failure "pnpm verify:fixtures failed with exit code $LASTEXITCODE."
+      } else {
+        Write-Host "[ok] pnpm verify:fixtures passed."
+      }
+    }
+
     if ($scriptNames -contains 'typecheck') {
       Write-Host "[run] pnpm typecheck"
       & pnpm typecheck
