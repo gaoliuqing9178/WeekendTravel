@@ -51,3 +51,17 @@
 - 决策：当前接口 `scenario` 仍只允许 `family` 和 `friends`。
 - 原因：补充设计文档的时间骨架里提到“情侣”模板，但产品核心 Demo 场景和 initializer 要求都只包含家庭、朋友。
 - 影响：不新增 `couple` 场景，不扩展前后端任务清单；如后续产品范围扩大，必须先更新 `docs/product-spec.md`、`docs/api-contract.md` 和 golden case。
+
+## 2026-05-22 Harness 测试职责调整
+
+### D-009 Generator 测试阶段必须委托 evaluator 子代理
+
+- 决策：所有 generator agent 完成开发后，测试阶段必须委托独立 evaluator 子代理执行。Generator 自己运行的本地冒烟、typecheck、build 或脚本结果只能作为开发准备记录，不能单独作为 `verified` 证据。
+- 原因：WeekendTravel 是长期接力项目，测试者和实现者必须分离，避免 generator 为了完成任务而弱化验收、漏测用户路径或把“能编译”当成“已验证”。
+- 影响：`docs/dev-workflow.md`、`docs/quality.md`、QA 模板、contract 模板、AGENTS 入口和 handoff 均按该规则更新。后续任何功能若没有 evaluator 子代理证据，只能保持 `todo` / `in_progress` / `blocked`，不能标为 `verified`。
+
+### D-010 前端 evaluator 必须使用 Playwright MCP 和 Chrome DevTools MCP
+
+- 决策：所有涉及前端 UI 的任务，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP。Playwright MCP 负责用户路径、模拟交互、状态等待、截图或 trace；Chrome DevTools MCP 负责页面快照、DOM / accessibility、console、network 和视觉复核。
+- 原因：WeekendTravel 前端验收不能只依赖脚本或单一浏览器路径；需要同时覆盖用户交互和浏览器诊断，避免 UI 看似可用但存在 console/network 错误、DOM 状态异常、遮挡、错位或关键内容不可见。
+- 影响：前端任务的 QA 报告必须分别记录 Playwright MCP 和 Chrome DevTools MCP 证据。缺少任一类 MCP 证据时，前端任务不能标记为 `verified`。

@@ -51,4 +51,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target all
 
 ## 什么叫完成
 
-每轮只推进一个清楚的小目标。完成必须同时满足：实现落地、运行或脚本验证有证据、`feature_list.json` 状态和证据同步、`progress.md` 与对应 handoff 更新。后端任务更新 `backend/HANDOFF.md`，前端任务更新 `frontend/F1-handoff.md`，联调或跨端任务两个都更新。没有验证证据的功能不能标为 `verified`。
+每轮只推进一个清楚的小目标。完成必须同时满足：实现落地、由独立 evaluator 子代理完成测试并留下证据、`feature_list.json` 状态和证据同步、`progress.md` 与对应 handoff 更新。后端任务更新 `backend/HANDOFF.md`，前端任务更新 `frontend/F1-handoff.md`，联调或跨端任务两个都更新。
+
+所有 generator agent 在完成开发后，测试阶段必须委托独立 evaluator 子代理执行；generator 自己运行的本地冒烟、typecheck、build 或脚本结果只能作为开发准备记录，不能单独作为 `verified` 证据。没有 evaluator 子代理验证证据的功能不能标为 `verified`。
+
+涉及前端 UI 的任务，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP。Playwright MCP 用于模拟交互、状态等待、截图或 trace；Chrome DevTools MCP 用于页面快照、console、network、DOM / accessibility 和视觉复核。缺少任一类 MCP 证据时，前端任务不能标为 `verified`。

@@ -3,3 +3,5 @@
 backend/target/
 .playwright-mcp/
 node_modules/
+.vscode/
+.github/

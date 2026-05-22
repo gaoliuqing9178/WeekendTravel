@@ -1,5 +1,45 @@
 # Progress
 
+## 2026-05-22 WF-002 前端 evaluator 浏览器 MCP 规则
+
+### 已完成
+
+- 新增 `docs/contracts/WF-002-frontend-evaluator-browser-mcp.md`，明确前端 evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP。
+- 更新 `docs/dev-workflow.md`，把前端 UI 验收从泛泛的浏览器 / Playwright 要求升级为双 MCP 要求。
+- 更新 `docs/frontend-contract.md`，明确 Playwright MCP 负责模拟交互、状态等待、截图或 trace，Chrome DevTools MCP 负责页面快照、console、network、DOM / accessibility 和视觉复核。
+- 更新 `docs/quality.md`、`docs/contracts/_template.md`、`docs/qa/evaluator-template.md`、`frontend/F1-handoff.md` 和 `docs/decision-log.md`，统一前端 evaluator 证据要求。
+- 在 `feature_list.json` 新增 `WF-002`，并在 evaluator 子代理放行后标记为 `verified`。
+
+### 验证记录
+
+- Generator 开发侧准备检查：`feature_list.json` 可通过 `ConvertFrom-Json` 解析。
+- Generator 开发侧准备检查：搜索 `Playwright MCP|Chrome DevTools MCP|截图|视觉|console|network|DOM|accessibility|trace`，确认入口、前端 contract、workflow、quality、模板、handoff、decision log、progress 和 feature metadata 均有覆盖。
+- 独立 evaluator 子代理 Euler (`019e4db4-865e-7fe2-85ed-4dd5e5b6f3c2`) 已完成只读验证并放行。
+- Evaluator 验证范围包含：`AGENTS.md`、`docs/dev-workflow.md`、`docs/frontend-contract.md`、`docs/quality.md`、`docs/contracts/_template.md`、`docs/qa/evaluator-template.md`、`docs/contracts/WF-002-frontend-evaluator-browser-mcp.md`、`frontend/F1-handoff.md`、`docs/handoff.md`、`docs/decision-log.md`、`docs/initiallizer-agent-prompt.md`、`progress.md`、`feature_list.json`。
+- Evaluator 结论：前端验收入口、QA 模板、handoff、decision log、progress 和 feature metadata 都已覆盖 Playwright MCP + Chrome DevTools MCP 双工具要求；`feature_list.json` 可解析；未发现冲突规则。
+- QA 报告已写入 `docs/qa/WF-002-frontend-evaluator-browser-mcp.md`。
+
+## 2026-05-22 WF-001 harness 测试职责调整
+
+### 已完成
+
+- 新增 `docs/contracts/WF-001-generator-subagent-testing.md`，把“generator 测试阶段必须使用 evaluator 子代理”作为本轮 workflow contract。
+- 更新 `AGENTS.md`，把完成定义改为必须有独立 evaluator 子代理验证证据。
+- 更新 `docs/dev-workflow.md`，将旧的 generator 自行最终验证流程改为 `Generator -> Handoff to Evaluator Subagent -> Evaluator Test -> Fix -> Evaluator Retest -> Handoff`。
+- 更新 `docs/quality.md`，明确 generator 自己运行的 typecheck、build、脚本、curl 或冒烟只能作为开发准备记录，不能单独作为 `verified` 证据。
+- 更新 `docs/contracts/_template.md` 和 `docs/qa/evaluator-template.md`，要求后续 contract 与 QA 报告记录 evaluator 子代理。
+- 更新 `docs/backend-contract.md`、`docs/frontend-contract.md`、`backend/HANDOFF.md`、`frontend/F1-handoff.md`、`docs/handoff.md`、`docs/decision-log.md` 和 `docs/initiallizer-agent-prompt.md`，统一新规则。
+- 在 `feature_list.json` 新增 `WF-001`，并在 evaluator 子代理放行后标记为 `verified`。
+
+### 验证记录
+
+- Generator 开发侧准备检查：`feature_list.json` 可通过 `ConvertFrom-Json` 解析。
+- Generator 开发侧准备检查：搜索 `Self Verify|小任务可以同一个 agent|Generator 负责实现和基础验证|Generator -> Self Verify`，只剩 `docs/contracts/WF-001-generator-subagent-testing.md` 的负例搜索命令命中，不是活跃规则。
+- 独立 evaluator 子代理 Newton (`019e4da9-79c0-79a3-b7f1-c79f5e594c58`) 已完成只读验证并放行。
+- Evaluator 验证范围包含：`AGENTS.md`、`docs/dev-workflow.md`、`docs/quality.md`、`docs/contracts/_template.md`、`docs/qa/evaluator-template.md`、`docs/contracts/WF-001-generator-subagent-testing.md`、`docs/backend-contract.md`、`docs/frontend-contract.md`、`backend/HANDOFF.md`、`frontend/F1-handoff.md`、`docs/handoff.md`、`docs/decision-log.md`、`progress.md`、`feature_list.json`。
+- Evaluator 结论：活跃规则已统一为“generator 完成开发后，测试阶段必须交给独立 evaluator 子代理”；没有发现仍允许 generator-only final testing 的活跃表述；`feature_list.json` 可解析。
+- QA 报告已写入 `docs/qa/WF-001-generator-subagent-testing.md`。
+
 ## 2026-05-21 Initializer
 
 ### 已完成

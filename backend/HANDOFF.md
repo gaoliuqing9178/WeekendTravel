@@ -101,6 +101,9 @@
 
 ## 验证与回归
 
+- [ ] Generator 完成开发后，测试阶段必须交给独立 evaluator 子代理执行。
+- [ ] Generator 自己运行的 `./mvnw test`、`verify.ps1`、curl 或本地冒烟只能作为开发准备记录，不能单独作为 `verified` 证据。
+- [ ] Evaluator 子代理需要记录命令、API 输出、日志或 QA 报告；没有 evaluator 证据不要标记完成。
 - [ ] 运行 `./mvnw test`。
 - [ ] 运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ..\verify.ps1 -Target backend -Mode fast`。
 - [ ] 为 `GET /health` 添加 API 测试。

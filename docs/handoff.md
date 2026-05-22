@@ -1,5 +1,63 @@
 # Handoff
 
+## 2026-05-22 前端 evaluator 浏览器 MCP 规则
+
+本轮补充前端验收硬规则：所有涉及前端 UI 的任务，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP。Playwright MCP 用于模拟真实用户交互、状态等待、截图或 trace；Chrome DevTools MCP 用于页面快照、console、network、DOM / accessibility 和视觉复核。
+
+本轮新增或更新：
+- `docs/contracts/WF-002-frontend-evaluator-browser-mcp.md`
+- `docs/qa/WF-002-frontend-evaluator-browser-mcp.md`
+- `docs/dev-workflow.md`
+- `docs/frontend-contract.md`
+- `docs/quality.md`
+- `docs/contracts/_template.md`
+- `docs/qa/evaluator-template.md`
+- `frontend/F1-handoff.md`
+- `docs/decision-log.md`
+- `feature_list.json`
+- `progress.md`
+
+接手提醒：
+- 后续前端 evaluator 报告必须分别写 Playwright MCP 证据和 Chrome DevTools MCP 证据。
+- 缺少任一类 MCP 证据时，前端 UI 任务不能标记为 `verified`。
+
+验证结果：
+- 独立 evaluator 子代理 Euler (`019e4db4-865e-7fe2-85ed-4dd5e5b6f3c2`) 已只读检查本轮前端 harness 文档并放行。
+- evaluator 确认前端验收入口、QA 模板、handoff、decision log、progress 和 feature metadata 都已覆盖 Playwright MCP + Chrome DevTools MCP 双工具要求。
+- `feature_list.json` 已通过 `ConvertFrom-Json` 解析，`WF-002` 已按 evaluator 证据标记为 `verified`。
+
+## 2026-05-22 Harness 测试职责调整
+
+本轮将 generator / evaluator 流程从旧的“generator 可自行最终验证”调整为硬性职责分离：所有 generator agent 完成开发后，测试阶段必须委托独立 evaluator 子代理执行；generator 自己运行的本地冒烟、typecheck、build、curl、Playwright 或脚本结果只能作为开发准备记录，不能单独作为 `verified` 证据。
+
+本轮新增或更新：
+- `AGENTS.md`
+- `docs/architecture.md`
+- `docs/dev-workflow.md`
+- `docs/quality.md`
+- `docs/backend-contract.md`
+- `docs/frontend-contract.md`
+- `docs/contracts/_template.md`
+- `docs/contracts/WF-001-generator-subagent-testing.md`
+- `docs/qa/WF-001-generator-subagent-testing.md`
+- `docs/qa/evaluator-template.md`
+- `docs/decision-log.md`
+- `docs/initiallizer-agent-prompt.md`
+- `backend/HANDOFF.md`
+- `frontend/F1-handoff.md`
+- `feature_list.json`
+- `progress.md`
+
+接手提醒：
+- 后续任意 B1 / B2 / F1 / INT generator 做完实现后，都要把待测范围交给 evaluator 子代理。
+- 小任务也不能由同一个 generator 自测后直接标记 `verified`。
+- 如果当前环境无法启动 evaluator 子代理，任务只能保持 `todo` / `in_progress` / `blocked`，不能标为 `verified`。
+
+验证结果：
+- 独立 evaluator 子代理 Newton (`019e4da9-79c0-79a3-b7f1-c79f5e594c58`) 已只读检查本轮 harness 文档并放行。
+- evaluator 确认未发现仍允许 generator 自己完成最终测试、自己直接标记完成或以 generator-only 命令作为 `verified` 证据的活跃表述。
+- `feature_list.json` 已通过 `ConvertFrom-Json` 解析，`WF-001` 已按 evaluator 证据标记为 `verified`。
+
 ## 2026-05-21 F1-sprint1-generator 更新
 
 F1-001 已完成并验证。`frontend/` 现在已经是 Vue 3 + Vite + Pinia + Naive UI 项目，`pnpm dev` 默认端口为 `5173`，`feature_list.json` 中 `F1-001` 已标记为 `verified`。

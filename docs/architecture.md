@@ -33,7 +33,7 @@ Planning decisions stay in the state machine and rule code.
 - SSE 接入和日志面板。
 - 方案卡、确认执行、Plan B 展示。
 - `CLARIFY` 反问、`ADJUST` 微调、错误和降级状态展示。
-- 在后端未完成前，基于 `docs/fixtures/` 开发和自测。
+- 在后端未完成前，基于 `docs/fixtures/` 开发调试；正式测试仍必须交由 evaluator 子代理执行。
 
 ### Backend B1
 

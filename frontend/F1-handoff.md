@@ -117,4 +117,6 @@ unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied
 - 前端不得自定义 snake_case 兼容分支，除非 `docs/api-contract.md` 明确要求。
 - 不在前端暴露真实 token、key 或个人路径。
 - 后端未完成前，优先用 `docs/fixtures/` 做独立开发。
-- 没有验证证据，不要把 `feature_list.json` 中的任务标为 `verified`。
+- Generator 完成开发后，测试阶段必须交给独立 evaluator 子代理执行；generator 自己跑的 typecheck、build、Playwright 或本地冒烟只能作为开发准备记录。
+- 前端 evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP：Playwright MCP 覆盖模拟交互、状态等待、截图或 trace；Chrome DevTools MCP 覆盖页面快照、console、network、DOM / accessibility 和视觉复核。
+- 没有 evaluator 子代理验证证据，不要把 `feature_list.json` 中的任务标为 `verified`。
