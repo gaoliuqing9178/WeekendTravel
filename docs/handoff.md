@@ -92,11 +92,11 @@ UI 冒烟验证：`pnpm dev` 已启动并监听 `127.0.0.1:5173`；Playwright �
 
 下一步建议：
 - F1：推进 `F1-002`，实现 API client 和 mock fixture mode。
-- B1：后端仍未 scaffold，推进 `B1-001`。
+- B1：推进 `B1-002`，实现 SSE emitter and heartbeat。
 
 ## 当前状态
 
-Initializer 已把仓库整理成长期 agent 开发 harness。前端仍未 scaffold，但后端已经完成 B1-001 的最小初始化：Spring Boot + Maven 项目已存在，`GET /health`、全局 CORS 和基础测试已落地，默认端口已固定为 `8000`。
+Initializer 已把仓库整理成长期 agent 开发 harness。前端 F1-001 Vue 骨架已 scaffold 并通过验证；后端已经完成 B1-001 的最小初始化：Spring Boot + Maven 项目已存在，`GET /health`、全局 CORS 和基础测试已落地，默认端口已固定为 `8000`。
 
 ## 已创建文件
 
@@ -112,6 +112,7 @@ Initializer 已把仓库整理成长期 agent 开发 harness。前端仍未 scaf
 - `docs/decision-log.md`
 - `docs/contracts/_template.md`
 - `docs/contracts/B1-001-health-cors.md`
+- `docs/contracts/F1-001-vue-skeleton.md`
 - `docs/qa/evaluator-template.md`
 - `docs/fixtures/sse-events.jsonl`
 - `docs/fixtures/plan-ready-family.json`
@@ -130,10 +131,10 @@ Initializer 已把仓库整理成长期 agent 开发 harness。前端仍未 scaf
 
 ## 尚未实现内容
 
-- `frontend/` 还没有 `package.json` 和 Vue 源码。
 - 后端还没有 `POST /api/plan`、SSE stream、`POST /api/debug/scenario`、状态机、Tool、POI 数据或真实业务链路。
-- 还没有前端 UI 组件或 Playwright 测试。
-- 当前仅 `B1-001` 具备验证证据并可标记为 `verified`；其余功能仍未完成。
+- `frontend/` 已有 Vue/Vite/Pinia/Naive UI 骨架，但还没有 API client、fixture mode、真实 SSE、业务组件或完整 Playwright 自动化覆盖。
+- 还没有真实 API、SSE、状态机、Tool、POI 数据或端到端联调。
+- 当前 `B1-001` 和 `F1-001` 已具备验证证据并标记为 `verified`；其余功能仍按各自验证证据推进。
 
 ## 最高优先级下一步
 
@@ -141,15 +142,14 @@ Initializer 已把仓库整理成长期 agent 开发 harness。前端仍未 scaf
 
 1. 进入 `B1-002`，实现 `GET /api/plan/{planId}/stream` 的最小 SSE emitter 和 heartbeat。
 2. 进入 `B1-003`，实现 `POST /api/plan` 返回 `planId` 和 `status`。
-3. 视需要补修 `verify.ps1`，让 backend verify 支持当前 `./backend/mvnw` 工作流，而不是依赖系统 `mvn`。
-4. 按 `docs/dev-workflow.md` 继续为每轮任务补 contract、验证证据和 handoff。
+3. 按 `docs/dev-workflow.md` 继续为每轮任务补 contract、验证证据和 handoff。
 
 前端优先：
 
-1. 创建 `docs/contracts/F1-001-vue-skeleton.md`。
-2. scaffold Vue 3 + Vite + Pinia + Naive UI 项目。
-3. 配置 `pnpm dev` 默认端口 `5173`。
-4. 跑 `./verify.ps1 -Target frontend -Mode fast` 或等效 PowerShell Bypass 命令。
+1. 创建 `docs/contracts/F1-002-api-client-fixtures.md`。
+2. 实现 API client，字段只使用 `docs/api-contract.md` 的 camelCase 契约。
+3. 实现 mock fixture mode，读取 `docs/fixtures/*.json` 和 `docs/fixtures/*.jsonl`。
+4. 跑 `./verify.ps1 -Target frontend -Mode fast` 或等效 PowerShell Bypass 命令，补充 fixture 解析或 build/typecheck 证据。
 
 ## 验证结果
 
@@ -187,10 +187,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target all
 
 结果：
 
-- `init.ps1` 成功运行：Java、Node、pnpm 可见；Maven 缺失；backend/frontend 均提示尚未初始化。
-- 初始化阶段的 `verify.ps1` 历史结果是失败：当时 `backend\pom.xml` 和 `frontend\package.json` 均缺失。
+- `init.ps1` 成功运行：Java、Node、pnpm 可见；初始化阶段 Maven 缺失，backend/frontend 均提示尚未初始化。
+- `verify.ps1` 在 initializer 阶段曾返回失败：当时 `backend\pom.xml` 缺失、`frontend\package.json` 缺失。
 - 2026-05-21 已完成 B1-001 后续验证：`./backend/mvnw -f "backend/pom.xml" test` 通过；`powershell.exe -NoProfile -ExecutionPolicy Bypass -File "./verify.ps1" -Target backend -Mode fast` 通过；`./backend/mvnw -f "backend/pom.xml" spring-boot:run` 可启动后端；`curl -i -H "Origin: http://localhost:5173" http://localhost:8000/health` 返回 200，且包含 `Access-Control-Allow-Origin: http://localhost:5173`。
 - `verify.ps1` 已改为调用 `backend/mvnw.cmd`，backend verify 不再依赖系统 `mvn` 在 PATH 中。
+- F1-001 已通过 frontend fast verify、`pnpm build` 和 Playwright 冒烟验证。
 - `git status --short` 可运行；Git 仍可能输出全局 ignore 权限警告，但未阻塞本地开发。
 
 ## 已知冲突和处理
@@ -207,5 +208,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target all
 - 每轮只推进一个清楚小目标。
 - API 字段变更先改 `docs/api-contract.md`。
 - 没有验证证据，不要把 `feature_list.json` 状态改成 `verified`。
-- 当前后端最先完成的是 `B1-001`；继续推进时优先按依赖顺序做 `B1-002` 和 `B1-003`。
+- 当前已完成并验证的最小任务是 `B1-001` 和 `F1-001`；继续推进时优先按依赖顺序做 `B1-002`、`B1-003`、`F1-002`。
 - `verify.ps1` 已与 Maven Wrapper 工作流对齐，可直接用于 backend fast verify。

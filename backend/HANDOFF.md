@@ -5,11 +5,11 @@
 - [x] Spring Boot + Maven 项目已初始化。
 - [x] `pom.xml`、`mvnw`、`src/main`、`src/test` 已存在。
 - [x] B2 POI mock 数据已落地为 `src/main/resources/mock/poi_data.json`，并通过 evaluator 验证。
-- [x] 当前已有健康检查 / CORS 骨架、B2 POI 数据、SearchTool、RouteTool、AvailabilityTool、BookingTool、MessageTool、ScenarioFlags 和 debug scenario API；`POST /api/plan`、SSE、状态机、MockApiService 仍未实现。
+- [x] 当前已有健康检查 / CORS 骨架、B2 POI 数据、SearchTool、RouteTool、AvailabilityTool、BookingTool、MessageTool、ScenarioFlags、debug scenario API、最小 SSE stream 和最小 `POST /api/plan` 占位接口；状态机、MockApiService 仍未实现。
 - [ ] `GET /health` 已按 `docs/api-contract.md` 返回契约字段。
 - [ ] CORS 已放通 `http://localhost:5173`。
-- [ ] `POST /api/plan` 已返回 `planId` 和 `status`。
-- [ ] `GET /api/plan/{planId}/stream` 已推送心跳和至少一个 `state_change`。
+- [x] `POST /api/plan` 已返回 `planId` 和 `status`。
+- [x] `GET /api/plan/{planId}/stream` 已推送心跳和至少一个 `state_change`。
 - [x] `POST /api/debug/scenario` 已支持动态更新 flags。
 
 ## 开工前必读
@@ -34,10 +34,10 @@
 - [ ] 实现 `GET /health`，返回 `status`、`service`、`timestamp`。
 - [ ] 配置 `server.port=8000`。
 - [ ] 配置 CORS，仅允许 `http://localhost:5173`。
-- [ ] 为 `POST /api/plan` 建立最小占位实现，返回 202 + `planId` / `status`。
-- [ ] 为 `GET /api/plan/{planId}/stream` 建立最小 SSE 占位实现。
-- [ ] SSE 至少推送 1 个 `heartbeat`。
-- [ ] SSE 至少推送 1 个 `state_change`。
+- [x] 为 `POST /api/plan` 建立最小占位实现，返回 202 + `planId` / `status`。
+- [x] 为 `GET /api/plan/{planId}/stream` 建立最小 SSE 占位实现。
+- [x] SSE 至少推送 1 个 `heartbeat`。
+- [x] SSE 至少推送 1 个 `state_change`。
 - [x] 为 `POST /api/debug/scenario` 建立最小可更新实现。
 - [ ] `mvn test` 可运行通过。
 
@@ -56,9 +56,9 @@
 - [ ] `POST /api/plan/{planId}/execute` 支持确认执行。
 - [ ] `POST /api/plan/{planId}/clarify` 支持继续规划。
 - [ ] `PATCH /api/plan/{planId}/adjust` 支持局部微调。
-- [ ] SSE 事件名与 `type` 字段保持一致。
-- [ ] 支持 `heartbeat`。
-- [ ] 支持 `state_change`。
+- [x] SSE 事件名与 `type` 字段保持一致。
+- [x] 支持 `heartbeat`。
+- [x] 支持 `state_change`。
 - [ ] 支持 `tool_call`。
 - [ ] 支持 `tool_result`，并提供 `latencyMs`。
 - [ ] 支持 `clarification_request`。
@@ -108,7 +108,7 @@
 - [x] 运行 `./mvnw test`。
 - [x] 运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File ..\verify.ps1 -Target backend -Mode fast`。
 - [ ] 为 `GET /health` 添加 API 测试。
-- [ ] 为最小 SSE 链路添加测试或可复现验证步骤。
+- [x] 为最小 SSE 链路添加测试或可复现验证步骤。
 - [ ] 没有验证证据前，不要把相关功能标记为完成或 verified。
 
 ### 2026-05-22 B2-001 验证记录
