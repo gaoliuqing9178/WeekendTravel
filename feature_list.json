@@ -93,7 +93,7 @@
       "track": "backend",
       "owner": "B1",
       "title": "POST /api/plan returns planId",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["B1-001"],
       "contract": "docs/contracts/B1-003-create-plan.md",
@@ -102,7 +102,12 @@
         "Response uses camelCase planId and status",
         "Invalid input returns the documented error shape"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-26: Generator added contract docs/contracts/B1-003-create-plan.md and implemented POST /api/plan in PlanController with PlanCreateService, request/response DTOs, and uniform API error DTO/handler.",
+        "2026-05-26: Generator added backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerCreateTests.java covering HTTP 202 success, generated planId, processing status, missing text, blank text, missing scenario, invalid scenario, and empty body error cases.",
+        "2026-05-26: Generator development checks passed: ./backend/mvnw -f \"backend/pom.xml\" test -> BUILD SUCCESS with 34 tests, 0 failures; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"./verify.ps1\" -Target backend -Mode fast -> Verify passed.",
+        "2026-05-26: Independent evaluator B1-003-EVAL-gpt-5.4-20260526 verified the parent working tree implementation and parent-repo Maven tests using absolute paths; conclusion: pass. QA report: docs/qa/B1-003-create-plan.md."
+      ]
     },
     {
       "id": "B1-004",

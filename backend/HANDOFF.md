@@ -5,10 +5,10 @@
 - [x] Spring Boot + Maven 项目已初始化。
 - [x] `pom.xml`、`mvnw`、`src/main`、`src/test` 已存在。
 - [x] B2 POI mock 数据已落地为 `src/main/resources/mock/poi_data.json`，并通过 evaluator 验证。
-- [x] 当前已有健康检查 / CORS 骨架、B2 POI 数据、SearchTool、RouteTool、AvailabilityTool、BookingTool、MessageTool、ScenarioFlags、debug scenario API 和最小 SSE stream；`POST /api/plan`、状态机、MockApiService 仍未实现。
+- [x] 当前已有健康检查 / CORS 骨架、B2 POI 数据、SearchTool、RouteTool、AvailabilityTool、BookingTool、MessageTool、ScenarioFlags、debug scenario API、最小 SSE stream 和最小 `POST /api/plan` 占位接口；状态机、MockApiService 仍未实现。
 - [ ] `GET /health` 已按 `docs/api-contract.md` 返回契约字段。
 - [ ] CORS 已放通 `http://localhost:5173`。
-- [ ] `POST /api/plan` 已返回 `planId` 和 `status`。
+- [x] `POST /api/plan` 已返回 `planId` 和 `status`。
 - [x] `GET /api/plan/{planId}/stream` 已推送心跳和至少一个 `state_change`。
 - [x] `POST /api/debug/scenario` 已支持动态更新 flags。
 
@@ -34,7 +34,7 @@
 - [ ] 实现 `GET /health`，返回 `status`、`service`、`timestamp`。
 - [ ] 配置 `server.port=8000`。
 - [ ] 配置 CORS，仅允许 `http://localhost:5173`。
-- [ ] 为 `POST /api/plan` 建立最小占位实现，返回 202 + `planId` / `status`。
+- [x] 为 `POST /api/plan` 建立最小占位实现，返回 202 + `planId` / `status`。
 - [x] 为 `GET /api/plan/{planId}/stream` 建立最小 SSE 占位实现。
 - [x] SSE 至少推送 1 个 `heartbeat`。
 - [x] SSE 至少推送 1 个 `state_change`。

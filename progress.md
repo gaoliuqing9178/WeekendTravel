@@ -1,5 +1,38 @@
 # Progress
 
+## 2026-05-26 B1-003 POST /api/plan
+
+### 已完成
+
+- 新增 `docs/contracts/B1-003-create-plan.md`，明确本轮只交付最小 `POST /api/plan` 占位接口，不抢做真实 Planner、状态机或完整 `Plan` 返回。
+- 在 `backend/src/main/java/com/weekendtravel/backend/controller/PlanController.java` 上补 `POST /api/plan`，返回 HTTP `202` 和最小 `{ planId, status }` 响应，同时保留 B1-002 的 SSE stream 端点。
+- 新增 `backend/src/main/java/com/weekendtravel/backend/plan/PlanCreateService.java`，负责 `text` / `scenario` / 可选 `origin` 的最小归一化与校验，并生成带 `plan_` 前缀的占位 `planId`，固定返回 `status=processing`。
+- 新增 `backend/src/main/java/com/weekendtravel/backend/plan/api/CreatePlanRequest.java` 与 `CreatePlanResponse.java`，字段保持 camelCase，对齐正式线缆契约。
+- 新增 `backend/src/main/java/com/weekendtravel/backend/api/ApiErrorResponse.java` 与 `ApiExceptionHandler.java`，为 `IllegalArgumentException` 和请求体不可读场景提供统一 `400 INVALID_INPUT` 错误结构，并在 `... is required` 场景提取 `details.field`。
+- 新增 `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerCreateTests.java`，使用 `@SpringBootTest(webEnvironment = RANDOM_PORT)` + JDK `HttpClient` 对真实 HTTP `POST /api/plan` 做集成测试。
+- 在 `feature_list.json` 将 `B1-003` 标记为 `verified`，并补入 contract、测试、generator 开发侧准备检查和 evaluator 证据。
+- 新增 QA 报告 `docs/qa/B1-003-create-plan.md`，记录独立 evaluator 放行结论。
+- 更新 `backend/HANDOFF.md`，把最小 `POST /api/plan` 占位接口同步为已完成。
+
+### 验证记录
+
+- Generator 开发侧准备检查：`./backend/mvnw -f "backend/pom.xml" test` 通过，后端测试合计 34 tests、0 failures、`BUILD SUCCESS`。
+- Generator 开发侧准备检查：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过，`PlanControllerCreateTests` 6 个测试、全后端 34 个测试均通过，`Verify passed.`。
+- 独立 evaluator：`B1-003-EVAL-gpt-5.4-20260526` 已完成验收并放行。
+- Evaluator 以父工作树绝对路径复核 `PlanController`、`PlanCreateService`、`CreatePlanRequest`、`CreatePlanResponse`、`ApiErrorResponse`、`ApiExceptionHandler`、`PlanControllerCreateTests` 和 `feature_list.json`，避免隔离 worktree 看不到未提交改动的问题。
+- Evaluator 独立运行：
+  - `D:/Users/lenovo/Desktop/WeekendTravel/backend/mvnw -f D:/Users/lenovo/Desktop/WeekendTravel/backend/pom.xml -Dtest=PlanControllerCreateTests test`
+  - `D:/Users/lenovo/Desktop/WeekendTravel/backend/mvnw -f D:/Users/lenovo/Desktop/WeekendTravel/backend/pom.xml test`
+  均 `BUILD SUCCESS`，确认 `POST /api/plan` 的 `202` 成功响应、camelCase `planId`/`status`、可选 `origin` 以及统一错误 shape。
+- QA 报告：`docs/qa/B1-003-create-plan.md`。
+- 本轮不涉及前端 UI，Playwright MCP / Chrome DevTools MCP 不适用。
+
+### 当前状态
+
+- `B1-003` 已完成并 verified。
+- 后端当前已具备 `POST /api/plan` 最小建单入口和 B1-002 的 SSE stream 入口，可继续推进 `B1-004` 状态机接入。
+
+
 ## 2026-05-26 B1-002 SSE emitter and heartbeat
 
 ### 已完成
