@@ -1,8 +1,50 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-05-21",
+  "updatedAt": "2026-05-24",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
+    {
+      "id": "WF-002",
+      "track": "workflow",
+      "owner": "Harness",
+      "title": "Frontend evaluator must use Playwright MCP and Chrome DevTools MCP",
+      "status": "verified",
+      "priority": "P0",
+      "dependsOn": ["WF-001"],
+      "contract": "docs/contracts/WF-002-frontend-evaluator-browser-mcp.md",
+      "acceptance": [
+        "Frontend evaluator requirements mention both Playwright MCP and Chrome DevTools MCP",
+        "Frontend QA reports must include simulated interaction, screenshot or trace, and visual inspection evidence",
+        "Chrome DevTools MCP evidence must cover page snapshot plus console, network, DOM, accessibility, or equivalent browser diagnostics",
+        "feature_list.json remains parseable"
+      ],
+      "evidence": [
+        "2026-05-22: Generator updated frontend evaluator harness docs and added contract docs/contracts/WF-002-frontend-evaluator-browser-mcp.md.",
+        "2026-05-22: Independent evaluator subagent Euler (019e4db4-865e-7fe2-85ed-4dd5e5b6f3c2) verified AGENTS.md, docs/dev-workflow.md, docs/frontend-contract.md, docs/quality.md, templates, handoffs, decision log, initializer prompt, progress, and feature_list.json; conclusion: pass.",
+        "2026-05-22: Evaluator evidence written to docs/qa/WF-002-frontend-evaluator-browser-mcp.md; feature_list.json parsed successfully with ConvertFrom-Json."
+      ]
+    },
+    {
+      "id": "WF-001",
+      "track": "workflow",
+      "owner": "Harness",
+      "title": "Generator testing must use evaluator subagents",
+      "status": "verified",
+      "priority": "P0",
+      "dependsOn": [],
+      "contract": "docs/contracts/WF-001-generator-subagent-testing.md",
+      "acceptance": [
+        "Generator / evaluator workflow forbids generator-only final testing",
+        "Docs state that testing after development must be delegated to an independent evaluator subagent",
+        "Contract and evaluator templates require evaluator subagent evidence",
+        "feature_list.json remains parseable"
+      ],
+      "evidence": [
+        "2026-05-22: Generator updated harness docs and added contract docs/contracts/WF-001-generator-subagent-testing.md.",
+        "2026-05-22: Independent evaluator subagent Newton (019e4da9-79c0-79a3-b7f1-c79f5e594c58) verified AGENTS.md, docs/dev-workflow.md, docs/quality.md, templates, handoffs, decision log, progress, and feature_list.json; conclusion: pass.",
+        "2026-05-22: Evaluator evidence written to docs/qa/WF-001-generator-subagent-testing.md; feature_list.json parsed successfully with ConvertFrom-Json."
+      ]
+    },
     {
       "id": "B1-001",
       "track": "backend",
@@ -112,7 +154,7 @@
       "track": "backend",
       "owner": "B2",
       "title": "POI mock data",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": [],
       "contract": "docs/contracts/B2-001-poi-data.md",
@@ -121,14 +163,19 @@
         "Final POI JSON has at least 50 entries",
         "Data covers family, friends, restaurant, dessert/cafe, and supplier categories"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-22: Generator added contract docs/contracts/B2-001-poi-data.md, backend/src/main/resources/mock/poi_data.json with 52 POIs, and backend/src/test/java/com/weekendtravel/backend/PoiDataTests.java covering parse/count/category/scenario checks.",
+        "2026-05-22: Generator development check passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target backend -Mode fast -> backend tests passed with 3 tests and BUILD SUCCESS.",
+        "2026-05-22: Independent evaluator subagent Newton (019e4fdf-35fd-7c40-a198-aa35368a6fae; B2-001-EVAL-CODEX-20260522T2130+0800) verified POI JSON parsing, category/scenario coverage, backend fast verify, and POI test coverage; conclusion: pass.",
+        "2026-05-22: Evaluator evidence written to docs/qa/B2-001-poi-data.md; POI totals: 52 entries, activity=20, restaurant=20, cafe=3, dessert=3, supplier=6, family=28, friends=32."
+      ]
     },
     {
       "id": "B2-002",
       "track": "backend",
       "owner": "B2",
       "title": "SearchTool and RouteTool",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["B2-001"],
       "contract": "docs/contracts/B2-002-search-route-tools.md",
@@ -137,14 +184,20 @@
         "RouteTool returns distanceMinutes and route summary",
         "Tools return latencyMs"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-24: Generator added contract docs/contracts/B2-002-search-route-tools.md and backend B2 model/repository/tool implementation for SearchTool.searchLocalPlaces and RouteTool.calculateRouteTime.",
+        "2026-05-24: Generator added backend/src/test/java/com/weekendtravel/backend/b2/SearchToolTests.java and RouteToolTests.java covering local POI search filters, route minutes, summaries, latencyMs, and error paths.",
+        "2026-05-24: Generator development check passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target backend -Mode fast -> backend tests passed with 12 tests, 0 failures, BUILD SUCCESS.",
+        "2026-05-24: Independent evaluator subagent Averroes (019e5780-ab21-7250-9644-2889eae14565; B2-002-EVAL-CODEX-20260524T0904+0800) verified SearchTool/RouteTool behavior and backend fast verify; conclusion: pass.",
+        "2026-05-24: Evaluator evidence written to docs/qa/B2-002-search-route-tools.md; SearchToolTests 4 tests, RouteToolTests 5 tests, backend total 12 tests, 0 failures."
+      ]
     },
     {
       "id": "B2-003",
       "track": "backend",
       "owner": "B2",
       "title": "AvailabilityTool and ScenarioFlags",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["B2-001"],
       "contract": "docs/contracts/B2-003-availability-scenario-flags.md",
@@ -153,14 +206,20 @@
         "ScenarioFlags supports restaurantFull, routeTooFar, bookingFail, ageMismatch",
         "POST /api/debug/scenario updates flags without restart"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-24: Generator added contract docs/contracts/B2-003-availability-scenario-flags.md and B2 AvailabilityTool, ScenarioFlags, and POST /api/debug/scenario implementation.",
+        "2026-05-24: Generator added AvailabilityToolTests, ScenarioFlagsTests, and DebugScenarioControllerTests covering default POI availability, latencyMs, scenario flags, restaurantFull, ageMismatch, invalid inputs, and same-runtime debug API updates.",
+        "2026-05-24: Generator development check passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target backend -Mode fast -> backend tests passed with 18 tests, 0 failures, BUILD SUCCESS.",
+        "2026-05-24: Independent evaluator subagent Dirac (019e5795-2750-75c0-845e-f3104401f0a0; B2-003 evaluator) verified AvailabilityTool, ScenarioFlags, debug scenario API, and backend fast verify; conclusion: pass.",
+        "2026-05-24: Evaluator evidence written to docs/qa/B2-003-availability-scenario-flags.md; AvailabilityToolTests 4 tests, DebugScenarioControllerTests 1 test, ScenarioFlagsTests 1 test, backend total 18 tests, 0 failures."
+      ]
     },
     {
       "id": "B2-004",
       "track": "backend",
       "owner": "B2",
       "title": "BookingTool / bookOrOrder",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["B2-003"],
       "contract": "docs/contracts/B2-004-booking-tool.md",
@@ -171,14 +230,20 @@
         "bookOrOrder uses idempotencyKey to avoid duplicate mock orders",
         "cancel_booking reverse operation is supported at the Tool layer"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-24: Generator added contract docs/contracts/B2-004-booking-tool.md and B2 BookingTool/bookOrOrder implementation with BookingRequest and BookingResult records.",
+        "2026-05-24: Generator added BookingToolTests covering success confirmationNo, bookingFail failure, execute_result fields, idempotencyKey reuse, cancel_booking, and invalid requests.",
+        "2026-05-24: Generator development check passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target backend -Mode fast -> backend tests passed with 23 tests, 0 failures, BUILD SUCCESS.",
+        "2026-05-24: Independent evaluator subagent Confucius (019e57a4-d8b5-7b10-aba7-5557ecee3057) verified BookingTool behavior, idempotency, bookingFail, cancel_booking, and backend fast verify; conclusion: pass.",
+        "2026-05-24: Evaluator evidence written in Chinese to docs/qa/B2-004-booking-tool.md; BookingToolTests 5 tests, backend total 23 tests, 0 failures."
+      ]
     },
     {
       "id": "B2-005",
       "track": "backend",
       "owner": "B2",
       "title": "MessageTool / composeShareMessage",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["B1-004"],
       "contract": "docs/contracts/B2-005-message-tool.md",
@@ -187,7 +252,13 @@
         "Future LLM use stays within docs/backend-contract.md boundary",
         "shareMessage appears in Plan"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-24: Generator added contract docs/contracts/B2-005-message-tool.md and B2 MessageTool/composeShareMessage implementation with MessageRequest, MessageResult, MessagePlanPayload, MessageTimeSlot, and MessageActionSummary records.",
+        "2026-05-24: Generator added MessageToolTests covering deterministic family/friends fallback messages, Plan B reason, plan.shareMessage payload, llmUsed=false, action summary filtering, timeline ordering, and invalid requests.",
+        "2026-05-24: Generator development check passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target backend -Mode fast -> backend tests passed with 27 tests, 0 failures, BUILD SUCCESS.",
+        "2026-05-24: Independent evaluator subagent Mencius (019e57b3-5e9e-7e92-b1e5-7744b2a4d329; B2-005-EVAL-CODEX-20260524T0959+0800) verified deterministic fallback shareMessage, LLM boundary, Plan-compatible payload, and backend fast verify; conclusion: pass.",
+        "2026-05-24: Evaluator evidence written in Chinese to docs/qa/B2-005-message-tool.md; MessageToolTests 4 tests, backend total 27 tests, 0 failures."
+      ]
     },
     {
       "id": "F1-001",
@@ -213,7 +284,7 @@
       "track": "frontend",
       "owner": "F1",
       "title": "API client and mock fixture mode",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["F1-001"],
       "contract": "docs/contracts/F1-002-api-client-fixtures.md",
@@ -222,7 +293,12 @@
         "Mock mode can load docs/fixtures/*.json and *.jsonl",
         "No snake_case conversion exists unless documented in docs/api-contract.md"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-22: Generator added contract docs/contracts/F1-002-api-client-fixtures.md, typed frontend API client, mock fixture loader, fixture parser, and verify:fixtures script.",
+        "2026-05-22: Generator development check passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target frontend -Mode fast -> fixture parsing and pnpm typecheck passed; npm run build also passed.",
+        "2026-05-22: Independent evaluator subagent Hooke (019e4dd8-6378-79b2-a8d6-9f89bcadb13d) verified fast frontend harness, camelCase-only field usage, Playwright MCP interaction, and Chrome DevTools MCP browser diagnostics.",
+        "2026-05-22: Evaluator evidence written to docs/qa/F1-002-api-client-fixtures.md with screenshots docs/qa/F1-002-devtools-confirm.png, docs/qa/F1-002-devtools-confirm-root.png, and docs/qa/F1-002-playwright-confirm.png."
+      ]
     },
     {
       "id": "F1-003",

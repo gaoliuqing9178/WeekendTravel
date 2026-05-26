@@ -134,7 +134,7 @@ EXECUTE -> DONE
 
 ## 后端独立验证
 
-后续 scaffold 后，`.\verify.ps1 -Target backend -Mode fast` 至少应覆盖：
+后续 scaffold 后，测试阶段必须由独立 evaluator 子代理运行 `.\verify.ps1 -Target backend -Mode fast`，至少应覆盖：
 
 - Maven 项目存在。
 - `mvn test` 可运行。
@@ -146,6 +146,8 @@ Sprint 1 后端最低可用标准：
 - `POST /api/plan` 返回 `planId` 和 `status`。
 - `GET /api/plan/{planId}/stream` 能推送 SSE 心跳和至少一个 mock `state_change`。
 - `POST /api/debug/scenario` 能更新异常开关。
+
+Generator 可以在开发过程中先运行同类命令排除明显错误，但后端任务能否标记 `verified`，只看 evaluator 子代理的验证证据。
 
 ## 后端不做的事
 

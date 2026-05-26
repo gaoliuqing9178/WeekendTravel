@@ -2,29 +2,41 @@
 
 ## 当前状态
 
-F1-001 已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
+F1-001、F1-002 已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
 
-当前前端只做骨架和本地状态预演：
+当前前端具备骨架、API client 和 mock fixture mode：
 - 已有首页工作台骨架。
 - 已有家庭 / 朋友两个 Demo 场景切换。
-- 已有自然语言输入、origin 输入、状态摘要和日志占位。
+- 已有自然语言输入、origin 输入、状态摘要和 fixture 日志预览。
 - 已接入 Pinia store。
 - 已使用 Naive UI 组件。
-- 暂未接入真实 API、fixture mode、SSE、PlanCard、ClarifyBubble、AdjustPanel 或 Playwright 测试。
+- 已有 `frontend/src/api/client.ts`，默认 `mock` mode，可用 `VITE_API_MODE=real` 切换真实 API mode。
+- 已有 `frontend/src/api/fixtures.ts` 和 `frontend/scripts/verify-fixtures.mjs`，可解析 `docs/fixtures/plan-ready-family.json`、`docs/fixtures/plan-ready-friends.json`、`docs/fixtures/sse-events.jsonl`。
+- 点击“开始预演”后，mock client 会加载 fixture，让页面进入 `CONFIRM` / `closed`，展示 Plan ID、Plan B 摘要和 fixture 日志。
+- 暂未实现完整 `useSSE` composable、实时日志自动滚动、PlanCard、ClarifyBubble、AdjustPanel 或真实后端流式接入。
 
 ## 已完成文件
 
 - `docs/contracts/F1-001-vue-skeleton.md`
+- `docs/contracts/F1-002-api-client-fixtures.md`
+- `docs/qa/F1-002-api-client-fixtures.md`
+- `docs/qa/F1-002-devtools-confirm.png`
+- `docs/qa/F1-002-devtools-confirm-root.png`
+- `docs/qa/F1-002-playwright-confirm.png`
 - `frontend/package.json`
 - `frontend/pnpm-lock.yaml`
 - `frontend/vite.config.ts`
 - `frontend/tsconfig.json`
 - `frontend/index.html`
 - `frontend/public/favicon.svg`
+- `frontend/src/api/types.ts`
+- `frontend/src/api/client.ts`
+- `frontend/src/api/fixtures.ts`
 - `frontend/src/main.ts`
 - `frontend/src/App.vue`
 - `frontend/src/stores/planner.ts`
 - `frontend/src/styles/main.css`
+- `frontend/scripts/verify-fixtures.mjs`
 - `frontend/.gitignore`
 - `frontend/README.md`
 
@@ -33,6 +45,10 @@ F1-001 已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive U
 - 应用入口：`frontend/src/main.ts`
 - 页面入口：`frontend/src/App.vue`
 - 状态入口：`frontend/src/stores/planner.ts`
+- API client：`frontend/src/api/client.ts`
+- API / SSE 类型：`frontend/src/api/types.ts`
+- Fixture loader：`frontend/src/api/fixtures.ts`
+- Fixture 验证脚本：`frontend/scripts/verify-fixtures.mjs`
 - 样式入口：`frontend/src/styles/main.css`
 - Vite 配置：`frontend/vite.config.ts`
 
@@ -42,6 +58,7 @@ F1-001 已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive U
 
 ```powershell
 pnpm install
+pnpm verify:fixtures
 pnpm dev
 ```
 
@@ -82,6 +99,31 @@ UI 冒烟验证：
 - 点击“开始预演”后，Pinia 状态从 `START/idle` 变为 `INTENT/connecting`。
 - console 无 error / warning。
 
+F1-002 验证已通过：
+
+```text
+pnpm verify:fixtures passed
+pnpm typecheck passed
+Verify passed.
+```
+
+Fixture 解析覆盖：
+- `docs/fixtures/plan-ready-family.json -> plan_family_fixture`
+- `docs/fixtures/plan-ready-friends.json -> plan_friends_fixture`
+- `docs/fixtures/sse-events.jsonl -> 23 JSONL events`
+
+额外构建验证也通过：
+
+```powershell
+npm run build
+```
+
+独立 evaluator 子代理 Hooke (`019e4dd8-6378-79b2-a8d6-9f89bcadb13d`) 已放行：
+- Playwright MCP：打开 `http://127.0.0.1:5173`，点击“开始预演”，页面进入 `CONFIRM` / `closed`，可见 `plan_family_fixture`、Plan B 和 summary，console error / warning 为 0。
+- Chrome DevTools MCP：snapshot、console、network、DOM 复核通过；三份 fixture raw import 均为 200。
+- QA 报告：`docs/qa/F1-002-api-client-fixtures.md`。
+- 截图证据：`docs/qa/F1-002-devtools-confirm.png`、`docs/qa/F1-002-devtools-confirm-root.png`、`docs/qa/F1-002-playwright-confirm.png`。
+
 ## 环境注意
 
 - 当前沙盒 shell 里直接运行 `.\verify.ps1 -Target frontend -Mode fast` 可能找不到宿主全局 `pnpm`。
@@ -101,15 +143,13 @@ unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied
 
 ## 下一步建议
 
-下一个 F1 小目标应推进 `F1-002`：
+下一个 F1 小目标应推进 `F1-003`：
 
-1. 创建 `docs/contracts/F1-002-api-client-fixtures.md`。
-2. 实现 API client，字段只使用 `docs/api-contract.md` 的 camelCase 契约。
-3. 实现 mock fixture mode：
-   - `docs/fixtures/plan-ready-family.json`
-   - `docs/fixtures/plan-ready-friends.json`
-   - `docs/fixtures/sse-events.jsonl`
-4. 让验证覆盖 fixture 解析，至少保持 `.\verify.ps1 -Target frontend -Mode fast` 通过。
+1. 创建 `docs/contracts/F1-003-sse-log-panel.md`。
+2. 实现 `useSSE` composable：真实 mode 连接 `/api/plan/{planId}/stream`，mock mode 消费 `getSseFixtureFrames()`。
+3. 把当前 fixture 日志预览升级成正式 LogPanel，覆盖 `state_change`、`tool_call`、`tool_result`、`replan`、`clarification_request`、`adjust_result`、`execute_result`、`done`、`error`。
+4. 日志面板需要自动滚动到最新事件，并按事件类型更新 Pinia 状态。
+5. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 仍必须同时使用 Playwright MCP 和 Chrome DevTools MCP。
 
 ## F1 边界
 
@@ -117,4 +157,6 @@ unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied
 - 前端不得自定义 snake_case 兼容分支，除非 `docs/api-contract.md` 明确要求。
 - 不在前端暴露真实 token、key 或个人路径。
 - 后端未完成前，优先用 `docs/fixtures/` 做独立开发。
-- 没有验证证据，不要把 `feature_list.json` 中的任务标为 `verified`。
+- Generator 完成开发后，测试阶段必须交给独立 evaluator 子代理执行；generator 自己跑的 typecheck、build、Playwright 或本地冒烟只能作为开发准备记录。
+- 前端 evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP：Playwright MCP 覆盖模拟交互、状态等待、截图或 trace；Chrome DevTools MCP 覆盖页面快照、console、network、DOM / accessibility 和视觉复核。
+- 没有 evaluator 子代理验证证据，不要把 `feature_list.json` 中的任务标为 `verified`。

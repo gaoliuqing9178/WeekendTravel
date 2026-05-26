@@ -78,6 +78,15 @@ button:disabled,
   margin-top: 18px;
 }
 
+.fixture-summary {
+  margin-top: 18px;
+}
+
+.fixture-summary :where(strong, span) {
+  display: block;
+  line-height: 1.6;
+}
+
 @media (max-width: 760px) {
   .app-shell {
     width: min(100% - 24px, 1180px);

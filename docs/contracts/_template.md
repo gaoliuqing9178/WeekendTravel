@@ -28,6 +28,16 @@
 
 ## 验收方式
 
+Evaluator 子代理：
+
+- 
+
+前端浏览器验收：
+
+- 如本轮涉及前端 UI，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP。
+- Playwright MCP 证据：
+- Chrome DevTools MCP 证据：
+
 手动路径：
 
 - 
@@ -46,4 +56,6 @@ API / 日志 / 截图证据：
 - UI 显示成功但 API 或状态没有真实变化，失败。
 - 前后端字段与 `docs/api-contract.md` 不一致，失败。
 - 只实现占位或 mock 却标记正式完成，失败。
-- 验证命令未运行或无证据，不能标为 `verified`。
+- 测试阶段没有独立 evaluator 子代理参与，失败。
+- 前端 UI 任务缺少 Playwright MCP 或 Chrome DevTools MCP 任一类证据，失败。
+- 只有 generator 自己运行验证命令或没有证据，不能标为 `verified`。

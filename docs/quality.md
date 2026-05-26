@@ -14,12 +14,12 @@
 一个功能只有同时满足以下条件，才能标记为 `verified`：
 
 - 实现已经落地到对应目录。
-- 验收路径已经执行。
+- 验收路径已经由独立 evaluator 子代理执行。
 - 有命令输出、API 输出、截图、日志或 QA 报告作为证据。
 - `feature_list.json` 的 `evidence` 已更新。
 - `progress.md` 和对应 handoff 已更新。后端任务更新 `backend/HANDOFF.md`，前端任务更新 `frontend/F1-handoff.md`，联调或跨端任务两个都更新。
 
-没有验证证据不能标记完成。
+没有 evaluator 子代理验证证据不能标记完成。Generator 自己运行的本地冒烟、typecheck、build 或脚本结果只能证明开发准备情况，不能单独作为 `verified` 证据。
 
 ## 技术债扫描命令
 
@@ -42,11 +42,24 @@ git log --stat --since="30 days ago"
 
 ## Evaluator 要求
 
-Evaluator 报告必须尽量包含真实运行证据：
+Evaluator 必须由 generator 之外的子代理担任。Evaluator 报告必须尽量包含真实运行证据：
 
+- evaluator 子代理身份或执行入口。
+- generator 提供的改动摘要和待测范围。
 - 环境和命令。
 - 用户路径。
 - 通过证据。
 - 失败复现。
 - 截图、日志或 API 输出位置。
 - 放行或不放行结论。
+
+如果测试阶段没有独立 evaluator 子代理参与，即使命令在 generator 手里通过，也不能放行。
+
+## 前端 Evaluator 浏览器要求
+
+涉及前端 UI 的任务，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP：
+
+- Playwright MCP 用于真实用户路径、模拟交互、状态等待、截图或 trace。
+- Chrome DevTools MCP 用于页面快照、DOM / accessibility 检查、console 错误、network 请求和视觉复核。
+- QA 报告必须分别记录两类 MCP 的证据。缺少任一类 MCP 证据时，前端任务不能标记为 `verified`。
+- 截图视觉检查至少关注文本溢出、遮挡、错位、空白页面、关键按钮状态和核心业务内容是否可见。

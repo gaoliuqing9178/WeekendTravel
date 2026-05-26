@@ -5,6 +5,7 @@ import {
   NConfigProvider,
   NGrid,
   NGridItem,
+  NAlert,
   NInput,
   NInputGroup,
   NMessageProvider,
@@ -57,9 +58,9 @@ function handleScenarioUpdate(value: string | number) {
       <main class="app-shell">
         <section class="workspace-hero" aria-labelledby="app-title">
           <div class="hero-copy">
-            <NTag type="info" round>F1-001</NTag>
+            <NTag type="info" round>F1-002</NTag>
             <h1 id="app-title">WeekendTravel</h1>
-            <p>本地短时活动规划与执行 Agent 前端骨架。</p>
+            <p>API client 与 mock fixture mode 已接入，默认不访问后端网络。</p>
           </div>
           <NSpace class="hero-actions" align="center" :size="12">
             <NTag :bordered="false" type="success">
@@ -124,6 +125,17 @@ function handleScenarioUpdate(value: string | number) {
                 <NStatistic label="Agent" :value="planner.agentState" />
                 <NStatistic label="SSE" :value="planner.connectionState" />
               </div>
+              <NAlert
+                v-if="planner.currentPlan"
+                class="fixture-summary"
+                type="success"
+                :show-icon="false"
+              >
+                <strong>{{ planner.currentPlan.summary }}</strong>
+                <span v-if="planner.currentPlan.isPlanB">
+                  Plan B：{{ planner.currentPlan.planBReason }}
+                </span>
+              </NAlert>
               <NButton class="reset-button" quaternary @click="planner.resetSkeletonFlow">
                 重置
               </NButton>
@@ -131,7 +143,7 @@ function handleScenarioUpdate(value: string | number) {
           </NGridItem>
 
           <NGridItem span="12">
-            <NCard title="日志面板占位" :bordered="false">
+            <NCard title="Fixture 日志预览" :bordered="false">
               <NTimeline>
                 <NTimelineItem
                   v-for="event in planner.logEvents"
