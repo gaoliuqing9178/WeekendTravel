@@ -70,6 +70,7 @@ Planner / Contract -> Generator -> Handoff to Evaluator Subagent -> Evaluator Te
 - 所有 generator agent 在完成开发后，测试阶段必须委托独立 evaluator 子代理执行，不能自己兼任最终测试者。
 - Evaluator 子代理负责像真实用户一样运行、点击、输入、检查 API、查看日志、写 QA 报告。
 - 前端 evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP：Playwright MCP 负责用户路径、模拟交互和截图，Chrome DevTools MCP 负责页面快照、console、network、DOM / accessibility 和必要的视觉复核。
+- 前端 evaluator 截图后必须视觉检查截图检查是否出错，不能只看截图位置。
 - 小任务也不能由同一个 generator agent 自测后直接标记完成；如果无法启动 evaluator 子代理，任务状态只能保持 `todo` / `in_progress` / `blocked`，不能标为 `verified`。
 - 修复循环中，Generator 根据 evaluator 反馈修复；修完后仍必须交回 evaluator 子代理复测。
 - Evaluator 不应只读代码，必须尽量跑真实路径。

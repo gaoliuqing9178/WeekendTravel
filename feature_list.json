@@ -1,6 +1,6 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-05-24",
+  "updatedAt": "2026-05-26",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
     {
@@ -315,7 +315,7 @@
       "track": "frontend",
       "owner": "F1",
       "title": "useSSE composable and log panel",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["F1-001", "F1-002"],
       "contract": "docs/contracts/F1-003-sse-log-panel.md",
@@ -324,7 +324,12 @@
         "Fixture SSE events render in LogPanel",
         "LogPanel auto-scrolls to latest event"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-26: Generator added contract docs/contracts/F1-003-sse-log-panel.md, useSSE composable, LogPanel, Pinia SSE payload reducers, and App integration for mock fixture replay plus real EventSource mode.",
+        "2026-05-26: Generator development checks passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target frontend -Mode fast -> fixture parsing and pnpm typecheck passed; npm run build also passed; forbidden snake_case field search had no matches.",
+        "2026-05-26: Independent evaluator subagent Rawls (019e64a8-1b72-7722-84e4-57b5364a252f) verified frontend fast verify, forbidden field search, Playwright MCP interaction/autoscroll, and Chrome DevTools MCP snapshot/console/network diagnostics; conclusion: pass.",
+        "2026-05-26: Evaluator evidence written to docs/qa/F1-003-sse-log-panel.md with screenshots docs/qa/F1-003-playwright-log-panel.png and docs/qa/F1-003-devtools-log-panel.png."
+      ]
     },
     {
       "id": "F1-004",

@@ -14,11 +14,10 @@ import {
   NSpace,
   NStatistic,
   NTag,
-  NTimeline,
-  NTimelineItem,
   type GlobalThemeOverrides,
 } from 'naive-ui'
 
+import LogPanel from '@/components/LogPanel.vue'
 import { usePlannerStore } from '@/stores/planner'
 
 const planner = usePlannerStore()
@@ -58,9 +57,9 @@ function handleScenarioUpdate(value: string | number) {
       <main class="app-shell">
         <section class="workspace-hero" aria-labelledby="app-title">
           <div class="hero-copy">
-            <NTag type="info" round>F1-002</NTag>
+            <NTag type="info" round>F1-003</NTag>
             <h1 id="app-title">WeekendTravel</h1>
-            <p>API client 与 mock fixture mode 已接入，默认不访问后端网络。</p>
+            <p>useSSE 与实时日志面板已接入，可在 mock fixture mode 下回放完整 SSE 事件。</p>
           </div>
           <NSpace class="hero-actions" align="center" :size="12">
             <NTag :bordered="false" type="success">
@@ -105,6 +104,7 @@ function handleScenarioUpdate(value: string | number) {
                   <NButton
                     type="primary"
                     :disabled="!planner.canStart"
+                    :loading="planner.isRunning"
                     @click="planner.previewSkeletonFlow"
                   >
                     开始预演
@@ -118,6 +118,7 @@ function handleScenarioUpdate(value: string | number) {
             <NCard title="Pinia 状态" :bordered="false">
               <div class="state-grid">
                 <NStatistic label="场景" :value="planner.scenarioLabel" />
+                <NStatistic label="Mode" :value="planner.apiMode" />
                 <NStatistic
                   label="Plan ID"
                   :value="planner.planId ?? '未创建'"
@@ -126,14 +127,22 @@ function handleScenarioUpdate(value: string | number) {
                 <NStatistic label="SSE" :value="planner.connectionState" />
               </div>
               <NAlert
-                v-if="planner.currentPlan"
+                v-if="planner.currentPlan || planner.planBReason"
                 class="fixture-summary"
-                type="success"
+                :type="planner.errorMessage ? 'warning' : 'success'"
                 :show-icon="false"
               >
-                <strong>{{ planner.currentPlan.summary }}</strong>
-                <span v-if="planner.currentPlan.isPlanB">
-                  Plan B：{{ planner.currentPlan.planBReason }}
+                <strong v-if="planner.currentPlan">
+                  {{ planner.currentPlan.summary }}
+                </strong>
+                <span v-if="planner.planBReason">
+                  Plan B：{{ planner.planBReason }}
+                </span>
+                <span v-if="planner.pendingClarification">
+                  反问：{{ planner.pendingClarification.question }}
+                </span>
+                <span v-if="planner.errorMessage">
+                  {{ planner.errorMessage }}
                 </span>
               </NAlert>
               <NButton class="reset-button" quaternary @click="planner.resetSkeletonFlow">
@@ -143,18 +152,10 @@ function handleScenarioUpdate(value: string | number) {
           </NGridItem>
 
           <NGridItem span="12">
-            <NCard title="Fixture 日志预览" :bordered="false">
-              <NTimeline>
-                <NTimelineItem
-                  v-for="event in planner.logEvents"
-                  :key="event.id"
-                  :type="event.type === 'state_change' ? 'info' : 'default'"
-                  :title="event.title"
-                  :content="event.detail"
-                  :time="new Date(event.timestamp).toLocaleTimeString('zh-CN')"
-                />
-              </NTimeline>
-            </NCard>
+            <LogPanel
+              :events="planner.logEvents"
+              :connection-state="planner.connectionState"
+            />
           </NGridItem>
         </NGrid>
       </main>
