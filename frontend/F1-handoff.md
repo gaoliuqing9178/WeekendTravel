@@ -2,27 +2,41 @@
 
 ## 当前状态
 
-F1-001、F1-002 已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
+F1-001、F1-002、F1-003、F1-004 已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
 
-当前前端具备骨架、API client 和 mock fixture mode：
+当前前端具备骨架、API client、mock fixture mode、正式 `InputPanel`、`useSSE` 和实时日志面板：
 - 已有首页工作台骨架。
 - 已有家庭 / 朋友两个 Demo 场景切换。
-- 已有自然语言输入、origin 输入、状态摘要和 fixture 日志预览。
+- 已有正式 `frontend/src/components/InputPanel.vue`，包含自然语言输入、origin 输入、场景选择、提交按钮和提交状态提示。
+- real mode 下提交会调用 `POST /api/plan`，读取 camelCase `planId` / `status`，并把 `planId` 交给 `useSSE` 连接 `/api/plan/{planId}/stream`。
 - 已接入 Pinia store。
 - 已使用 Naive UI 组件。
 - 已有 `frontend/src/api/client.ts`，默认 `mock` mode，可用 `VITE_API_MODE=real` 切换真实 API mode。
 - 已有 `frontend/src/api/fixtures.ts` 和 `frontend/scripts/verify-fixtures.mjs`，可解析 `docs/fixtures/plan-ready-family.json`、`docs/fixtures/plan-ready-friends.json`、`docs/fixtures/sse-events.jsonl`。
-- 点击“开始预演”后，mock client 会加载 fixture，让页面进入 `CONFIRM` / `closed`，展示 Plan ID、Plan B 摘要和 fixture 日志。
-- 暂未实现完整 `useSSE` composable、实时日志自动滚动、PlanCard、ClarifyBubble、AdjustPanel 或真实后端流式接入。
+- 已有 `frontend/src/composables/useSSE.ts`，mock mode 逐条回放 fixture SSE，real mode 通过 `openPlanStream(planId)` 连接 `/api/plan/{planId}/stream`。
+- 已有 `frontend/src/components/LogPanel.vue`，可以展示 `heartbeat`、`state_change`、`tool_call`、`tool_result`、`replan`、`clarification_request`、`adjust_result`、`plan_ready`、`execute_result`、`done`、`error`，并自动滚动到最新事件。
+- 点击“提交规划”后，mock client 会创建 fixture plan，`useSSE` 逐条回放 `docs/fixtures/sse-events.jsonl`，页面最终可见 `DEGRADE` / `closed`、Plan ID、Plan B 摘要和最新日志事件。
+- 暂未实现完整 PlanCard、ConfirmButton、ExecutionTracker、ClarifyBubble 或 AdjustPanel。
 
 ## 已完成文件
 
 - `docs/contracts/F1-001-vue-skeleton.md`
 - `docs/contracts/F1-002-api-client-fixtures.md`
+- `docs/contracts/F1-003-sse-log-panel.md`
+- `docs/contracts/F1-004-input-plan-api.md`
 - `docs/qa/F1-002-api-client-fixtures.md`
 - `docs/qa/F1-002-devtools-confirm.png`
 - `docs/qa/F1-002-devtools-confirm-root.png`
 - `docs/qa/F1-002-playwright-confirm.png`
+- `docs/qa/F1-003-sse-log-panel.md`
+- `docs/qa/F1-003-devtools-log-panel.png`
+- `docs/qa/F1-003-playwright-log-panel.png`
+- `docs/qa/F1-004-input-plan-api.md`
+- `docs/qa/F1-004-devtools-mock.png`
+- `docs/qa/F1-004-devtools-real.png`
+- `docs/qa/F1-004-playwright-mock.png`
+- `docs/qa/F1-004-playwright-real.png`
+- `docs/qa/F1-004-playwright-real-127.png`
 - `frontend/package.json`
 - `frontend/pnpm-lock.yaml`
 - `frontend/vite.config.ts`
@@ -32,6 +46,9 @@ F1-001、F1-002 已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia 
 - `frontend/src/api/types.ts`
 - `frontend/src/api/client.ts`
 - `frontend/src/api/fixtures.ts`
+- `frontend/src/composables/useSSE.ts`
+- `frontend/src/components/InputPanel.vue`
+- `frontend/src/components/LogPanel.vue`
 - `frontend/src/main.ts`
 - `frontend/src/App.vue`
 - `frontend/src/stores/planner.ts`
@@ -45,6 +62,8 @@ F1-001、F1-002 已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia 
 - 应用入口：`frontend/src/main.ts`
 - 页面入口：`frontend/src/App.vue`
 - 状态入口：`frontend/src/stores/planner.ts`
+- SSE composable：`frontend/src/composables/useSSE.ts`
+- 日志面板：`frontend/src/components/LogPanel.vue`
 - API client：`frontend/src/api/client.ts`
 - API / SSE 类型：`frontend/src/api/types.ts`
 - Fixture loader：`frontend/src/api/fixtures.ts`
@@ -124,6 +143,66 @@ npm run build
 - QA 报告：`docs/qa/F1-002-api-client-fixtures.md`。
 - 截图证据：`docs/qa/F1-002-devtools-confirm.png`、`docs/qa/F1-002-devtools-confirm-root.png`、`docs/qa/F1-002-playwright-confirm.png`。
 
+F1-003 验证已通过：
+
+```text
+pnpm verify:fixtures passed
+pnpm typecheck passed
+Verify passed.
+```
+
+额外构建验证也通过：
+
+```powershell
+npm run build
+```
+
+Generator 字段检查无命中：
+
+```powershell
+rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures
+```
+
+独立 evaluator 子代理 Rawls (`019e64a8-1b72-7722-84e4-57b5364a252f`) 已放行：
+- Playwright MCP：打开 `http://127.0.0.1:5173`，点击“开始预演”，等待 mock fixture SSE 完成；确认 LogPanel `role=log`、`ariaLive=polite`、`eventCount=25`、包含 `done` / `error` / `DEGRADE`，并自动滚动到底部。
+- Chrome DevTools MCP：snapshot / accessibility 显示 `log "实时日志面板" live="polite"`；完成态含 `DEGRADE`、`closed`、`plan_family_fixture`、`done`、`error`；console 无消息；mock mode 下未访问 `/api/plan/*/stream`，只加载前端模块和 fixture raw import。
+- QA 报告：`docs/qa/F1-003-sse-log-panel.md`。
+- 截图证据：`docs/qa/F1-003-playwright-log-panel.png`、`docs/qa/F1-003-devtools-log-panel.png`。
+
+F1-004 验证已通过：
+
+```text
+pnpm verify:fixtures passed
+pnpm typecheck passed
+Verify passed.
+```
+
+额外构建验证也通过：
+
+```powershell
+pnpm build
+```
+
+后端 CORS 补充回归也通过：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast
+```
+
+结果覆盖 35 tests、0 failures、`BUILD SUCCESS`。
+
+Generator 字段检查无命中：
+
+```powershell
+rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures
+```
+
+独立 evaluator 子代理 Gauss (`019e64d9-95ea-76a2-9f4d-53478e6a64a6`) 已放行：
+- Playwright MCP：mock mode 下编辑 `InputPanel` 并点击“提交规划”，确认 `plan_family_fixture`、25 条日志和自动滚动；real mode 下 `localhost:5173` 与 `127.0.0.1:5173` 都能 POST `/api/plan` 返回 202，页面显示后端 `planId`，并可见 `heartbeat` / `START -> INTENT`。
+- Chrome DevTools MCP：mock mode snapshot / accessibility 覆盖 InputPanel 和 LogPanel，console 无 error / warn，network 没有真实 `/api/plan`；real mode snapshot / accessibility 覆盖 real InputPanel，console 无 error / warn，network 包含 `POST http://localhost:8000/api/plan [202]` 和 SSE stream 请求。
+- QA 报告：`docs/qa/F1-004-input-plan-api.md`。
+- 截图证据：`docs/qa/F1-004-playwright-mock.png`、`docs/qa/F1-004-playwright-real.png`、`docs/qa/F1-004-playwright-real-127.png`、`docs/qa/F1-004-devtools-mock.png`、`docs/qa/F1-004-devtools-real.png`。
+
 ## 环境注意
 
 - 当前沙盒 shell 里直接运行 `.\verify.ps1 -Target frontend -Mode fast` 可能找不到宿主全局 `pnpm`。
@@ -143,12 +222,12 @@ unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied
 
 ## 下一步建议
 
-下一个 F1 小目标应推进 `F1-003`：
+下一个 F1 小目标建议推进 `F1-005`：PlanCard, ConfirmButton, and ExecutionTracker。
 
-1. 创建 `docs/contracts/F1-003-sse-log-panel.md`。
-2. 实现 `useSSE` composable：真实 mode 连接 `/api/plan/{planId}/stream`，mock mode 消费 `getSseFixtureFrames()`。
-3. 把当前 fixture 日志预览升级成正式 LogPanel，覆盖 `state_change`、`tool_call`、`tool_result`、`replan`、`clarification_request`、`adjust_result`、`execute_result`、`done`、`error`。
-4. 日志面板需要自动滚动到最新事件，并按事件类型更新 Pinia 状态。
+1. 创建 `docs/contracts/F1-005-plan-card-execution.md`。
+2. 基于现有 `plan_ready` fixture 渲染正式 PlanCard，覆盖 summary、timeline、actions、shareMessage、总时长和 Plan B 信息。
+3. 在 `CONFIRM` 状态启用 ConfirmButton，非确认状态禁用或隐藏。
+4. 接入 `execute_result` 对 action 状态的可视化更新，形成 ExecutionTracker。
 5. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 仍必须同时使用 Playwright MCP 和 Chrome DevTools MCP。
 
 ## F1 边界

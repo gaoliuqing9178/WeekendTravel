@@ -1,6 +1,6 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-05-24",
+  "updatedAt": "2026-05-26",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
     {
@@ -315,7 +315,7 @@
       "track": "frontend",
       "owner": "F1",
       "title": "useSSE composable and log panel",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["F1-001", "F1-002"],
       "contract": "docs/contracts/F1-003-sse-log-panel.md",
@@ -324,23 +324,34 @@
         "Fixture SSE events render in LogPanel",
         "LogPanel auto-scrolls to latest event"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-26: Generator added contract docs/contracts/F1-003-sse-log-panel.md, useSSE composable, LogPanel, Pinia SSE payload reducers, and App integration for mock fixture replay plus real EventSource mode.",
+        "2026-05-26: Generator development checks passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target frontend -Mode fast -> fixture parsing and pnpm typecheck passed; npm run build also passed; forbidden snake_case field search had no matches.",
+        "2026-05-26: Independent evaluator subagent Rawls (019e64a8-1b72-7722-84e4-57b5364a252f) verified frontend fast verify, forbidden field search, Playwright MCP interaction/autoscroll, and Chrome DevTools MCP snapshot/console/network diagnostics; conclusion: pass.",
+        "2026-05-26: Evaluator evidence written to docs/qa/F1-003-sse-log-panel.md with screenshots docs/qa/F1-003-playwright-log-panel.png and docs/qa/F1-003-devtools-log-panel.png."
+      ]
     },
     {
       "id": "F1-004",
       "track": "frontend",
       "owner": "F1",
       "title": "InputPanel and POST /api/plan",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
-      "dependsOn": ["F1-001", "F1-002"],
+      "dependsOn": ["F1-001", "F1-002", "F1-003", "B1-003"],
       "contract": "docs/contracts/F1-004-input-plan-api.md",
       "acceptance": [
         "User can enter natural language input",
         "Submit calls POST /api/plan in real API mode",
         "Submit enters visible planning state"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-26: Generator added contract docs/contracts/F1-004-input-plan-api.md, frontend/src/components/InputPanel.vue, formal submitPlan flow in Pinia, App integration, and useSSE handling for minimal backend SSE completion.",
+        "2026-05-26: Generator updated backend CORS to allow both http://localhost:5173 and http://127.0.0.1:5173 for real-mode browser POST /api/plan, with PlanControllerCreateTests coverage for both origins.",
+        "2026-05-26: Generator development checks passed: frontend fast verify -> pnpm verify:fixtures and pnpm typecheck passed; pnpm build passed; backend fast verify -> 35 tests passed; forbidden snake_case field search had no matches.",
+        "2026-05-26: Independent evaluator subagent Gauss (019e64d9-95ea-76a2-9f4d-53478e6a64a6) verified InputPanel, mock fixture submit, real POST /api/plan 202 for localhost and 127.0.0.1 origins, Playwright MCP and Chrome DevTools MCP evidence; conclusion: pass.",
+        "2026-05-26: Evaluator evidence written to docs/qa/F1-004-input-plan-api.md with screenshots docs/qa/F1-004-playwright-mock.png, docs/qa/F1-004-playwright-real.png, docs/qa/F1-004-playwright-real-127.png, docs/qa/F1-004-devtools-mock.png, and docs/qa/F1-004-devtools-real.png."
+      ]
     },
     {
       "id": "F1-005",

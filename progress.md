@@ -1,5 +1,98 @@
 # Progress
 
+## 2026-05-26 F1-004 InputPanel and POST /api/plan
+
+### 已完成
+
+- 新增 `docs/contracts/F1-004-input-plan-api.md`，明确本轮只交付正式 `InputPanel`、提交规划入口、real mode `POST /api/plan`、创建后连接既有 `useSSE`，不抢做 F1-005 PlanCard / ConfirmButton / ExecutionTracker、F1-006 ClarifyBubble 或 F1-007 AdjustPanel。
+- 新增 `frontend/src/components/InputPanel.vue`，包含家庭 / 朋友场景选择、自然语言输入、可选出发位置、提交按钮和提交状态提示；空输入或运行中禁用提交。
+- 更新 `frontend/src/stores/planner.ts`，新增 `submitPlan()`、`submitMessage`、`isSubmitting` 和 `canSubmit`；提交时清理上一轮状态，调用 `plannerClient.createPlan()`，读取 camelCase `planId` / `status`，追加 client log，并将 `planId` 交给 `sse.connect()`。
+- 更新 `frontend/src/App.vue`，将首页标识切换为 `F1-004`，用 `InputPanel` 替代上一轮内联“开始预演”入口，保留 Pinia 状态摘要和正式 LogPanel。
+- 更新 `frontend/src/composables/useSSE.ts`，real mode 下后端最小 SSE stream 完成后的 EventSource retry 不再被渲染为错误；空 message / `undefined` message 会被忽略，避免最小占位流导致误报。
+- 更新 `frontend/src/styles/main.css`，补齐 `InputPanel` 表单和状态提示的基础布局。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/config/WebConfig.java`，允许 `http://localhost:5173` 和 `http://127.0.0.1:5173` 两个前端 origin；这是 F1-004 real mode 浏览器联调所需的最小 CORS 修正。
+- 更新 `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerCreateTests.java`，新增两个前端 origin 的 POST /api/plan CORS 回归测试。
+- 新增 QA 报告 `docs/qa/F1-004-input-plan-api.md` 和截图证据 `docs/qa/F1-004-playwright-mock.png`、`docs/qa/F1-004-playwright-real.png`、`docs/qa/F1-004-playwright-real-127.png`、`docs/qa/F1-004-devtools-mock.png`、`docs/qa/F1-004-devtools-real.png`。
+- 在 `feature_list.json` 将 `F1-004` 标记为 `verified`，并写入 generator 检查和独立 evaluator 证据。
+
+### 验证记录
+
+- Generator 前端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast` 通过，覆盖：
+  - `docs/fixtures/plan-ready-family.json -> plan_family_fixture`
+  - `docs/fixtures/plan-ready-friends.json -> plan_friends_fixture`
+  - `docs/fixtures/sse-events.jsonl -> 23 JSONL events`
+  - `pnpm verify:fixtures passed`
+  - `pnpm typecheck passed`
+  - `Verify passed.`
+- Generator 前端构建检查：`pnpm build` 在 `frontend/` 下通过，Vite production build 成功。
+- Generator 后端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过，后端 35 tests、0 failures、`BUILD SUCCESS`。
+- Generator 字段检查：`rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures` 无命中。
+- Generator mock 浏览器冒烟：Playwright 打开 `http://127.0.0.1:5173`，点击“提交规划”，确认 `InputPanel` 可见、`plan_family_fixture` 可见、日志 25 条、`role=log`、自动滚动到底部。
+- Generator real mode 冒烟：后端启动在 `8000`，前端以 `VITE_API_MODE=real` 启动；浏览器从 `http://localhost:5173` 提交后捕获 `POST http://localhost:8000/api/plan => 202`，页面显示后端 `planId`、`heartbeat` 和 `START -> INTENT`。
+- Generator CORS 回归：`Origin: http://127.0.0.1:5173` 请求 `/health` 时响应头包含 `Access-Control-Allow-Origin: http://127.0.0.1:5173`。
+- 独立 evaluator 子代理 Gauss (`019e64d9-95ea-76a2-9f4d-53478e6a64a6`) 已完成验收并放行。
+- Evaluator 独立运行前端 fast verify 通过；补充运行后端 fast verify 通过，35 tests、0 failures、`BUILD SUCCESS`；禁止字段搜索无命中；`feature_list.json` 可解析。
+- Evaluator 使用 Playwright MCP 验证：
+  - mock mode：`InputPanel`、提交、`plan_family_fixture`、25 条日志、自动滚动到底部。
+  - real mode：`localhost:5173` 和 `127.0.0.1:5173` 都能 POST `/api/plan` 返回 202，页面显示后端 `planId`，并可见 `heartbeat` / `START -> INTENT`。
+- Evaluator 使用 Chrome DevTools MCP 验证：
+  - mock mode：snapshot / accessibility 覆盖 InputPanel 和 LogPanel；console 无 error / warn；network 没有真实 `/api/plan`。
+  - real mode：snapshot / accessibility 覆盖 real InputPanel；console 无 error / warn；network 包含 `POST http://localhost:8000/api/plan [202]` 和 SSE stream 请求。
+- QA 报告：`docs/qa/F1-004-input-plan-api.md`。
+- 截图证据：
+  - `docs/qa/F1-004-playwright-mock.png`
+  - `docs/qa/F1-004-playwright-real.png`
+  - `docs/qa/F1-004-playwright-real-127.png`
+  - `docs/qa/F1-004-devtools-mock.png`
+  - `docs/qa/F1-004-devtools-real.png`
+
+### 当前状态
+
+- `F1-004` 已完成并 verified。
+- 前端当前具备正式 `InputPanel`、mock fixture 提交回放、real mode `POST /api/plan` 提交和创建后 SSE 连接。
+- 后端最小 CORS 已支持 `localhost:5173` 与 `127.0.0.1:5173` 两个前端开发 origin。
+- real mode 目前仍只接入后端最小 SSE 占位流，所以会看到 `retrying` 和重复 `heartbeat` / `START -> INTENT`；这不影响 F1-004，完整状态机流转留给后续 B1 / INT 任务。
+- 下一步 F1 小目标建议推进 `F1-005`：PlanCard, ConfirmButton, and ExecutionTracker。
+
+## 2026-05-26 F1-003 useSSE composable and log panel
+
+### 已完成
+
+- 新增 `docs/contracts/F1-003-sse-log-panel.md`，明确本轮只交付 `useSSE` composable、实时 LogPanel、fixture SSE 回放、real mode EventSource 连接入口和 Pinia 状态分发，不抢做 F1-004 输入链路、F1-005 PlanCard / ConfirmButton / ExecutionTracker、F1-006 ClarifyBubble 或 F1-007 AdjustPanel。
+- 新增 `frontend/src/composables/useSSE.ts`，统一表达 `idle / connecting / open / retrying / closed / error` 连接状态；mock mode 逐条消费 `getSseFixtureFrames()`，real mode 通过 `PlannerApiClient.openPlanStream(planId)` 连接 `/api/plan/{planId}/stream`。
+- 新增 `frontend/src/components/LogPanel.vue`，使用 `role="log"`、`aria-live="polite"` 和固定滚动容器渲染 SSE 事件；新增事件后自动滚动到底部，`replan` / Plan B 与 `error` / `DEGRADE` 有明显视觉区分。
+- 更新 `frontend/src/stores/planner.ts`，将现有 fixture 日志预览升级为逐条 SSE payload 分发；`state_change` 更新 `agentState`，`plan_ready` / `adjust_result` 更新 `currentPlan`，`clarification_request` 更新 pending clarification，`execute_result` 更新 action 状态，`done` 进入 `DONE`，`error(code=DEGRADE)` 进入 `DEGRADE`。
+- 更新 `frontend/src/App.vue`，将页面标识改为 `F1-003`，接入正式 LogPanel，并在状态摘要里展示 mode、Plan B、clarification 和 error / degrade 信息。
+- 更新 `frontend/src/styles/main.css`，补齐 LogPanel 布局、固定滚动区域、事件行、Plan B / error 视觉状态、移动端布局和 `prefers-reduced-motion` 支持。
+- 新增 QA 报告 `docs/qa/F1-003-sse-log-panel.md` 和截图证据 `docs/qa/F1-003-playwright-log-panel.png`、`docs/qa/F1-003-devtools-log-panel.png`。
+- 在 `feature_list.json` 将 `F1-003` 标记为 `verified`，并写入 generator 检查和独立 evaluator 证据。
+
+### 验证记录
+
+- Generator 开发侧准备检查：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast` 通过，输出覆盖：
+  - `docs/fixtures/plan-ready-family.json -> plan_family_fixture`
+  - `docs/fixtures/plan-ready-friends.json -> plan_friends_fixture`
+  - `docs/fixtures/sse-events.jsonl -> 23 JSONL events`
+  - `pnpm verify:fixtures passed`
+  - `pnpm typecheck passed`
+  - `Verify passed.`
+- Generator 额外构建检查：`npm run build` 在 `frontend/` 下通过，Vite production build 成功。
+- Generator 字段检查：`rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures` 无命中。
+- Generator 浏览器冒烟：Playwright 打开 `http://127.0.0.1:5173`，点击“开始预演”，等待 `DEGRADE`，确认 `eventCount=25`、末尾事件为 `error / DEGRADE`、`done` 和 `plan_ready` 可见、日志容器 `atBottom=true`。
+- Generator Chrome DevTools MCP 冒烟：snapshot 显示 `DEGRADE`、`closed`、`plan_family_fixture` 和 `log "实时日志面板"`；console error / warn 为 0；network 仅包含前端模块和 fixture raw import。
+- 独立 evaluator 子代理 Rawls (`019e64a8-1b72-7722-84e4-57b5364a252f`) 已完成验收并放行。
+- Evaluator 独立运行前端 fast verify 通过，并确认禁止字段搜索无命中、`feature_list.json` 可解析。
+- Evaluator 使用 Playwright MCP 打开页面并点击“开始预演”，确认 LogPanel `role=log`、`ariaLive=polite`、`eventCount=25`、包含 `done` / `error` / `DEGRADE`、自动滚动到底部。
+- Evaluator 使用 Chrome DevTools MCP 复核 snapshot / accessibility、console 和 network：页面含 `log "实时日志面板" live="polite"`；console 无消息；mock mode 下没有访问 `/api/plan/*/stream`，只加载三份 fixture raw import。
+- QA 报告：`docs/qa/F1-003-sse-log-panel.md`。
+- 截图证据：`docs/qa/F1-003-playwright-log-panel.png`、`docs/qa/F1-003-devtools-log-panel.png`。
+
+### 当前状态
+
+- `F1-003` 已完成并 verified。
+- 前端当前具备 `useSSE`、mock fixture 逐条日志回放、real mode SSE 连接入口、LogPanel 自动滚动和基础 SSE payload 状态分发。
+- 下一步 F1 小目标建议推进 `F1-004`：InputPanel and POST `/api/plan`，把当前“开始预演”入口整理成正式输入提交链路；也可在后续 `F1-005` 基于 `plan_ready` 继续落 PlanCard、ConfirmButton 和 ExecutionTracker。
+
 ## 2026-05-26 B1-003 POST /api/plan
 
 ### 已完成

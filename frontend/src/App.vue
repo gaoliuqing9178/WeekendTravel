@@ -6,19 +6,15 @@ import {
   NGrid,
   NGridItem,
   NAlert,
-  NInput,
-  NInputGroup,
   NMessageProvider,
-  NRadioButton,
-  NRadioGroup,
   NSpace,
   NStatistic,
   NTag,
-  NTimeline,
-  NTimelineItem,
   type GlobalThemeOverrides,
 } from 'naive-ui'
 
+import InputPanel from '@/components/InputPanel.vue'
+import LogPanel from '@/components/LogPanel.vue'
 import { usePlannerStore } from '@/stores/planner'
 
 const planner = usePlannerStore()
@@ -40,16 +36,6 @@ const themeOverrides: GlobalThemeOverrides = {
   },
 }
 
-const scenarioOptions = [
-  { label: '家庭', value: 'family' },
-  { label: '朋友', value: 'friends' },
-] as const
-
-function handleScenarioUpdate(value: string | number) {
-  if (value === 'family' || value === 'friends') {
-    planner.setScenario(value)
-  }
-}
 </script>
 
 <template>
@@ -58,9 +44,9 @@ function handleScenarioUpdate(value: string | number) {
       <main class="app-shell">
         <section class="workspace-hero" aria-labelledby="app-title">
           <div class="hero-copy">
-            <NTag type="info" round>F1-002</NTag>
+            <NTag type="info" round>F1-004</NTag>
             <h1 id="app-title">WeekendTravel</h1>
-            <p>API client 与 mock fixture mode 已接入，默认不访问后端网络。</p>
+            <p>InputPanel 已接入创建 plan 链路，提交后会进入规划状态并连接实时日志流。</p>
           </div>
           <NSpace class="hero-actions" align="center" :size="12">
             <NTag :bordered="false" type="success">
@@ -74,50 +60,14 @@ function handleScenarioUpdate(value: string | number) {
 
         <NGrid :cols="12" :x-gap="20" :y-gap="20" responsive="screen">
           <NGridItem span="12 m:7">
-            <NCard title="自然语言输入" :bordered="false">
-              <NSpace vertical :size="16">
-                <NRadioGroup
-                  :value="planner.scenario"
-                  name="scenario"
-                  @update:value="handleScenarioUpdate"
-                >
-                  <NRadioButton
-                    v-for="option in scenarioOptions"
-                    :key="option.value"
-                    :value="option.value"
-                  >
-                    {{ option.label }}
-                  </NRadioButton>
-                </NRadioGroup>
-                <NInput
-                  v-model:value="planner.userInput"
-                  type="textarea"
-                  :autosize="{ minRows: 5, maxRows: 7 }"
-                  placeholder="说一句你想怎么安排这个下午"
-                  show-count
-                />
-                <NInputGroup>
-                  <NInput
-                    v-model:value="planner.origin"
-                    placeholder="出发位置"
-                    clearable
-                  />
-                  <NButton
-                    type="primary"
-                    :disabled="!planner.canStart"
-                    @click="planner.previewSkeletonFlow"
-                  >
-                    开始预演
-                  </NButton>
-                </NInputGroup>
-              </NSpace>
-            </NCard>
+            <InputPanel />
           </NGridItem>
 
           <NGridItem span="12 m:5">
             <NCard title="Pinia 状态" :bordered="false">
               <div class="state-grid">
                 <NStatistic label="场景" :value="planner.scenarioLabel" />
+                <NStatistic label="Mode" :value="planner.apiMode" />
                 <NStatistic
                   label="Plan ID"
                   :value="planner.planId ?? '未创建'"
@@ -126,14 +76,22 @@ function handleScenarioUpdate(value: string | number) {
                 <NStatistic label="SSE" :value="planner.connectionState" />
               </div>
               <NAlert
-                v-if="planner.currentPlan"
+                v-if="planner.currentPlan || planner.planBReason"
                 class="fixture-summary"
-                type="success"
+                :type="planner.errorMessage ? 'warning' : 'success'"
                 :show-icon="false"
               >
-                <strong>{{ planner.currentPlan.summary }}</strong>
-                <span v-if="planner.currentPlan.isPlanB">
-                  Plan B：{{ planner.currentPlan.planBReason }}
+                <strong v-if="planner.currentPlan">
+                  {{ planner.currentPlan.summary }}
+                </strong>
+                <span v-if="planner.planBReason">
+                  Plan B：{{ planner.planBReason }}
+                </span>
+                <span v-if="planner.pendingClarification">
+                  反问：{{ planner.pendingClarification.question }}
+                </span>
+                <span v-if="planner.errorMessage">
+                  {{ planner.errorMessage }}
                 </span>
               </NAlert>
               <NButton class="reset-button" quaternary @click="planner.resetSkeletonFlow">
@@ -143,18 +101,10 @@ function handleScenarioUpdate(value: string | number) {
           </NGridItem>
 
           <NGridItem span="12">
-            <NCard title="Fixture 日志预览" :bordered="false">
-              <NTimeline>
-                <NTimelineItem
-                  v-for="event in planner.logEvents"
-                  :key="event.id"
-                  :type="event.type === 'state_change' ? 'info' : 'default'"
-                  :title="event.title"
-                  :content="event.detail"
-                  :time="new Date(event.timestamp).toLocaleTimeString('zh-CN')"
-                />
-              </NTimeline>
-            </NCard>
+            <LogPanel
+              :events="planner.logEvents"
+              :connection-state="planner.connectionState"
+            />
           </NGridItem>
         </NGrid>
       </main>

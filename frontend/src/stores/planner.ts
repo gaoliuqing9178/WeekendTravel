@@ -2,19 +2,19 @@ import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { createPlannerApiClient } from '@/api/client'
-import type { AgentState, Plan, Scenario, SsePayload } from '@/api/types'
+import { useSSE, type SseConnectionState } from '@/composables/useSSE'
+import type {
+  AgentState,
+  ClarificationRequestEvent,
+  ExecuteResultEvent,
+  Plan,
+  Scenario,
+  SsePayload,
+} from '@/api/types'
 
-type ConnectionState =
-  | 'idle'
-  | 'connecting'
-  | 'open'
-  | 'retrying'
-  | 'closed'
-  | 'error'
-
-interface LogEvent {
+export interface LogEvent {
   id: string
-  type: SsePayload['type'] | 'fixture_loaded'
+  type: SsePayload['type'] | 'client_event'
   title: string
   detail: string
   timestamp: number
@@ -34,23 +34,60 @@ export const usePlannerStore = defineStore('planner', () => {
   const scenario = ref<Scenario>('family')
   const origin = ref('当前位置')
   const userInput = ref(familyPrompt)
-  const connectionState = ref<ConnectionState>('idle')
+  const connectionState = ref<SseConnectionState>('idle')
   const currentPlan = ref<Plan | null>(null)
-  const logEvents = ref<LogEvent[]>([
-    {
-      id: 'evt-ready',
-      type: 'fixture_loaded',
-      title: 'API client 已就绪',
-      detail: '当前默认使用 mock fixture mode，不访问后端网络。',
-      timestamp: Date.now(),
-    },
-  ])
+  const pendingClarification = ref<ClarificationRequestEvent | null>(null)
+  const errorMessage = ref<string | null>(null)
+  const submitMessage = ref<string | null>(null)
+  const logEvents = ref<LogEvent[]>([createReadyEvent()])
+
+  let eventSequence = 0
 
   const scenarioLabel = computed(() =>
     scenario.value === 'family' ? '家庭场景' : '朋友场景',
   )
 
-  const canStart = computed(() => userInput.value.trim().length > 0)
+  const isSubmitting = computed(() =>
+    ['connecting', 'open', 'retrying'].includes(connectionState.value),
+  )
+
+  const canSubmit = computed(
+    () => userInput.value.trim().length > 0 && !isSubmitting.value,
+  )
+
+  const planBReason = computed(() => {
+    if (currentPlan.value?.isPlanB) {
+      return currentPlan.value.planBReason
+    }
+
+    const replanEvent = [...logEvents.value]
+      .reverse()
+      .find((event) => event.type === 'replan')
+
+    return replanEvent?.detail ?? null
+  })
+
+  const sse = useSSE({
+    client: plannerClient,
+    mockIntervalMs: 90,
+    onConnectionStateChange(nextState) {
+      connectionState.value = nextState
+      updateSubmitMessageForConnection(nextState)
+    },
+    onEvent(payload, meta) {
+      handleSsePayload(payload, meta.id)
+    },
+    onError(message) {
+      errorMessage.value = message
+      appendLogEvent({
+        id: nextLogId('evt-sse-error'),
+        type: 'error',
+        title: 'SSE 连接提示',
+        detail: message,
+        timestamp: Date.now(),
+      })
+    },
+  })
 
   function setScenario(nextScenario: Scenario) {
     scenario.value = nextScenario
@@ -58,21 +95,32 @@ export const usePlannerStore = defineStore('planner', () => {
   }
 
   async function previewSkeletonFlow() {
-    if (!canStart.value) {
+    await submitPlan()
+  }
+
+  async function submitPlan() {
+    if (!canSubmit.value) {
       return
     }
 
+    sse.close('closed')
+    eventSequence = 0
+    planId.value = null
+    agentState.value = 'START'
     connectionState.value = 'connecting'
     currentPlan.value = null
+    pendingClarification.value = null
+    errorMessage.value = null
+    submitMessage.value = '正在创建 plan...'
     logEvents.value = [
       {
-        id: 'evt-create-plan',
-        type: 'fixture_loaded',
-        title: '创建规划请求',
+        id: nextLogId('evt-create-plan'),
+        type: 'client_event',
+        title: '提交规划请求',
         detail:
           plannerClient.mode === 'mock'
-            ? `${scenarioLabel.value}将读取本地 fixture。`
-            : `${scenarioLabel.value}将调用真实后端 API。`,
+            ? `${scenarioLabel.value}使用本地 fixture 创建 plan，并回放日志流。`
+            : `${scenarioLabel.value}正在调用 POST /api/plan。`,
         timestamp: Date.now(),
       },
     ]
@@ -86,73 +134,160 @@ export const usePlannerStore = defineStore('planner', () => {
 
       planId.value = created.planId
       agentState.value = 'INTENT'
-      connectionState.value = 'open'
+      submitMessage.value = `已创建 ${created.planId}，正在连接日志流。`
+      appendLogEvent({
+        id: nextLogId('evt-plan-created'),
+        type: 'client_event',
+        title: 'plan 已创建',
+        detail: `planId=${created.planId}，status=${created.status}`,
+        timestamp: Date.now(),
+      })
 
-      if (plannerClient.mode === 'real') {
-        logEvents.value = [
-          ...logEvents.value,
-          {
-            id: 'evt-real-created',
-            type: 'state_change',
-            title: '真实 API 已返回',
-            detail: `planId=${created.planId}，等待 F1-003 接入 SSE 流。`,
-            timestamp: Date.now(),
-          },
-        ]
-        return
-      }
-
-      const [planReady, sseFrames] = await Promise.all([
-        plannerClient.getPlanReadyFixture(scenario.value),
-        plannerClient.getSseFixtureFrames(),
-      ])
-
-      currentPlan.value = planReady.plan
-      planId.value = planReady.planId
-      agentState.value = planReady.plan.status
-      connectionState.value = 'closed'
-      logEvents.value = [
-        ...sseFrames.map((frame, index) =>
-          toLogEvent(frame.data, `fixture-${index}`),
-        ),
-        {
-          id: 'evt-plan-fixture-loaded',
-          type: 'fixture_loaded',
-          title: 'plan_ready fixture 已加载',
-          detail: planReady.plan.summary,
-          timestamp: Date.now() + sseFrames.length,
-        },
-      ]
+      await sse.connect(created.planId)
     } catch (error) {
       agentState.value = 'FAILED'
       connectionState.value = 'error'
-      logEvents.value = [
-        ...logEvents.value,
-        {
-          id: 'evt-client-error',
-          type: 'error',
-          title: 'API client 失败',
-          detail: error instanceof Error ? error.message : String(error),
-          timestamp: Date.now(),
-        },
-      ]
+      errorMessage.value = error instanceof Error ? error.message : String(error)
+      submitMessage.value = null
+      appendLogEvent({
+        id: nextLogId('evt-client-error'),
+        type: 'error',
+        title: '规划启动失败',
+        detail: errorMessage.value,
+        timestamp: Date.now(),
+      })
     }
   }
 
   function resetSkeletonFlow() {
+    sse.close('closed')
+    eventSequence = 0
     planId.value = null
     agentState.value = 'START'
     connectionState.value = 'idle'
     currentPlan.value = null
-    logEvents.value = [
-      {
-        id: 'evt-ready',
-        type: 'fixture_loaded',
-        title: 'API client 已就绪',
-        detail: '当前默认使用 mock fixture mode，不访问后端网络。',
-        timestamp: Date.now(),
-      },
-    ]
+    pendingClarification.value = null
+    errorMessage.value = null
+    submitMessage.value = null
+    logEvents.value = [createReadyEvent()]
+  }
+
+  function handleSsePayload(payload: SsePayload, fallbackId: string) {
+    appendLogEvent(toLogEvent(payload, fallbackId))
+    applySsePayload(payload)
+  }
+
+  function applySsePayload(payload: SsePayload) {
+    planId.value = payload.planId
+
+    switch (payload.type) {
+      case 'heartbeat':
+      case 'tool_call':
+      case 'tool_result':
+        return
+      case 'state_change':
+        agentState.value = payload.to
+        return
+      case 'clarification_request':
+        pendingClarification.value = payload
+        agentState.value = 'CLARIFY'
+        return
+      case 'replan':
+        agentState.value = 'REPLAN'
+        return
+      case 'adjust_result':
+        currentPlan.value = payload.plan
+        pendingClarification.value = null
+        agentState.value = payload.plan.status
+        return
+      case 'plan_ready':
+        currentPlan.value = payload.plan
+        pendingClarification.value = null
+        errorMessage.value = null
+        agentState.value = payload.plan.status
+        return
+      case 'execute_result':
+        updateActionStatus(payload)
+        agentState.value = 'EXECUTE'
+        return
+      case 'done':
+        pendingClarification.value = null
+        agentState.value = 'DONE'
+        return
+      case 'error':
+        errorMessage.value = payload.message
+        agentState.value = payload.code === 'DEGRADE' ? 'DEGRADE' : 'FAILED'
+        return
+    }
+  }
+
+  function updateActionStatus(payload: ExecuteResultEvent) {
+    if (!currentPlan.value) {
+      return
+    }
+
+    currentPlan.value = {
+      ...currentPlan.value,
+      actions: currentPlan.value.actions.map((action) =>
+        action.actionId === payload.actionId
+          ? {
+              ...action,
+              status: payload.status,
+              confirmationNo: payload.confirmationNo,
+            }
+          : action,
+      ),
+    }
+  }
+
+  function appendLogEvent(event: LogEvent) {
+    logEvents.value = [...logEvents.value, event]
+  }
+
+  function updateSubmitMessageForConnection(nextState: SseConnectionState) {
+    if (errorMessage.value) {
+      return
+    }
+
+    if (!planId.value) {
+      return
+    }
+
+    switch (nextState) {
+      case 'connecting':
+        submitMessage.value = '正在连接日志流...'
+        return
+      case 'open':
+        submitMessage.value = `规划中：${planId.value}`
+        return
+      case 'retrying':
+        submitMessage.value = `日志流重连中：${planId.value}`
+        return
+      case 'closed':
+        submitMessage.value = `本轮日志流已结束：${planId.value}`
+        return
+      case 'idle':
+      case 'error':
+        return
+    }
+  }
+
+  function nextLogId(prefix: string) {
+    eventSequence += 1
+    return `${prefix}-${eventSequence}`
+  }
+
+  function createReadyEvent(): LogEvent {
+    return {
+      id: 'evt-ready',
+      type: 'client_event',
+      title: 'useSSE 已就绪',
+      detail:
+        plannerClient.mode === 'mock'
+          ? '当前使用 mock fixture mode，不访问后端网络。'
+          : '当前使用 real API mode，提交后会连接后端 SSE。',
+      timestamp: Date.now(),
+    }
   }
 
   function toLogEvent(payload: SsePayload, fallbackId: string): LogEvent {
@@ -161,7 +296,7 @@ export const usePlannerStore = defineStore('planner', () => {
     switch (payload.type) {
       case 'heartbeat':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: 'heartbeat',
           detail: `planId=${payload.planId}`,
@@ -169,7 +304,7 @@ export const usePlannerStore = defineStore('planner', () => {
         }
       case 'state_change':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: `${payload.from} -> ${payload.to}`,
           detail: `状态已进入 ${payload.to}`,
@@ -177,7 +312,7 @@ export const usePlannerStore = defineStore('planner', () => {
         }
       case 'tool_call':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: `${payload.tool} start`,
           detail: payload.inputSummary,
@@ -185,7 +320,7 @@ export const usePlannerStore = defineStore('planner', () => {
         }
       case 'tool_result':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: `${payload.tool} ${payload.status}`,
           detail: `${payload.outputSummary} (${payload.latencyMs}ms)`,
@@ -193,7 +328,7 @@ export const usePlannerStore = defineStore('planner', () => {
         }
       case 'clarification_request':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: 'clarification_request',
           detail: payload.question,
@@ -201,7 +336,7 @@ export const usePlannerStore = defineStore('planner', () => {
         }
       case 'replan':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: `Plan B #${payload.replanCount}`,
           detail: payload.reason,
@@ -209,7 +344,7 @@ export const usePlannerStore = defineStore('planner', () => {
         }
       case 'adjust_result':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: 'adjust_result',
           detail: payload.summary,
@@ -217,7 +352,7 @@ export const usePlannerStore = defineStore('planner', () => {
         }
       case 'plan_ready':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: 'plan_ready',
           detail: payload.plan.summary,
@@ -225,7 +360,7 @@ export const usePlannerStore = defineStore('planner', () => {
         }
       case 'execute_result':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: `${payload.actionType} ${payload.status}`,
           detail: payload.confirmationNo ?? payload.actionId,
@@ -233,7 +368,7 @@ export const usePlannerStore = defineStore('planner', () => {
         }
       case 'done':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: 'done',
           detail: payload.summary,
@@ -241,7 +376,7 @@ export const usePlannerStore = defineStore('planner', () => {
         }
       case 'error':
         return {
-          id: fallbackId,
+          id: nextLogId(fallbackId),
           type: payload.type,
           title: payload.code,
           detail: payload.message,
@@ -258,10 +393,19 @@ export const usePlannerStore = defineStore('planner', () => {
     userInput,
     connectionState,
     currentPlan,
+    pendingClarification,
+    errorMessage,
+    submitMessage,
     logEvents,
     scenarioLabel,
-    canStart,
+    isSubmitting,
+    canSubmit,
+    isRunning: isSubmitting,
+    canStart: canSubmit,
+    planBReason,
+    apiMode: plannerClient.mode,
     setScenario,
+    submitPlan,
     previewSkeletonFlow,
     resetSkeletonFlow,
   }

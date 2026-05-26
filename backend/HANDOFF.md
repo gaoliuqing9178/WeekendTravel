@@ -7,7 +7,7 @@
 - [x] B2 POI mock 数据已落地为 `src/main/resources/mock/poi_data.json`，并通过 evaluator 验证。
 - [x] 当前已有健康检查 / CORS 骨架、B2 POI 数据、SearchTool、RouteTool、AvailabilityTool、BookingTool、MessageTool、ScenarioFlags、debug scenario API、最小 SSE stream 和最小 `POST /api/plan` 占位接口；状态机、MockApiService 仍未实现。
 - [ ] `GET /health` 已按 `docs/api-contract.md` 返回契约字段。
-- [ ] CORS 已放通 `http://localhost:5173`。
+- [x] CORS 已放通 `http://localhost:5173` 和 `http://127.0.0.1:5173`。
 - [x] `POST /api/plan` 已返回 `planId` 和 `status`。
 - [x] `GET /api/plan/{planId}/stream` 已推送心跳和至少一个 `state_change`。
 - [x] `POST /api/debug/scenario` 已支持动态更新 flags。
@@ -33,7 +33,7 @@
 - [ ] 新建 `docs/contracts/B1-001-health-cors.md` 记录健康检查和 CORS 契约。
 - [ ] 实现 `GET /health`，返回 `status`、`service`、`timestamp`。
 - [ ] 配置 `server.port=8000`。
-- [ ] 配置 CORS，仅允许 `http://localhost:5173`。
+- [x] 配置 CORS，允许 `http://localhost:5173` 和 `http://127.0.0.1:5173`。
 - [x] 为 `POST /api/plan` 建立最小占位实现，返回 202 + `planId` / `status`。
 - [x] 为 `GET /api/plan/{planId}/stream` 建立最小 SSE 占位实现。
 - [x] SSE 至少推送 1 个 `heartbeat`。
@@ -180,6 +180,14 @@
 - Generator 开发侧准备检查：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过，27 tests、0 failures、`Verify passed.`。
 - 独立 evaluator 子代理 Mencius (`019e57b3-5e9e-7e92-b1e5-7744b2a4d329`, `B2-005-EVAL-CODEX-20260524T0959+0800`) 已放行。
 - 中文 QA 报告：`docs/qa/B2-005-message-tool.md`。
+
+### 2026-05-26 F1-004 real mode CORS 补充
+
+- 为支持 F1-004 real mode 从前端默认开发地址提交，`src/main/java/com/weekendtravel/backend/config/WebConfig.java` 已允许 `http://localhost:5173` 和 `http://127.0.0.1:5173`。
+- `src/test/java/com/weekendtravel/backend/controller/PlanControllerCreateTests.java` 已新增 `createAllowsConfiguredFrontendOrigins`，覆盖两个 Origin 对 `POST /api/plan` 的 CORS 回显。
+- Generator 开发侧准备检查：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过，35 tests、0 failures、`BUILD SUCCESS`。
+- 独立 evaluator 子代理 Gauss (`019e64d9-95ea-76a2-9f4d-53478e6a64a6`) 已在 F1-004 验收中覆盖该 CORS 修正。
+- QA 报告：`docs/qa/F1-004-input-plan-api.md`。
 
 ## 接手提醒
 
