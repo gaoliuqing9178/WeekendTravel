@@ -138,7 +138,6 @@ export function useSSE(options: UseSseOptions) {
       }
 
       setConnectionState('retrying')
-      options.onError?.('SSE connection interrupted; EventSource will retry.')
     }
 
     sseEventTypes.forEach((type) => {
@@ -156,6 +155,14 @@ export function useSSE(options: UseSseOptions) {
     event: MessageEvent<string>,
     expectedType?: SsePayload['type'],
   ) {
+    if (
+      typeof event.data !== 'string' ||
+      event.data.trim().length === 0 ||
+      event.data === 'undefined'
+    ) {
+      return
+    }
+
     try {
       const payload = parsePayload(event.data, expectedType)
       options.onEvent(payload, {

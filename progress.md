@@ -1,5 +1,59 @@
 # Progress
 
+## 2026-05-26 F1-004 InputPanel and POST /api/plan
+
+### 已完成
+
+- 新增 `docs/contracts/F1-004-input-plan-api.md`，明确本轮只交付正式 `InputPanel`、提交规划入口、real mode `POST /api/plan`、创建后连接既有 `useSSE`，不抢做 F1-005 PlanCard / ConfirmButton / ExecutionTracker、F1-006 ClarifyBubble 或 F1-007 AdjustPanel。
+- 新增 `frontend/src/components/InputPanel.vue`，包含家庭 / 朋友场景选择、自然语言输入、可选出发位置、提交按钮和提交状态提示；空输入或运行中禁用提交。
+- 更新 `frontend/src/stores/planner.ts`，新增 `submitPlan()`、`submitMessage`、`isSubmitting` 和 `canSubmit`；提交时清理上一轮状态，调用 `plannerClient.createPlan()`，读取 camelCase `planId` / `status`，追加 client log，并将 `planId` 交给 `sse.connect()`。
+- 更新 `frontend/src/App.vue`，将首页标识切换为 `F1-004`，用 `InputPanel` 替代上一轮内联“开始预演”入口，保留 Pinia 状态摘要和正式 LogPanel。
+- 更新 `frontend/src/composables/useSSE.ts`，real mode 下后端最小 SSE stream 完成后的 EventSource retry 不再被渲染为错误；空 message / `undefined` message 会被忽略，避免最小占位流导致误报。
+- 更新 `frontend/src/styles/main.css`，补齐 `InputPanel` 表单和状态提示的基础布局。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/config/WebConfig.java`，允许 `http://localhost:5173` 和 `http://127.0.0.1:5173` 两个前端 origin；这是 F1-004 real mode 浏览器联调所需的最小 CORS 修正。
+- 更新 `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerCreateTests.java`，新增两个前端 origin 的 POST /api/plan CORS 回归测试。
+- 新增 QA 报告 `docs/qa/F1-004-input-plan-api.md` 和截图证据 `docs/qa/F1-004-playwright-mock.png`、`docs/qa/F1-004-playwright-real.png`、`docs/qa/F1-004-playwright-real-127.png`、`docs/qa/F1-004-devtools-mock.png`、`docs/qa/F1-004-devtools-real.png`。
+- 在 `feature_list.json` 将 `F1-004` 标记为 `verified`，并写入 generator 检查和独立 evaluator 证据。
+
+### 验证记录
+
+- Generator 前端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast` 通过，覆盖：
+  - `docs/fixtures/plan-ready-family.json -> plan_family_fixture`
+  - `docs/fixtures/plan-ready-friends.json -> plan_friends_fixture`
+  - `docs/fixtures/sse-events.jsonl -> 23 JSONL events`
+  - `pnpm verify:fixtures passed`
+  - `pnpm typecheck passed`
+  - `Verify passed.`
+- Generator 前端构建检查：`pnpm build` 在 `frontend/` 下通过，Vite production build 成功。
+- Generator 后端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过，后端 35 tests、0 failures、`BUILD SUCCESS`。
+- Generator 字段检查：`rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures` 无命中。
+- Generator mock 浏览器冒烟：Playwright 打开 `http://127.0.0.1:5173`，点击“提交规划”，确认 `InputPanel` 可见、`plan_family_fixture` 可见、日志 25 条、`role=log`、自动滚动到底部。
+- Generator real mode 冒烟：后端启动在 `8000`，前端以 `VITE_API_MODE=real` 启动；浏览器从 `http://localhost:5173` 提交后捕获 `POST http://localhost:8000/api/plan => 202`，页面显示后端 `planId`、`heartbeat` 和 `START -> INTENT`。
+- Generator CORS 回归：`Origin: http://127.0.0.1:5173` 请求 `/health` 时响应头包含 `Access-Control-Allow-Origin: http://127.0.0.1:5173`。
+- 独立 evaluator 子代理 Gauss (`019e64d9-95ea-76a2-9f4d-53478e6a64a6`) 已完成验收并放行。
+- Evaluator 独立运行前端 fast verify 通过；补充运行后端 fast verify 通过，35 tests、0 failures、`BUILD SUCCESS`；禁止字段搜索无命中；`feature_list.json` 可解析。
+- Evaluator 使用 Playwright MCP 验证：
+  - mock mode：`InputPanel`、提交、`plan_family_fixture`、25 条日志、自动滚动到底部。
+  - real mode：`localhost:5173` 和 `127.0.0.1:5173` 都能 POST `/api/plan` 返回 202，页面显示后端 `planId`，并可见 `heartbeat` / `START -> INTENT`。
+- Evaluator 使用 Chrome DevTools MCP 验证：
+  - mock mode：snapshot / accessibility 覆盖 InputPanel 和 LogPanel；console 无 error / warn；network 没有真实 `/api/plan`。
+  - real mode：snapshot / accessibility 覆盖 real InputPanel；console 无 error / warn；network 包含 `POST http://localhost:8000/api/plan [202]` 和 SSE stream 请求。
+- QA 报告：`docs/qa/F1-004-input-plan-api.md`。
+- 截图证据：
+  - `docs/qa/F1-004-playwright-mock.png`
+  - `docs/qa/F1-004-playwright-real.png`
+  - `docs/qa/F1-004-playwright-real-127.png`
+  - `docs/qa/F1-004-devtools-mock.png`
+  - `docs/qa/F1-004-devtools-real.png`
+
+### 当前状态
+
+- `F1-004` 已完成并 verified。
+- 前端当前具备正式 `InputPanel`、mock fixture 提交回放、real mode `POST /api/plan` 提交和创建后 SSE 连接。
+- 后端最小 CORS 已支持 `localhost:5173` 与 `127.0.0.1:5173` 两个前端开发 origin。
+- real mode 目前仍只接入后端最小 SSE 占位流，所以会看到 `retrying` 和重复 `heartbeat` / `START -> INTENT`；这不影响 F1-004，完整状态机流转留给后续 B1 / INT 任务。
+- 下一步 F1 小目标建议推进 `F1-005`：PlanCard, ConfirmButton, and ExecutionTracker。
+
 ## 2026-05-26 F1-003 useSSE composable and log panel
 
 ### 已完成

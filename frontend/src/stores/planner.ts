@@ -38,6 +38,7 @@ export const usePlannerStore = defineStore('planner', () => {
   const currentPlan = ref<Plan | null>(null)
   const pendingClarification = ref<ClarificationRequestEvent | null>(null)
   const errorMessage = ref<string | null>(null)
+  const submitMessage = ref<string | null>(null)
   const logEvents = ref<LogEvent[]>([createReadyEvent()])
 
   let eventSequence = 0
@@ -46,12 +47,12 @@ export const usePlannerStore = defineStore('planner', () => {
     scenario.value === 'family' ? '家庭场景' : '朋友场景',
   )
 
-  const isRunning = computed(() =>
+  const isSubmitting = computed(() =>
     ['connecting', 'open', 'retrying'].includes(connectionState.value),
   )
 
-  const canStart = computed(
-    () => userInput.value.trim().length > 0 && !isRunning.value,
+  const canSubmit = computed(
+    () => userInput.value.trim().length > 0 && !isSubmitting.value,
   )
 
   const planBReason = computed(() => {
@@ -71,6 +72,7 @@ export const usePlannerStore = defineStore('planner', () => {
     mockIntervalMs: 90,
     onConnectionStateChange(nextState) {
       connectionState.value = nextState
+      updateSubmitMessageForConnection(nextState)
     },
     onEvent(payload, meta) {
       handleSsePayload(payload, meta.id)
@@ -93,7 +95,11 @@ export const usePlannerStore = defineStore('planner', () => {
   }
 
   async function previewSkeletonFlow() {
-    if (!canStart.value) {
+    await submitPlan()
+  }
+
+  async function submitPlan() {
+    if (!canSubmit.value) {
       return
     }
 
@@ -105,15 +111,16 @@ export const usePlannerStore = defineStore('planner', () => {
     currentPlan.value = null
     pendingClarification.value = null
     errorMessage.value = null
+    submitMessage.value = '正在创建 plan...'
     logEvents.value = [
       {
         id: nextLogId('evt-create-plan'),
         type: 'client_event',
-        title: '创建规划请求',
+        title: '提交规划请求',
         detail:
           plannerClient.mode === 'mock'
-            ? `${scenarioLabel.value}将读取本地 fixture，并用 useSSE 回放日志流。`
-            : `${scenarioLabel.value}将调用真实后端 API，并连接 SSE 流。`,
+            ? `${scenarioLabel.value}使用本地 fixture 创建 plan，并回放日志流。`
+            : `${scenarioLabel.value}正在调用 POST /api/plan。`,
         timestamp: Date.now(),
       },
     ]
@@ -127,6 +134,7 @@ export const usePlannerStore = defineStore('planner', () => {
 
       planId.value = created.planId
       agentState.value = 'INTENT'
+      submitMessage.value = `已创建 ${created.planId}，正在连接日志流。`
       appendLogEvent({
         id: nextLogId('evt-plan-created'),
         type: 'client_event',
@@ -140,6 +148,7 @@ export const usePlannerStore = defineStore('planner', () => {
       agentState.value = 'FAILED'
       connectionState.value = 'error'
       errorMessage.value = error instanceof Error ? error.message : String(error)
+      submitMessage.value = null
       appendLogEvent({
         id: nextLogId('evt-client-error'),
         type: 'error',
@@ -159,6 +168,7 @@ export const usePlannerStore = defineStore('planner', () => {
     currentPlan.value = null
     pendingClarification.value = null
     errorMessage.value = null
+    submitMessage.value = null
     logEvents.value = [createReadyEvent()]
   }
 
@@ -232,6 +242,34 @@ export const usePlannerStore = defineStore('planner', () => {
 
   function appendLogEvent(event: LogEvent) {
     logEvents.value = [...logEvents.value, event]
+  }
+
+  function updateSubmitMessageForConnection(nextState: SseConnectionState) {
+    if (errorMessage.value) {
+      return
+    }
+
+    if (!planId.value) {
+      return
+    }
+
+    switch (nextState) {
+      case 'connecting':
+        submitMessage.value = '正在连接日志流...'
+        return
+      case 'open':
+        submitMessage.value = `规划中：${planId.value}`
+        return
+      case 'retrying':
+        submitMessage.value = `日志流重连中：${planId.value}`
+        return
+      case 'closed':
+        submitMessage.value = `本轮日志流已结束：${planId.value}`
+        return
+      case 'idle':
+      case 'error':
+        return
+    }
   }
 
   function nextLogId(prefix: string) {
@@ -357,13 +395,17 @@ export const usePlannerStore = defineStore('planner', () => {
     currentPlan,
     pendingClarification,
     errorMessage,
+    submitMessage,
     logEvents,
     scenarioLabel,
-    isRunning,
-    canStart,
+    isSubmitting,
+    canSubmit,
+    isRunning: isSubmitting,
+    canStart: canSubmit,
     planBReason,
     apiMode: plannerClient.mode,
     setScenario,
+    submitPlan,
     previewSkeletonFlow,
     resetSkeletonFlow,
   }

@@ -41,6 +41,21 @@ class PlanControllerCreateTests {
     }
 
     @Test
+    void createAllowsConfiguredFrontendOrigins() throws Exception {
+        for (String origin : new String[]{"http://localhost:5173", "http://127.0.0.1:5173"}) {
+            HttpResponse<String> response = postPlan("""
+                    {
+                      "text": "今天下午想出去玩",
+                      "scenario": "family"
+                    }
+                    """, origin);
+
+            assertEquals(202, response.statusCode());
+            assertEquals(origin, response.headers().firstValue("Access-Control-Allow-Origin").orElse(""));
+        }
+    }
+
+    @Test
     void createRejectsMissingText() throws Exception {
         HttpResponse<String> response = postPlan("""
                 {
@@ -98,12 +113,22 @@ class PlanControllerCreateTests {
     }
 
     private HttpResponse<String> postPlan(String body) throws Exception {
-        HttpRequest request = HttpRequest.newBuilder()
+        return postPlan(body, null);
+    }
+
+    private HttpResponse<String> postPlan(String body, String origin) throws Exception {
+        HttpRequest.Builder request = HttpRequest.newBuilder()
                 .uri(URI.create("http://127.0.0.1:" + port + "/api/plan"))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
-                .build();
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+                .header("Content-Type", "application/json");
+
+        if (origin != null) {
+            request.header("Origin", origin);
+        }
+
+        return httpClient.send(
+                request.POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build(),
+                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
+        );
     }
 
     private void assertInvalidInput(HttpResponse<String> response, String message, String field) throws Exception {
