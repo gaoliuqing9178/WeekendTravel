@@ -14,9 +14,17 @@ public class PlanCreateService {
     private static final Set<String> VALID_SCENARIOS = Set.of("family", "friends");
     private static final String STATUS_PROCESSING = "processing";
 
+    private final PlanStateMachineService planStateMachineService;
+
+    public PlanCreateService(PlanStateMachineService planStateMachineService) {
+        this.planStateMachineService = planStateMachineService;
+    }
+
     public CreatePlanResponse createPlan(CreatePlanRequest request) {
         CreatePlanRequest normalized = normalize(request);
-        return new CreatePlanResponse(generatePlanId(), STATUS_PROCESSING);
+        String planId = generatePlanId();
+        planStateMachineService.createPlan(planId, normalized);
+        return new CreatePlanResponse(planId, STATUS_PROCESSING);
     }
 
     private CreatePlanRequest normalize(CreatePlanRequest request) {
