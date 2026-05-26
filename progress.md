@@ -1,5 +1,37 @@
 # Progress
 
+## 2026-05-26 B1-002 SSE emitter and heartbeat
+
+### 已完成
+
+- 新增 `docs/contracts/B1-002-sse-emitter.md`，明确本轮只交付 `GET /api/plan/{planId}/stream` 的最小 SSE 链路，不引入 Spring AI、WebFlux 或 Reactor Flux。
+- 在 `backend/src/main/java/com/weekendtravel/backend/controller/PlanController.java` 增加 `GET /api/plan/{planId}/stream`，返回 `text/event-stream`，并显式设置 `Cache-Control: no-cache` 与 `Connection: keep-alive`。
+- 新增 `backend/src/main/java/com/weekendtravel/backend/plan/PlanStreamService.java`，使用 Spring MVC `SseEmitter` 建立最小 stream，按顺序发送 `heartbeat` 和 mock `state_change`。
+- 新增 `backend/src/main/java/com/weekendtravel/backend/plan/sse/HeartbeatEvent.java` 与 `StateChangeEvent.java`，字段使用 camelCase；`state_change` 的最小 mock 转移固定为 `START -> INTENT`。
+- 新增 `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerStreamTests.java`，使用 `@SpringBootTest(webEnvironment = RANDOM_PORT)` + JDK `HttpClient` 对真实 HTTP SSE 端点做集成测试。
+- 在 `feature_list.json` 将 `B1-002` 标记为 `verified`，并补入 contract、测试、generator 开发侧准备检查和 evaluator 证据。
+- 新增 QA 报告 `docs/qa/B1-002-sse-emitter.md`，记录独立 evaluator 放行结论。
+- 更新 `backend/HANDOFF.md`，将最小 SSE stream、`heartbeat`、`state_change`、事件名与 `type` 一致性以及 SSE 测试项同步为已完成。
+
+### 验证记录
+
+- Generator 开发侧准备检查：`./backend/mvnw -f "backend/pom.xml" test` 通过，后端测试合计 28 tests、0 failures、`BUILD SUCCESS`。
+- Generator 开发侧准备检查：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过，`PlanControllerStreamTests` 1 个测试、全后端 28 个测试均通过，`Verify passed.`。
+- 独立 evaluator：`B1-002-EVAL-gpt-5.4-20260526` 已完成验收并放行。
+- Evaluator 以父工作树绝对路径复核 `PlanController`、`PlanStreamService`、`HeartbeatEvent`、`StateChangeEvent`、`PlanControllerStreamTests` 和 `feature_list.json`，避免隔离 worktree 看不到未提交改动的问题。
+- Evaluator 独立运行：
+  - `D:/Users/lenovo/Desktop/WeekendTravel/backend/mvnw -f D:/Users/lenovo/Desktop/WeekendTravel/backend/pom.xml -Dtest=PlanControllerStreamTests test`
+  - `D:/Users/lenovo/Desktop/WeekendTravel/backend/mvnw -f D:/Users/lenovo/Desktop/WeekendTravel/backend/pom.xml test`
+  均 `BUILD SUCCESS`，确认端点路径、`text/event-stream`、`heartbeat`、mock `state_change`、`START -> INTENT` 和事件名与 `data.type` 一致。
+- QA 报告：`docs/qa/B1-002-sse-emitter.md`。
+- 本轮不涉及前端 UI，Playwright MCP / Chrome DevTools MCP 不适用。
+
+### 当前状态
+
+- `B1-002` 已完成并 verified。
+- 后端最小 SSE 占位链路已具备，可供后续 `B1-003` `POST /api/plan` 与 `B1-004` 状态机继续接入。
+
+
 ## 2026-05-24 B2-005 MessageTool / composeShareMessage
 
 ### 已完成

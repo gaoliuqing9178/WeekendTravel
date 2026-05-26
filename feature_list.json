@@ -72,7 +72,7 @@
       "track": "backend",
       "owner": "B1",
       "title": "SSE emitter and heartbeat",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["B1-001"],
       "contract": "docs/contracts/B1-002-sse-emitter.md",
@@ -81,7 +81,12 @@
         "SSE stream sends heartbeat",
         "SSE stream sends at least one mock state_change event"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-26: Generator added contract docs/contracts/B1-002-sse-emitter.md and implemented backend SSE endpoint in PlanController plus PlanStreamService and SSE payload records.",
+        "2026-05-26: Generator added backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerStreamTests.java covering real HTTP response status, text/event-stream content type, cache-control header, heartbeat, state_change, test-plan, START, and INTENT.",
+        "2026-05-26: Generator development checks passed: ./backend/mvnw -f \"backend/pom.xml\" test -> BUILD SUCCESS with 28 tests, 0 failures; powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"./verify.ps1\" -Target backend -Mode fast -> Verify passed.",
+        "2026-05-26: Independent evaluator B1-002-EVAL-gpt-5.4-20260526 verified the parent working tree implementation and parent-repo Maven tests using absolute paths; conclusion: pass. QA report: docs/qa/B1-002-sse-emitter.md."
+      ]
     },
     {
       "id": "B1-003",
