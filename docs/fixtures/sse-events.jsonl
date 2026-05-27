@@ -19,5 +19,6 @@
 {"event":"state_change","data":{"type":"state_change","planId":"plan_family_fixture","from":"CONFIRM","to":"EXECUTE","timestamp":1779362410000}}
 {"event":"execute_result","data":{"type":"execute_result","planId":"plan_family_fixture","actionId":"act_family_001","actionType":"reserve_table","status":"success","confirmationNo":"MOCK-TBL-88421","timestamp":1779362411200}}
 {"event":"execute_result","data":{"type":"execute_result","planId":"plan_family_fixture","actionId":"act_family_002","actionType":"add_note","status":"success","confirmationNo":"MOCK-NOTE-122","timestamp":1779362412000}}
-{"event":"done","data":{"type":"done","planId":"plan_family_fixture","summary":"2 个动作已完成，1 条分享消息已生成","timestamp":1779362413000}}
+{"event":"execute_result","data":{"type":"execute_result","planId":"plan_family_fixture","actionId":"act_family_003","actionType":"send_message","status":"success","confirmationNo":"MOCK-MSG-309","timestamp":1779362412400}}
+{"event":"done","data":{"type":"done","planId":"plan_family_fixture","summary":"3 个动作已完成，1 条分享消息已生成","timestamp":1779362413000}}
 {"event":"error","data":{"type":"error","planId":"plan_family_fixture","code":"DEGRADE","message":"3 次重排后仍无可行方案，建议放宽距离限制或调整时间","timestamp":1779362414000}}

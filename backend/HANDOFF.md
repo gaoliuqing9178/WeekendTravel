@@ -1,5 +1,16 @@
 # Backend Handoff
 
+## 2026-05-27 INT-001 联调验收
+
+- [x] `INT-001` 已完成并 verified：前端 real mode 一句 Demo 输入可以创建 plan，后端返回 `planId`，前端用同一个 `planId` 建立 SSE，并渲染 `state_change START -> INTENT`。
+- [x] 新增合同：`../docs/contracts/INT-001-one-input-sse.md`。
+- [x] 新增 QA 报告：`../docs/qa/INT-001-one-input-sse.md`。
+- [x] 新增后端集成测试：`src/test/java/com/weekendtravel/backend/controller/PlanControllerIntegrationTests.java`，覆盖 `POST /api/plan` 后打开 `/api/plan/{planId}/stream`，并断言同一 `planId` 的 `heartbeat`、`state_change`、`START`、`INTENT`。
+- [x] Generator 后端 fast verify 通过：36 tests、0 failures、`BUILD SUCCESS`。
+- [x] 独立 evaluator Franklin (`019e691e-822d-7403-8ca3-df84e5f280c3`, `INT-001-EVAL-CODEX-20260527T1915+0800`) 已放行；Chrome DevTools MCP network 证据包含 `POST http://localhost:8000/api/plan [202]` 和 `GET /api/plan/{planId}/stream [200]`，SSE 响应体中 `state_change.data.planId` 与 POST 返回一致。
+
+注意：当前 `PlanStreamService` 仍是 Sprint 1 最小占位流，发送 `heartbeat` 和 `START -> INTENT` 后 complete。浏览器 EventSource 会进入 reconnect / `retrying`，这不阻塞 INT-001；完整状态机、`plan_ready`、执行事件和长流策略仍归后续 `B1-004`、`INT-002`、`INT-003`。
+
 ## 当前状态
 
 - [x] Spring Boot + Maven 项目已初始化。
@@ -10,6 +21,7 @@
 - [x] CORS 已放通 `http://localhost:5173` 和 `http://127.0.0.1:5173`。
 - [x] `POST /api/plan` 已返回 `planId` 和 `status`。
 - [x] `GET /api/plan/{planId}/stream` 已推送心跳和至少一个 `state_change`。
+- [x] `POST /api/plan` -> `GET /api/plan/{planId}/stream` 已通过 INT-001 真实联调验收，SSE `planId` 与创建响应一致。
 - [x] `POST /api/debug/scenario` 已支持动态更新 flags。
 
 ## 开工前必读
@@ -39,7 +51,7 @@
 - [x] SSE 至少推送 1 个 `heartbeat`。
 - [x] SSE 至少推送 1 个 `state_change`。
 - [x] 为 `POST /api/debug/scenario` 建立最小可更新实现。
-- [ ] `mvn test` 可运行通过。
+- [x] `mvn test` 可运行通过。
 
 ## 状态机与流程约束
 

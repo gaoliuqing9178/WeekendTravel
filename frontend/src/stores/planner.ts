@@ -39,9 +39,12 @@ export const usePlannerStore = defineStore('planner', () => {
   const pendingClarification = ref<ClarificationRequestEvent | null>(null)
   const errorMessage = ref<string | null>(null)
   const submitMessage = ref<string | null>(null)
+  const executeMessage = ref<string | null>(null)
+  const isExecuting = ref(false)
   const logEvents = ref<LogEvent[]>([createReadyEvent()])
 
   let eventSequence = 0
+  let executionSequence = 0
 
   const scenarioLabel = computed(() =>
     scenario.value === 'family' ? '家庭场景' : '朋友场景',
@@ -54,6 +57,15 @@ export const usePlannerStore = defineStore('planner', () => {
   const canSubmit = computed(
     () => userInput.value.trim().length > 0 && !isSubmitting.value,
   )
+
+  const canConfirmPlan = computed(
+    () =>
+      Boolean(planId.value && currentPlan.value) &&
+      agentState.value === 'CONFIRM' &&
+      !isExecuting.value,
+  )
+
+  const isRunning = computed(() => isSubmitting.value || isExecuting.value)
 
   const planBReason = computed(() => {
     if (currentPlan.value?.isPlanB) {
@@ -76,6 +88,7 @@ export const usePlannerStore = defineStore('planner', () => {
     },
     onEvent(payload, meta) {
       handleSsePayload(payload, meta.id)
+      closeMockPlanningStreamAtConfirm(payload)
     },
     onError(message) {
       errorMessage.value = message
@@ -112,6 +125,9 @@ export const usePlannerStore = defineStore('planner', () => {
     pendingClarification.value = null
     errorMessage.value = null
     submitMessage.value = '正在创建 plan...'
+    executeMessage.value = null
+    isExecuting.value = false
+    executionSequence += 1
     logEvents.value = [
       {
         id: nextLogId('evt-create-plan'),
@@ -162,6 +178,7 @@ export const usePlannerStore = defineStore('planner', () => {
   function resetSkeletonFlow() {
     sse.close('closed')
     eventSequence = 0
+    executionSequence += 1
     planId.value = null
     agentState.value = 'START'
     connectionState.value = 'idle'
@@ -169,7 +186,65 @@ export const usePlannerStore = defineStore('planner', () => {
     pendingClarification.value = null
     errorMessage.value = null
     submitMessage.value = null
+    executeMessage.value = null
+    isExecuting.value = false
     logEvents.value = [createReadyEvent()]
+  }
+
+  async function confirmPlanExecution() {
+    if (!canConfirmPlan.value || !planId.value || !currentPlan.value) {
+      return
+    }
+
+    const token = executionSequence + 1
+    executionSequence = token
+    isExecuting.value = true
+    errorMessage.value = null
+    executeMessage.value = '正在提交执行确认...'
+    agentState.value = 'EXECUTE'
+    markPendingActionsExecuting()
+    appendLogEvent({
+      id: nextLogId('evt-confirm-execute'),
+      type: 'client_event',
+      title: '确认执行',
+      detail: `planId=${planId.value}，confirmed=true`,
+      timestamp: Date.now(),
+    })
+
+    try {
+      const response = await plannerClient.executePlan(planId.value, {
+        confirmed: true,
+      })
+      executeMessage.value = response.message
+      appendLogEvent({
+        id: nextLogId('evt-execute-started'),
+        type: 'client_event',
+        title: '执行已提交',
+        detail: `planId=${response.planId}，status=${response.status}`,
+        timestamp: Date.now(),
+      })
+
+      if (plannerClient.mode === 'mock') {
+        await playMockExecutionEvents(token)
+      }
+    } catch (error) {
+      if (token !== executionSequence) {
+        return
+      }
+
+      isExecuting.value = false
+      agentState.value = 'FAILED'
+      errorMessage.value = error instanceof Error ? error.message : String(error)
+      executeMessage.value = null
+      setCurrentPlanStatus('FAILED')
+      appendLogEvent({
+        id: nextLogId('evt-execute-error'),
+        type: 'error',
+        title: '执行确认失败',
+        detail: errorMessage.value,
+        timestamp: Date.now(),
+      })
+    }
   }
 
   function handleSsePayload(payload: SsePayload, fallbackId: string) {
@@ -187,6 +262,7 @@ export const usePlannerStore = defineStore('planner', () => {
         return
       case 'state_change':
         agentState.value = payload.to
+        setCurrentPlanStatus(payload.to)
         return
       case 'clarification_request':
         pendingClarification.value = payload
@@ -194,6 +270,7 @@ export const usePlannerStore = defineStore('planner', () => {
         return
       case 'replan':
         agentState.value = 'REPLAN'
+        setCurrentPlanStatus('REPLAN')
         return
       case 'adjust_result':
         currentPlan.value = payload.plan
@@ -209,14 +286,20 @@ export const usePlannerStore = defineStore('planner', () => {
       case 'execute_result':
         updateActionStatus(payload)
         agentState.value = 'EXECUTE'
+        setCurrentPlanStatus('EXECUTE')
         return
       case 'done':
         pendingClarification.value = null
         agentState.value = 'DONE'
+        isExecuting.value = false
+        executeMessage.value = payload.summary
+        setCurrentPlanStatus('DONE')
         return
       case 'error':
         errorMessage.value = payload.message
         agentState.value = payload.code === 'DEGRADE' ? 'DEGRADE' : 'FAILED'
+        isExecuting.value = false
+        setCurrentPlanStatus(agentState.value)
         return
     }
   }
@@ -237,6 +320,71 @@ export const usePlannerStore = defineStore('planner', () => {
             }
           : action,
       ),
+    }
+  }
+
+  function markPendingActionsExecuting() {
+    if (!currentPlan.value) {
+      return
+    }
+
+    currentPlan.value = {
+      ...currentPlan.value,
+      status: 'EXECUTE',
+      actions: currentPlan.value.actions.map((action) =>
+        action.status === 'pending'
+          ? {
+              ...action,
+              status: 'executing',
+            }
+          : action,
+      ),
+    }
+  }
+
+  function setCurrentPlanStatus(status: AgentState) {
+    if (!currentPlan.value) {
+      return
+    }
+
+    currentPlan.value = {
+      ...currentPlan.value,
+      status,
+    }
+  }
+
+  function closeMockPlanningStreamAtConfirm(payload: SsePayload) {
+    if (plannerClient.mode !== 'mock') {
+      return
+    }
+
+    if (payload.type === 'state_change' && payload.to === 'CONFIRM') {
+      sse.close('closed')
+    }
+  }
+
+  async function playMockExecutionEvents(token: number) {
+    const frames = await plannerClient.getSseFixtureFrames()
+    const executionFrames = frames.filter(
+      (frame) => frame.data.type === 'execute_result' || frame.data.type === 'done',
+    )
+
+    for (const frame of executionFrames) {
+      if (token !== executionSequence) {
+        return
+      }
+
+      await wait(180)
+
+      if (token !== executionSequence) {
+        return
+      }
+
+      handleSsePayload(frame.data, `fixture-execute-${frame.data.type}`)
+    }
+
+    if (token === executionSequence) {
+      isExecuting.value = false
     }
   }
 
@@ -400,13 +548,21 @@ export const usePlannerStore = defineStore('planner', () => {
     scenarioLabel,
     isSubmitting,
     canSubmit,
-    isRunning: isSubmitting,
+    isExecuting,
+    canConfirmPlan,
+    isRunning,
     canStart: canSubmit,
     planBReason,
+    executeMessage,
     apiMode: plannerClient.mode,
     setScenario,
     submitPlan,
+    confirmPlanExecution,
     previewSkeletonFlow,
     resetSkeletonFlow,
   }
 })
+
+function wait(ms: number) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms))
+}
