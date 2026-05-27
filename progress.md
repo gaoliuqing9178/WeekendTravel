@@ -1,5 +1,39 @@
 # Progress
 
+## 2026-05-27 F1-005 PlanCard, ConfirmButton, and ExecutionTracker
+
+### 已完成
+
+- 新增 `docs/contracts/F1-005-plan-card-execution.md`，明确本轮只交付 PlanCard、ConfirmButton、ExecutionTracker 和确认执行前端链路，不抢做 ClarifyBubble、AdjustPanel、后端状态机或真实执行事件。
+- 新增 `frontend/src/components/PlanCard.vue`，基于 `plan_ready` / `currentPlan` 展示 summary、Plan B 原因、总时长、重排次数、Plan ID、timeline、actions 和 shareMessage。
+- 新增 `frontend/src/components/ConfirmButton.vue`，只在 `agentState === CONFIRM` 且已有 plan 时允许确认；执行中 loading，完成或非确认状态禁用。
+- 新增 `frontend/src/components/ExecutionTracker.vue`，按 action 展示 pending / executing / success / failed / manual 状态和 `confirmationNo`。
+- 更新 `frontend/src/stores/planner.ts`，新增 `confirmPlanExecution()`、`canConfirmPlan`、`isExecuting` 和 `executeMessage`；mock planning 回放会停在 `CONFIRM`，用户点击确认后再播放 fixture 中的 `execute_result` / `done`。
+- 更新 `frontend/src/App.vue` 和 `frontend/src/styles/main.css`，将 F1-005 组件接入工作台，并补齐响应式布局、语义区域、状态条和低动效支持。
+- 更新 `docs/fixtures/sse-events.jsonl`，补齐第三个 fixture action 的 `execute_result`，总事件数变为 24。
+- 新增独立 evaluator QA 报告 `docs/qa/F1-005-plan-card-execution.md` 和截图证据 `docs/qa/F1-005-playwright-mock.png`、`docs/qa/F1-005-devtools-mock.png`。
+- 在 `feature_list.json` 将 `F1-005` 标记为 `verified`，并写入 generator 检查和独立 evaluator 证据。
+
+### 验证记录
+
+- Generator 前端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast` 通过，覆盖 `pnpm verify:fixtures`、`24 JSONL events` 和 `pnpm typecheck passed`。
+- Generator 构建检查：`npm run build` 在 `frontend/` 下通过，Vite production build 成功。
+- Generator 禁止字段检查：`rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures` 无命中。
+- Generator 浏览器冒烟：Playwright MCP 和 Chrome DevTools MCP 均确认 mock 页面能停在 `CONFIRM`，点击“确认执行”后 `ExecutionTracker` 显示 `3 / 3`，并出现 `MOCK-TBL-88421`、`MOCK-NOTE-122`、`MOCK-MSG-309`；console error / warn 为 0，mock mode 没有真实后端 fetch / xhr。
+- 独立 evaluator 子代理 Copernicus (`019e693f-998a-7d03-8476-9c96e93288cb`) 已完成验收并放行。
+- Evaluator 独立运行前端 fast verify 通过；禁止 snake_case 字段搜索无命中；`feature_list.json` 可解析。
+- Evaluator 使用 Playwright MCP 验证：初始 `START` 下确认按钮 disabled；提交后进入 `CONFIRM`，PlanCard 展示 summary、timeline、actions、shareMessage、总时长和 Plan B；点击确认后 ExecutionTracker 显示 `3 / 3` 和三个 mock 确认号。
+- Evaluator 使用 Chrome DevTools MCP 验证：snapshot / accessibility 覆盖 PlanCard、确认按钮和 ExecutionTracker；console error / warn 为 0；mock mode 下没有真实 `/api/plan/*/execute` fetch / xhr。
+- QA 报告：`docs/qa/F1-005-plan-card-execution.md`。
+- 截图证据：`docs/qa/F1-005-playwright-mock.png`、`docs/qa/F1-005-devtools-mock.png`。
+
+### 当前状态
+
+- `F1-005` 已完成并 verified。
+- 前端当前具备正式输入提交、mock fixture SSE planning 回放、PlanCard、确认执行和 ExecutionTracker。
+- real mode 当前仍取决于后端后续 B1 状态机 / execute endpoint；F1-005 对 real mode 的职责是按 contract 调用 `POST /api/plan/{planId}/execute` 并显示错误或后续 SSE 结果，不伪造真实后端完成。
+- 下一步 F1 小目标可继续推进 `F1-006` ClarifyBubble 或 `F1-007` AdjustPanel；如果要做完整端到端 family path，则需要先推进 `B1-004` / `B1-005` 后端状态机与 plan_ready 链路。
+
 ## 2026-05-27 INT-001 Sprint 1 integration: one input to SSE state_change
 
 ### 已完成

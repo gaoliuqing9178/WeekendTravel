@@ -358,7 +358,7 @@
       "track": "frontend",
       "owner": "F1",
       "title": "PlanCard, ConfirmButton, and ExecutionTracker",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["F1-002", "F1-003"],
       "contract": "docs/contracts/F1-005-plan-card-execution.md",
@@ -367,7 +367,13 @@
         "ConfirmButton is enabled only in CONFIRM state",
         "execute_result updates action status in ExecutionTracker"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-27: Generator added contract docs/contracts/F1-005-plan-card-execution.md plus PlanCard, ConfirmButton, ExecutionTracker, App integration, and Pinia confirmPlanExecution flow.",
+        "2026-05-27: Generator updated mock SSE fixture execution coverage to 24 JSONL events, including execute_result for all three fixture actions and done summary.",
+        "2026-05-27: Generator development checks passed: frontend fast verify -> pnpm verify:fixtures and pnpm typecheck passed; npm run build passed; forbidden snake_case field search had no matches.",
+        "2026-05-27: Independent evaluator subagent Copernicus (019e693f-998a-7d03-8476-9c96e93288cb) verified F1-005 with frontend fast verify, forbidden field search, feature_list.json parse, Playwright MCP interaction, and Chrome DevTools MCP snapshot/console/network/DOM evidence; conclusion: pass.",
+        "2026-05-27: Evaluator evidence written to docs/qa/F1-005-plan-card-execution.md with screenshots docs/qa/F1-005-playwright-mock.png and docs/qa/F1-005-devtools-mock.png."
+      ]
     },
     {
       "id": "F1-006",
