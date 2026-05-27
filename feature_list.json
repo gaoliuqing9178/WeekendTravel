@@ -1,6 +1,6 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-05-26",
+  "updatedAt": "2026-05-27",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
     {
@@ -422,7 +422,7 @@
       "track": "integration",
       "owner": "B1/F1",
       "title": "Sprint 1 integration: one input to SSE state_change",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["B1-001", "B1-002", "B1-003", "F1-001", "F1-003", "F1-004"],
       "contract": "docs/contracts/INT-001-one-input-sse.md",
@@ -431,7 +431,12 @@
         "Backend returns planId",
         "Frontend receives and renders state_change from SSE"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-27: Generator added contract docs/contracts/INT-001-one-input-sse.md and backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerIntegrationTests.java covering POST /api/plan followed by SSE stream with the same planId and START -> INTENT state_change.",
+        "2026-05-27: Generator development checks passed: backend fast verify -> 36 tests, 0 failures, BUILD SUCCESS; frontend fast verify -> pnpm verify:fixtures and pnpm typecheck passed.",
+        "2026-05-27: Independent evaluator subagent Franklin (019e691e-822d-7403-8ca3-df84e5f280c3; INT-001-EVAL-CODEX-20260527T1915+0800) verified real mode browser path with Playwright MCP and Chrome DevTools MCP; conclusion: pass.",
+        "2026-05-27: Evaluator evidence written to docs/qa/INT-001-one-input-sse.md; network evidence included POST http://localhost:8000/api/plan [202] and GET /api/plan/{planId}/stream [200] with matching planId and state_change START -> INTENT."
+      ]
     },
     {
       "id": "INT-002",

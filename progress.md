@@ -1,5 +1,33 @@
 # Progress
 
+## 2026-05-27 INT-001 Sprint 1 integration: one input to SSE state_change
+
+### 已完成
+
+- 新增 `docs/contracts/INT-001-one-input-sse.md`，明确本轮只交付 Sprint 1 最小真实联调：一句 Demo 输入 -> `POST /api/plan` -> 返回 `planId` -> 连接 `/api/plan/{planId}/stream` -> 前端日志渲染真实后端 `state_change START -> INTENT`。
+- 新增 `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerIntegrationTests.java`，用真实 HTTP 先创建 plan，再用返回的 `planId` 打开 SSE stream，断言 `heartbeat`、`state_change`、同一个 `planId`、`START` 和 `INTENT`。
+- 保持实现范围不越界：没有实现完整 B1 状态机、`plan_ready`、PlanCard、ConfirmButton、ExecutionTracker、ClarifyBubble、AdjustPanel，也没有改 API 字段或接入 OpenAI。
+- 新增独立 evaluator QA 报告 `docs/qa/INT-001-one-input-sse.md`。
+- 在 `feature_list.json` 将 `INT-001` 标记为 `verified`，并写入 generator 检查和独立 evaluator 证据。
+
+### 验证记录
+
+- Generator 后端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过；后端总计 36 tests、0 failures、`BUILD SUCCESS`，新增 `PlanControllerIntegrationTests.createdPlanCanOpenStreamAndReceiveStateChangeForSamePlanId` 已执行。
+- Generator 前端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast` 通过；`pnpm verify:fixtures passed`，`pnpm typecheck passed`。
+- 独立 evaluator 子代理 Franklin (`019e691e-822d-7403-8ca3-df84e5f280c3`, `INT-001-EVAL-CODEX-20260527T1915+0800`) 已完成验收并放行。
+- Evaluator 独立运行后端 fast verify 通过：`Verify passed.`、`BUILD SUCCESS`、36 tests、0 failures。
+- Evaluator 独立运行前端 fast verify 通过：`pnpm verify:fixtures passed`、`pnpm typecheck passed`、`Verify passed.`。
+- Evaluator 使用 Playwright MCP 验证真实用户路径：打开 `http://127.0.0.1:5173/`，页面显示 real mode，保留默认家庭 Demo 文本并点击“提交规划”；页面出现后端 `planId=plan_5c63071dd52c`，Agent 显示 `INTENT`，LogPanel 可见 `heartbeat`、`state_change` 和 `START -> INTENT`。
+- Evaluator 使用 Chrome DevTools MCP 复核：snapshot / accessibility 覆盖 InputPanel、Pinia 状态和 LogPanel；console error / warn 为 0；network 包含 `POST http://localhost:8000/api/plan [202]` 和 `GET http://localhost:8000/api/plan/plan_0cfb9dd63714/stream [200]`，SSE 响应体包含同一 `planId` 的 `heartbeat` 与 `state_change START -> INTENT`。
+- QA 报告：`docs/qa/INT-001-one-input-sse.md`。
+
+### 当前状态
+
+- `INT-001` 已完成并 verified。
+- Sprint 1 最小真实联调链路已经成立：前端 real mode 可以提交一句 Demo 输入，后端返回 `planId`，前端用该 `planId` 连接 SSE 并渲染真实后端 `state_change`。
+- 当前后端最小 SSE stream 会在发送必需事件后 complete，浏览器 EventSource 因此进入 `retrying` 并可能重复显示 `heartbeat` / `state_change`；这不阻塞 INT-001，完整状态机和长流行为留给后续 `B1-004` / `INT-002` / `INT-003`。
+- 下一步集成建议仍是先推进 `B1-004` 状态机 START -> PACK，再接 `F1-005` / `INT-002` 的 plan_ready 和执行路径。
+
 ## 2026-05-26 F1-004 InputPanel and POST /api/plan
 
 ### 已完成

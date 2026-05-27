@@ -1,5 +1,29 @@
 # Handoff
 
+## 2026-05-27 INT-001 Sprint 1 最小联调
+
+INT-001 已完成并 verified。当前真实联调链路已经成立：前端 real mode 提交一条 Demo 自然语言输入，后端 `POST /api/plan` 返回非空 `planId` 和 `status=processing`，前端用该 `planId` 打开 `/api/plan/{planId}/stream`，LogPanel 渲染真实后端 SSE `state_change START -> INTENT`。
+
+本轮新增或更新：
+- `docs/contracts/INT-001-one-input-sse.md`
+- `docs/qa/INT-001-one-input-sse.md`
+- `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerIntegrationTests.java`
+- `feature_list.json`
+- `progress.md`
+- `frontend/F1-handoff.md`
+- `backend/HANDOFF.md`
+
+验证结果：
+- Generator 后端 fast verify 通过：36 tests、0 failures、`BUILD SUCCESS`。
+- Generator 前端 fast verify 通过：`pnpm verify:fixtures passed`，`pnpm typecheck passed`。
+- 独立 evaluator 子代理 Franklin (`019e691e-822d-7403-8ca3-df84e5f280c3`, `INT-001-EVAL-CODEX-20260527T1915+0800`) 已放行。
+- Evaluator 使用 Playwright MCP 验证真实用户路径：real mode 页面提交默认家庭 Demo 文本后显示后端 `planId`、Agent `INTENT`，LogPanel 可见 `heartbeat`、`state_change`、`START -> INTENT`。
+- Evaluator 使用 Chrome DevTools MCP 复核：console error / warn 为 0，network 包含 `POST http://localhost:8000/api/plan [202]` 和 `/api/plan/{planId}/stream [200]`，SSE 响应体中 `state_change.data.planId` 与 POST 返回一致。
+
+接手提醒：
+- 当前后端 SSE 仍是最小占位流：发送 `heartbeat` 和 `START -> INTENT` 后 complete；浏览器 EventSource 会显示 `retrying` 并可能重复收到最小事件。这不阻塞 INT-001，但后续 `B1-004` / `INT-002` 需要处理完整状态机和更真实的流生命周期。
+- 下一步不要把 INT-001 当作完整 `plan_ready` 或执行链路；`B1-004`、`F1-005`、`INT-002`、`INT-003` 仍是后续任务。
+
 ## 2026-05-22 前端 evaluator 浏览器 MCP 规则
 
 本轮补充前端验收硬规则：所有涉及前端 UI 的任务，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP。Playwright MCP 用于模拟真实用户交互、状态等待、截图或 trace；Chrome DevTools MCP 用于页面快照、console、network、DOM / accessibility 和视觉复核。

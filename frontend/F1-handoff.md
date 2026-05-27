@@ -1,8 +1,25 @@
 # F1 Handoff
 
+## 2026-05-27 INT-001 联调验收
+
+INT-001 已完成并 verified。真实 real mode 链路已经由独立 evaluator 放行：前端提交一条 Demo 自然语言输入，后端返回 `planId`，前端用该 `planId` 打开 `/api/plan/{planId}/stream`，并在 LogPanel 渲染真实后端 `state_change START -> INTENT`。
+
+本轮新增或关联的文件：
+- `docs/contracts/INT-001-one-input-sse.md`
+- `docs/qa/INT-001-one-input-sse.md`
+- `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerIntegrationTests.java`
+
+独立 evaluator Franklin (`019e691e-822d-7403-8ca3-df84e5f280c3`, `INT-001-EVAL-CODEX-20260527T1915+0800`) 验证结果：
+- 后端 fast verify 通过，36 tests、0 failures、`BUILD SUCCESS`。
+- 前端 fast verify 通过，`pnpm verify:fixtures passed`，`pnpm typecheck passed`。
+- Playwright MCP：打开 `http://127.0.0.1:5173/`，确认 real mode，点击“提交规划”，页面出现后端 `planId`、Agent `INTENT`，LogPanel 可见 `heartbeat`、`state_change` 和 `START -> INTENT`。
+- Chrome DevTools MCP：snapshot / accessibility 覆盖 InputPanel、Pinia 状态和 LogPanel；console error / warn 为 0；network 包含 `POST http://localhost:8000/api/plan [202]` 与 `/api/plan/{planId}/stream [200]`，SSE 响应体里 `state_change.data.planId` 与 POST 返回一致。
+
+注意：当前后端最小 SSE stream 发送必需事件后会 complete，浏览器 EventSource 会进入 `retrying` 并可能重复出现 `heartbeat` / `state_change`。这不阻塞 INT-001；完整状态机、`plan_ready` 和执行路径仍留给后续 `B1-004`、`F1-005`、`INT-002` / `INT-003`。
+
 ## 当前状态
 
-F1-001、F1-002、F1-003、F1-004 已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
+F1-001、F1-002、F1-003、F1-004 已完成并验证；INT-001 最小真实联调也已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
 
 当前前端具备骨架、API client、mock fixture mode、正式 `InputPanel`、`useSSE` 和实时日志面板：
 - 已有首页工作台骨架。
@@ -15,6 +32,7 @@ F1-001、F1-002、F1-003、F1-004 已完成并验证。`frontend/` 现在是 Vue
 - 已有 `frontend/src/api/fixtures.ts` 和 `frontend/scripts/verify-fixtures.mjs`，可解析 `docs/fixtures/plan-ready-family.json`、`docs/fixtures/plan-ready-friends.json`、`docs/fixtures/sse-events.jsonl`。
 - 已有 `frontend/src/composables/useSSE.ts`，mock mode 逐条回放 fixture SSE，real mode 通过 `openPlanStream(planId)` 连接 `/api/plan/{planId}/stream`。
 - 已有 `frontend/src/components/LogPanel.vue`，可以展示 `heartbeat`、`state_change`、`tool_call`、`tool_result`、`replan`、`clarification_request`、`adjust_result`、`plan_ready`、`execute_result`、`done`、`error`，并自动滚动到最新事件。
+- real mode 已通过 INT-001 验证：提交后页面能显示真实后端 `planId`，并在 LogPanel 渲染后端 SSE `state_change START -> INTENT`。
 - 点击“提交规划”后，mock client 会创建 fixture plan，`useSSE` 逐条回放 `docs/fixtures/sse-events.jsonl`，页面最终可见 `DEGRADE` / `closed`、Plan ID、Plan B 摘要和最新日志事件。
 - 暂未实现完整 PlanCard、ConfirmButton、ExecutionTracker、ClarifyBubble 或 AdjustPanel。
 
@@ -24,6 +42,7 @@ F1-001、F1-002、F1-003、F1-004 已完成并验证。`frontend/` 现在是 Vue
 - `docs/contracts/F1-002-api-client-fixtures.md`
 - `docs/contracts/F1-003-sse-log-panel.md`
 - `docs/contracts/F1-004-input-plan-api.md`
+- `docs/contracts/INT-001-one-input-sse.md`
 - `docs/qa/F1-002-api-client-fixtures.md`
 - `docs/qa/F1-002-devtools-confirm.png`
 - `docs/qa/F1-002-devtools-confirm-root.png`
@@ -37,6 +56,7 @@ F1-001、F1-002、F1-003、F1-004 已完成并验证。`frontend/` 现在是 Vue
 - `docs/qa/F1-004-playwright-mock.png`
 - `docs/qa/F1-004-playwright-real.png`
 - `docs/qa/F1-004-playwright-real-127.png`
+- `docs/qa/INT-001-one-input-sse.md`
 - `frontend/package.json`
 - `frontend/pnpm-lock.yaml`
 - `frontend/vite.config.ts`
