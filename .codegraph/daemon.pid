@@ -3,4 +3,8 @@
   "version": "0.9.6",
   "socketPath": "\\\\.\\pipe\\codegraph-4b9ca42259f9e150",
   "startedAt": 1779889056647
+  "pid": 7820,
+  "version": "0.9.6",
+  "socketPath": "\\\\.\\pipe\\codegraph-4b9ca42259f9e150",
+  "startedAt": 1779881163305
 }
