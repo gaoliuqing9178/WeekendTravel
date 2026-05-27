@@ -1,8 +1,32 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-05-26",
+  "updatedAt": "2026-05-27",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
+    {
+      "id": "DOC-001",
+      "track": "docs",
+      "owner": "Harness",
+      "title": "Root README project entrypoint",
+      "status": "verified",
+      "priority": "P0",
+      "dependsOn": ["WF-001", "WF-002"],
+      "contract": "docs/contracts/DOC-001-root-readme.md",
+      "acceptance": [
+        "Root README.md exists",
+        "README explains the project goal, family/friends demo scope, tech stacks, ports, directory structure, run commands, and verify commands",
+        "README links to docs/api-contract.md, feature_list.json, progress.md, docs/handoff.md, backend/HANDOFF.md, and frontend/F1-handoff.md",
+        "README does not mark unverified feature_list.json items as verified capability",
+        "README documents camelCase API fields, fixed ports, OPENAI_API_KEY boundary, evaluator subagent requirement, and frontend Playwright MCP plus Chrome DevTools MCP rule",
+        "feature_list.json remains parseable"
+      ],
+      "evidence": [
+        "2026-05-27: Generator added root README.md and docs/contracts/DOC-001-root-readme.md.",
+        "2026-05-27: Generator local checks passed: README key heading/rule search succeeded and feature_list.json parsed with ConvertFrom-Json.",
+        "2026-05-27: Independent evaluator subagent CodeChecker (019e69ae-e5fe-7c13-bbab-be7d49d8a6a4) performed read-only review of README.md and feature_list.json; conclusion: PASS.",
+        "2026-05-27: Evaluator evidence written to docs/qa/DOC-001-root-readme.md; B1-004 remains todo with empty evidence and README points readers back to feature_list.json for verified status."
+      ]
+    },
     {
       "id": "WF-002",
       "track": "workflow",

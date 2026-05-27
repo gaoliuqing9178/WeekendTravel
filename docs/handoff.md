@@ -1,5 +1,32 @@
 # Handoff
 
+## 2026-05-27 DOC-001 Root README
+
+本轮新增根目录 `README.md`，作为 WeekendTravel 仓库入口文档。README 覆盖项目目标、`family` / `friends` Demo 范围、前后端技术栈、默认端口、目录结构、初始化检查、依赖安装、本地运行、mock / real mode 切换和仓库级验证命令。
+
+本轮新增或更新：
+
+- `README.md`
+- `docs/contracts/DOC-001-root-readme.md`
+- `docs/qa/DOC-001-root-readme.md`
+- `feature_list.json`
+- `progress.md`
+- `docs/handoff.md`
+
+接手提醒：
+
+- README 是入口导航，不替代 `docs/api-contract.md`、`feature_list.json`、`progress.md` 或各 handoff。
+- 当前能力状态仍以 `feature_list.json` 和 evaluator 证据为准。
+- `B1-004` 仍未在 `feature_list.json` 标记为 verified；README 只说明源码中存在相关实现和测试文件，不把它当作已完成能力。
+- 涉及 API 字段变更仍必须先改 `docs/api-contract.md`。
+- 涉及前端 UI 的后续任务仍必须由 evaluator 同时使用 Playwright MCP 和 Chrome DevTools MCP。
+
+验证结果：
+
+- Generator 本地检查确认 README 关键标题、命令和规则可搜索，`feature_list.json` 可通过 `ConvertFrom-Json` 解析。
+- 独立 evaluator 子代理 CodeChecker (`019e69ae-e5fe-7c13-bbab-be7d49d8a6a4`) 对 `README.md` 和 `feature_list.json` 做只读复核，结论 PASS，无阻塞问题。
+- QA 报告：`docs/qa/DOC-001-root-readme.md`。
+
 ## 2026-05-22 前端 evaluator 浏览器 MCP 规则
 
 本轮补充前端验收硬规则：所有涉及前端 UI 的任务，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP。Playwright MCP 用于模拟真实用户交互、状态等待、截图或 trace；Chrome DevTools MCP 用于页面快照、console、network、DOM / accessibility 和视觉复核。

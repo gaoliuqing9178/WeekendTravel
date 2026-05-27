@@ -1,5 +1,37 @@
 # Progress
 
+## 2026-05-27 DOC-001 Root README
+
+### 已完成
+
+- 新增根目录 `README.md`，作为 WeekendTravel 的项目入口文档。
+- README 覆盖项目目标、`family` / `friends` Demo 范围、前后端技术栈、默认端口、目录结构、初始化检查、依赖安装、本地运行、mock / real mode 切换和仓库级验证命令。
+- README 指向 `docs/api-contract.md`、`feature_list.json`、`progress.md`、`docs/handoff.md`、`backend/HANDOFF.md`、`frontend/F1-handoff.md` 和常用长期文档入口。
+- README 明确当前能力状态以 `feature_list.json` 和 evaluator 证据为准；`B1-004` 仍不标记为已完成，只说明源码中已有相关实现和测试文件。
+- 新增 `docs/contracts/DOC-001-root-readme.md`，记录本轮 README 验收边界。
+- 新增 `docs/qa/DOC-001-root-readme.md`，整理独立 evaluator 子代理 CodeChecker 的只读 PASS 结论。
+- 更新 `feature_list.json`，新增 `DOC-001` 并按 evaluator 证据标记为 `verified`。
+
+### 验证记录
+
+- Generator 本地检查：
+  - `rg -n "^# WeekendTravel|^## 当前状态|verify\.ps1|VITE_API_MODE|docs/api-contract\.md|evaluator|Playwright MCP|Chrome DevTools MCP" README.md` 命中关键标题、命令和规则。
+  - `Get-Content -Raw -Encoding UTF8 -LiteralPath 'feature_list.json' | ConvertFrom-Json` 通过，`feature_list.json` 可解析。
+- 独立 evaluator 子代理 CodeChecker (`019e69ae-e5fe-7c13-bbab-be7d49d8a6a4`) 完成只读复核并放行：
+  - 确认 `README.md` 存在。
+  - 确认 README 覆盖项目目标、Demo 范围、技术栈、端口、目录结构、初始化 / 安装 / 运行 / 验证命令。
+  - 确认 README 正确引用关键入口文档。
+  - 确认 README 没有把 `B1-004` 或其他未 verified 条目写成已验证完成。
+  - 确认 README 写明 camelCase、端口边界、`OPENAI_API_KEY`、evaluator 子代理、前端 Playwright MCP + Chrome DevTools MCP 验收规则。
+  - 确认 `feature_list.json` 可解析。
+- QA 报告：`docs/qa/DOC-001-root-readme.md`。
+
+### 当前状态
+
+- `DOC-001` 已完成并 verified。
+- 本轮不涉及前端 UI、后端 API 或业务代码变更。
+- `B1-004`、`F1-005`、`INT-*` 等原有未完成条目状态不变，仍以后续各自 contract 和 evaluator 证据推进。
+
 ## 2026-05-26 F1-004 InputPanel and POST /api/plan
 
 ### 已完成
