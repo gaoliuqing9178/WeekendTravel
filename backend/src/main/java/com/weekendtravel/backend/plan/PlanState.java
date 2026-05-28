@@ -7,5 +7,6 @@ public enum PlanState {
     RECALL,
     VALIDATE,
     REPLAN,
-    PACK
+    PACK,
+    DEGRADE
 }

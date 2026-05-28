@@ -18,6 +18,7 @@ public class PlanStreamService {
     }
 
     public SseEmitter openStream(String planId) {
+        planStateMachineService.ensurePlanExists(planId);
         SseEmitter emitter = new SseEmitter(STREAM_TIMEOUT_MILLIS);
 
         try {

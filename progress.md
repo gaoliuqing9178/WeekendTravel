@@ -1,5 +1,43 @@
 # Progress
 
+## 2026-05-28 B1-005 Plan B and DEGRADE rules
+
+### 已完成
+
+- 新增 `docs/contracts/B1-005-plan-b-degrade.md`，明确本轮在 `B1-004` 基础上只补 family demo 的 deterministic `Plan B / DEGRADE` 行为，不抢做 friends 通用规划、`CLARIFY / ADJUST / EXECUTE` 或真实外部服务。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanState.java`，补充 `DEGRADE` 状态以对齐 `docs/api-contract.md`。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanContext.java`，新增 `injectedPlanB`、`latestReason` 等上下文字段，用于承接重排次数、原因和后续指标区分。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanStateMachineService.java`，将单次 fallback 改为 bounded replan 流程；family happy path 仍可进入 `PACK`，`restaurantFull` / `routeTooFar` 可触发 `replan`，达到上限后进入 `DEGRADE` 并发送 `error(code=DEGRADE)`。
+- 新增 `backend/src/main/java/com/weekendtravel/backend/plan/sse/ErrorEvent.java`，补齐后端 `error` SSE payload 模型。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanStreamService.java`，在发送 heartbeat 前先校验 `planId`，避免非法 stream 请求先写出 SSE 再异常中断。
+- 更新 `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerStreamTests.java`，补充 `plan_ready` 中 `isPlanB` / `replanCount` 字段断言。
+- 更新 `backend/src/test/java/com/weekendtravel/backend/controller/PlanFlowIntegrationTests.java`，覆盖 happy path、`restaurantFull` 注入、`routeTooFar` 注入，以及 `friends` 场景最小文案 / 输出回归。
+- 根据最终 review 结果，补齐了 `friends` 场景的最小搜索参数 / 文案分流，并修复了非法 `planId` stream 先发 heartbeat 的问题。
+- 新增并完善 QA 记录 `docs/qa/B1-005-plan-b-degrade.md`，整理 generator 与 independent evaluator 的验证证据。
+
+### 验证记录
+
+- Generator 后端测试：`./backend/mvnw -f backend/pom.xml test` 通过，`Tests run: 40, Failures: 0, Errors: 0, Skipped: 0`，`BUILD SUCCESS`。
+- Generator 后端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过，输出 `[ok] mvnw.cmd test passed.` 和 `Verify passed.`。
+- Generator 代码复核：补文档前对本轮差异做了精度 review，并据此修正了 replan 上限判断与 degrade 文案计数不一致的问题；最终 review 后又补齐了 friends 场景最小分流与非法 stream `planId` 先校验。
+- Independent evaluator 子代理完成只读验收并放行：
+  - 启动后端：`backend/mvnw -f backend/pom.xml spring-boot:run`
+  - 健康检查：`curl -sS -D - http://127.0.0.1:8000/health` 返回 `200` 与 `{"status":"ok","service":"WeekendTravel",...}`
+  - 后端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过
+  - 后端测试：`backend/mvnw -f backend/pom.xml test` 通过，原始独立验收时为 `39 tests, 0 failures`；本轮最终修正后 generator 复跑为 `40 tests, 0 failures`
+  - happy path create+stream 观察到 `PACK` 与 `plan_ready`
+  - `restaurantFull=true` 观察到 `replan`、`REPLAN`、`DEGRADE`、`error(code=DEGRADE)`
+  - `routeTooFar=true` 观察到 `replan`、`REPLAN`、`DEGRADE`、`error(code=DEGRADE)`
+  - `tool_result` 运行时 payload 含 `latencyMs`
+- 独立 evaluator 结论为 `PASS with caveat`；runtime 证据已写入 `docs/qa/B1-005-plan-b-degrade.md`。
+
+### 当前状态
+
+- `B1-005` 已完成并 verified。
+- family demo happy path 可到达 `PACK` / `plan_ready`；`restaurantFull` 和 `routeTooFar` 注入会进入 `replan`，达到上限后进入 `DEGRADE` 并返回可读错误。
+- 当前实现已补齐 friends 场景的最小文案 / 搜索参数分流，并修复了非法 `planId` stream 先发 heartbeat 的问题。
+- 更复杂的 friends 规则策略、execute/clarify/adjust 正式链路仍留给后续任务。
+
 ## 2026-05-27 DOC-001 Root README
 
 ### 已完成

@@ -60,6 +60,8 @@ class PlanControllerStreamTests {
         assertTrue(bodyText.contains("RECALL"), bodyText);
         assertTrue(bodyText.contains("VALIDATE"), bodyText);
         assertTrue(bodyText.contains("PACK"), bodyText);
+        assertTrue(bodyText.contains("\"isPlanB\":"), bodyText);
+        assertTrue(bodyText.contains("\"replanCount\":"), bodyText);
     }
 
     private String createFamilyPlan() throws Exception {

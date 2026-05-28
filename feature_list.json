@@ -155,7 +155,7 @@
       "track": "backend",
       "owner": "B1",
       "title": "Plan B and DEGRADE rules",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["B1-004", "B2-003"],
       "contract": "docs/contracts/B1-005-plan-b-degrade.md",
@@ -165,7 +165,12 @@
         "After replan limit, state enters DEGRADE with readable reason",
         "Normal non-injected Plan B rate can be measured separately from injected Plan B trigger accuracy"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-28: Generator added contract docs/contracts/B1-005-plan-b-degrade.md and backend ErrorEvent / PlanContext / PlanState / PlanStateMachineService changes for bounded replan and DEGRADE handling in family demo flow.",
+        "2026-05-28: Generator added backend stream coverage in backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerStreamTests.java and PlanFlowIntegrationTests.java for happy path plus restaurantFull / routeTooFar injections, and final regression coverage for friends scenario output.",
+        "2026-05-28: Generator verification passed: ./backend/mvnw -f backend/pom.xml test -> 40 tests, 0 failures, BUILD SUCCESS; powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target backend -Mode fast -> Verify passed.",
+        "2026-05-28: Independent evaluator verified runtime evidence via backend startup, curl create+stream checks, backend test command, and backend fast verify; verdict: PASS with caveat. Evidence recorded in docs/qa/B1-005-plan-b-degrade.md."
+      ]
     },
     {
       "id": "B1-006",
