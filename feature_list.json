@@ -177,7 +177,7 @@
       "track": "backend",
       "owner": "B1",
       "title": "CLARIFY and ADJUST states",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["B1-004"],
       "contract": "docs/contracts/B1-006-clarify-adjust.md",
@@ -186,7 +186,12 @@
         "Clarify asks one question with 2-3 options and max 2 rounds",
         "Adjust supports up to 3 local changes and emits adjust_result"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-28: Generator added contract docs/contracts/B1-006-clarify-adjust.md and implemented backend CLARIFY/ADJUST flow with expanded PlanState/PlanContext, clarify/adjust DTOs, invalid-state and adjust-limit error mapping, and clarification_request/adjust_result SSE payloads.",
+        "2026-05-28: Generator updated backend controller and flow coverage in backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerCreateTests.java and PlanFlowIntegrationTests.java for clarify invalid state, adjust invalid state, 4th adjust 429, ambiguous input clarify/resume, and confirm-to-adjust_result runtime flow.",
+        "2026-05-28: Generator verification passed: ./backend/mvnw -f backend/pom.xml test -> 45 tests, 0 failures, BUILD SUCCESS; powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./verify.ps1 -Target backend -Mode fast -> Verify passed.",
+        "2026-05-28: Independent evaluator verified parent-tree tests, backend fast verify, ambiguous input entering CLARIFY and resuming via POST /clarify, and adjust_result consistency on fresh runtime instance 8002; verdict: PASS. Evidence recorded in docs/qa/B1-006-clarify-adjust.md."
+      ]
     },
     {
       "id": "B2-001",

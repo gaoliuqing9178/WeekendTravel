@@ -11,6 +11,19 @@
 
 注意：当前 `PlanStreamService` 仍是 Sprint 1 最小占位流，发送 `heartbeat` 和 `START -> INTENT` 后 complete。浏览器 EventSource 会进入 reconnect / `retrying`，这不阻塞 INT-001；完整状态机、`plan_ready`、执行事件和长流策略仍归后续 `B1-004`、`INT-002`、`INT-003`。
 
+## 2026-05-28 B1-006 CLARIFY and ADJUST 验收
+
+- [x] `B1-006` 已完成并 verified：后端已支持 `POST /api/plan/{planId}/clarify`、`PATCH /api/plan/{planId}/adjust`、`clarification_request`、`adjust_result` 和对应状态转换。
+- [x] 新增合同：`../docs/contracts/B1-006-clarify-adjust.md`。
+- [x] 新增 QA 报告：`../docs/qa/B1-006-clarify-adjust.md`。
+- [x] 新增 / 更新后端运行态模型：`PlanContext`、`PendingClarification`、`PlanSelectionSnapshot`。
+- [x] 更新后端状态机：`PlanStateMachineService` 现支持 `CLARIFY` 暂停 / 恢复与 `CONFIRM -> ADJUST -> VALIDATE -> adjust_result -> CONFIRM`。
+- [x] 更新控制器和错误映射：`PlanController` 已新增 clarify / adjust 入口；`ApiExceptionHandler` 已支持 `409 INVALID_STATE` 与 `429 ADJUST_LIMIT_EXCEEDED`。
+- [x] Generator 后端 fast verify 通过：45 tests、0 failures、`BUILD SUCCESS`。
+- [x] 独立 evaluator 已放行：父工作树测试、backend fast verify、fresh 实例 `8002` 下的 clarify/resume 与 adjust_result 一致性均通过。
+
+注意：本轮只完成后端正式链路，不包含前端 ClarifyBubble / AdjustPanel UI。当前 clarify 启发式只覆盖 duration 不明确输入，adjust 仍是 deterministic 局部微调而非通用自由文本重规划。
+
 ## 当前状态
 
 - [x] Spring Boot + Maven 项目已初始化。
@@ -55,10 +68,10 @@
 
 ## 状态机与流程约束
 
-- [ ] 状态枚举至少包含 `START / INTENT / CLARIFY / SKELETON / RECALL / VALIDATE / REPLAN / PACK / CONFIRM / ADJUST / EXECUTE / DEGRADE / DONE / FAILED`。
-- [ ] 每次状态变化都推送 `state_change`。
-- [ ] `CLARIFY` 每次只问一个最关键问题，最多 2 次。
-- [ ] `ADJUST` 只重规划受影响槽位，最多 3 次。
+- [x] 状态枚举至少包含 `START / INTENT / CLARIFY / SKELETON / RECALL / VALIDATE / REPLAN / PACK / CONFIRM / ADJUST / EXECUTE / DEGRADE / DONE / FAILED`。
+- [x] 每次状态变化都推送 `state_change`。
+- [x] `CLARIFY` 每次只问一个最关键问题，最多 2 次。
+- [x] `ADJUST` 只重规划受影响槽位，最多 3 次。
 - [ ] 单个 plan 最多 3 次 replan。
 - [ ] 累计 Tool 调用不超过 30 次。
 - [ ] 规划超过 25 秒进入 `DEGRADE`。
@@ -66,20 +79,20 @@
 ## API / SSE 契约实现清单
 
 - [ ] `POST /api/plan/{planId}/execute` 支持确认执行。
-- [ ] `POST /api/plan/{planId}/clarify` 支持继续规划。
-- [ ] `PATCH /api/plan/{planId}/adjust` 支持局部微调。
+- [x] `POST /api/plan/{planId}/clarify` 支持继续规划。
+- [x] `PATCH /api/plan/{planId}/adjust` 支持局部微调。
 - [x] SSE 事件名与 `type` 字段保持一致。
 - [x] 支持 `heartbeat`。
 - [x] 支持 `state_change`。
-- [ ] 支持 `tool_call`。
-- [ ] 支持 `tool_result`，并提供 `latencyMs`。
-- [ ] 支持 `clarification_request`。
-- [ ] 支持 `replan`。
-- [ ] 支持 `adjust_result`。
-- [ ] 支持 `plan_ready`。
+- [x] 支持 `tool_call`。
+- [x] 支持 `tool_result`，并提供 `latencyMs`。
+- [x] 支持 `clarification_request`。
+- [x] 支持 `replan`。
+- [x] 支持 `adjust_result`。
+- [x] 支持 `plan_ready`。
 - [ ] 支持 `execute_result`。
 - [ ] 支持 `done`。
-- [ ] 支持 `error`。
+- [x] 支持 `error`。
 
 ## B2 Tool / Mock 数据清单
 
