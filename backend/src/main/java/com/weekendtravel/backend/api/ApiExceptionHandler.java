@@ -1,5 +1,7 @@
 package com.weekendtravel.backend.api;
 
+import com.weekendtravel.backend.plan.AdjustLimitExceededException;
+import com.weekendtravel.backend.plan.InvalidPlanStateException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -21,6 +23,24 @@ public class ApiExceptionHandler {
                 "INVALID_INPUT",
                 fallbackMessage(exception.getMessage()),
                 extractDetails(exception.getMessage())
+        ));
+    }
+
+    @ExceptionHandler(InvalidPlanStateException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidPlanState(InvalidPlanStateException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiErrorResponse(
+                "INVALID_STATE",
+                fallbackMessage(exception.getMessage()),
+                null
+        ));
+    }
+
+    @ExceptionHandler(AdjustLimitExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleAdjustLimitExceeded(AdjustLimitExceededException exception) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(new ApiErrorResponse(
+                "ADJUST_LIMIT_EXCEEDED",
+                fallbackMessage(exception.getMessage()),
+                null
         ));
     }
 

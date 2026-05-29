@@ -112,6 +112,63 @@ class PlanControllerCreateTests {
         assertEquals("request body is required", json.path("message").asText());
     }
 
+    @Test
+    void clarifyRejectsInvalidState() throws Exception {
+        String planId = createPlanId("今天下午想和老婆孩子找个轻松的亲子活动，再吃个不用排太久的晚饭，安排4小时左右", "family");
+        HttpResponse<String> response = clarifyPlan(planId, "4-6小时");
+
+        assertEquals(409, response.statusCode());
+        JsonNode json = objectMapper.readTree(response.body());
+        assertEquals("INVALID_STATE", json.path("error").asText());
+        assertEquals("plan is not waiting for clarification", json.path("message").asText());
+    }
+
+    @Test
+    void adjustRejectsInvalidState() throws Exception {
+        String planId = createPlanId("今天下午是空的，想和老婆孩子出去玩几个小时", "family");
+        HttpResponse<String> response = adjustPlan(planId, "换一家餐厅，要能订位的");
+
+        assertEquals(409, response.statusCode());
+        JsonNode json = objectMapper.readTree(response.body());
+        assertEquals("INVALID_STATE", json.path("error").asText());
+        assertEquals("plan is not in CONFIRM state before adjust", json.path("message").asText());
+    }
+
+    @Test
+    void adjustRejectsFourthAttempt() throws Exception {
+        String planId = createPlanId("今天下午想和老婆孩子找个轻松的亲子活动，再吃个不用排太久的晚饭，安排4小时左右", "family");
+        HttpResponse<String> initialStream = streamPlan(planId);
+        assertEquals(200, initialStream.statusCode());
+
+        for (int index = 0; index < 3; index++) {
+            HttpResponse<String> adjustAccepted = adjustPlan(planId, "换一家餐厅，要能订位的");
+            assertEquals(202, adjustAccepted.statusCode(), adjustAccepted.body());
+            HttpResponse<String> adjustStream = streamPlan(planId);
+            assertEquals(200, adjustStream.statusCode(), adjustStream.body());
+        }
+
+        HttpResponse<String> fourthAdjust = adjustPlan(planId, "再换一家餐厅");
+        assertEquals(429, fourthAdjust.statusCode());
+        JsonNode json = objectMapper.readTree(fourthAdjust.body());
+        assertEquals("ADJUST_LIMIT_EXCEEDED", json.path("error").asText());
+        assertEquals("已达最大微调次数，请直接确认或重新发起规划", json.path("message").asText());
+    }
+
+    private String createPlanId(String text, String scenario) throws Exception {
+        HttpResponse<String> response = postPlan("""
+                {
+                  "text": "%s",
+                  "scenario": "%s",
+                  "origin": "当前位置"
+                }
+                """.formatted(text, scenario));
+        assertEquals(202, response.statusCode());
+        JsonNode json = objectMapper.readTree(response.body());
+        String planId = json.path("planId").asText();
+        assertFalse(planId.isBlank(), response.body());
+        return planId;
+    }
+
     private HttpResponse<String> postPlan(String body) throws Exception {
         return postPlan(body, null);
     }
@@ -129,6 +186,41 @@ class PlanControllerCreateTests {
                 request.POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build(),
                 HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8)
         );
+    }
+
+    private HttpResponse<String> clarifyPlan(String planId, String reply) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:" + port + "/api/plan/" + planId + "/clarify"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("""
+                        {
+                          "reply": "%s"
+                        }
+                        """.formatted(reply), StandardCharsets.UTF_8))
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+    }
+
+    private HttpResponse<String> adjustPlan(String planId, String instruction) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:" + port + "/api/plan/" + planId + "/adjust"))
+                .header("Content-Type", "application/json")
+                .method("PATCH", HttpRequest.BodyPublishers.ofString("""
+                        {
+                          "instruction": "%s"
+                        }
+                        """.formatted(instruction), StandardCharsets.UTF_8))
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+    }
+
+    private HttpResponse<String> streamPlan(String planId) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:" + port + "/api/plan/" + planId + "/stream"))
+                .header("Accept", "text/event-stream")
+                .GET()
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
     }
 
     private void assertInvalidInput(HttpResponse<String> response, String message, String field) throws Exception {

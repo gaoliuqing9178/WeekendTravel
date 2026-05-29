@@ -1,5 +1,51 @@
 # Handoff
 
+## 2026-05-28 B1-006 CLARIFY and ADJUST
+
+B1-006 已完成并 verified。当前后端已支持：低置信度输入先进入 `CLARIFY`、发送单个 `clarification_request`、通过 `POST /api/plan/{planId}/clarify` 恢复到正式规划链路；同时在 `CONFIRM` 状态下支持最多 3 次 `PATCH /api/plan/{planId}/adjust` 局部微调，并通过 `adjust_result` 返回最新完整 `plan`。
+
+本轮新增或更新：
+- `docs/contracts/B1-006-clarify-adjust.md`
+- `docs/qa/B1-006-clarify-adjust.md`
+- `backend/src/main/java/com/weekendtravel/backend/controller/PlanController.java`
+- `backend/src/main/java/com/weekendtravel/backend/api/ApiExceptionHandler.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/PlanState.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/PlanContext.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/PendingClarification.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/PlanSelectionSnapshot.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/PlanStateMachineService.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/api/ClarifyPlanRequest.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/api/ClarifyPlanResponse.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/api/AdjustPlanRequest.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/api/AdjustPlanResponse.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/sse/ClarificationRequestEvent.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/sse/AdjustResultEvent.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/InvalidPlanStateException.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/AdjustLimitExceededException.java`
+- `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerCreateTests.java`
+- `backend/src/test/java/com/weekendtravel/backend/controller/PlanFlowIntegrationTests.java`
+- `feature_list.json`
+- `progress.md`
+- `docs/handoff.md`
+- `backend/HANDOFF.md`
+
+验证结果：
+- Generator 后端测试通过：45 tests、0 failures、`BUILD SUCCESS`。
+- Generator backend fast verify 通过：`Verify passed.`。
+- 独立 evaluator 子代理完成父工作树与 fresh 实例 `8002` 验收并放行：
+  - 模糊输入先进入 `CLARIFY` 并发出 `clarification_request`
+  - `POST /clarify` 返回 `processing`，随后恢复到 `plan_ready` / `CONFIRM`
+  - `PATCH /adjust` 后 stream 发出 `adjust_result`、`affectedSlots` 和最新完整 `plan`
+  - `adjust_result.summary` 与最终 `plan.timeline` 一致
+  - 事件名与 payload `type` 一致，字段保持 camelCase
+- QA 报告：`docs/qa/B1-006-clarify-adjust.md`
+
+接手提醒：
+- 本轮只完成后端正式链路，前端 ClarifyBubble / AdjustPanel UI 仍留给后续 `F1-006` / `F1-007`。
+- 当前 clarify 启发式只覆盖 duration 不明确这一类低置信度输入，并非通用意图澄清器。
+- 当前 adjust 仍是 deterministic 局部微调，主要覆盖 activity / restaurant 槽位，不是通用自由文本重规划。
+- 涉及 API / SSE 字段调整时，仍必须先改 `docs/api-contract.md`。
+
 ## 2026-05-27 DOC-001 Root README
 
 本轮新增根目录 `README.md`，作为 WeekendTravel 仓库入口文档。README 覆盖项目目标、`family` / `friends` Demo 范围、前后端技术栈、默认端口、目录结构、初始化检查、依赖安装、本地运行、mock / real mode 切换和仓库级验证命令。

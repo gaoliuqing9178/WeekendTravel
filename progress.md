@@ -1,5 +1,90 @@
 # Progress
 
+## 2026-05-28 B1-006 CLARIFY and ADJUST states
+
+### 已完成
+
+- 新增 `docs/contracts/B1-006-clarify-adjust.md`，明确本轮只交付后端 `CLARIFY` / `ADJUST` 正式链路，不抢做前端 ClarifyBubble / AdjustPanel UI，也不扩展到完整 `EXECUTE / DONE`。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanState.java`，补齐 `CLARIFY`、`CONFIRM`、`ADJUST`、`EXECUTE`、`DONE`、`FAILED` 等状态枚举，使后端状态范围与 `docs/api-contract.md` 对齐。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanContext.java`，新增 `currentState`、`clarifyCount`、`adjustCount`、`pendingClarification`、`selectionSnapshot`、`pendingAdjustInstruction` 等运行态字段，支持单 plan 内存态暂停与恢复。
+- 新增 `backend/src/main/java/com/weekendtravel/backend/plan/PendingClarification.java` 和 `PlanSelectionSnapshot.java`，承接 clarify 问题和局部 adjust 的候选快照。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/controller/PlanController.java`，新增 `POST /api/plan/{planId}/clarify` 与 `PATCH /api/plan/{planId}/adjust`。
+- 新增 `backend/src/main/java/com/weekendtravel/backend/plan/api/ClarifyPlanRequest.java`、`ClarifyPlanResponse.java`、`AdjustPlanRequest.java`、`AdjustPlanResponse.java`，对齐前端既有 typed client 和 `docs/api-contract.md`。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/api/ApiExceptionHandler.java`，新增 `409 INVALID_STATE` 与 `429 ADJUST_LIMIT_EXCEEDED` 错误映射；并新增 `InvalidPlanStateException.java`、`AdjustLimitExceededException.java`。
+- 新增 `backend/src/main/java/com/weekendtravel/backend/plan/sse/ClarificationRequestEvent.java` 与 `AdjustResultEvent.java`，补齐后端 `clarification_request` / `adjust_result` SSE payload 模型。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanStateMachineService.java`，将原 one-shot 规划流程改为可恢复的内存态状态机：
+  - 低置信度输入可进入 `INTENT -> CLARIFY`
+  - `clarification_request` 只问一个问题，提供 3 个 options
+  - `POST /clarify` 后可恢复到 `INTENT` 并继续推进到 `plan_ready` / `CONFIRM`
+  - `CONFIRM -> ADJUST -> VALIDATE` 后发送 `adjust_result`
+  - 单个 plan 的 adjust 次数上限为 3
+  - `adjust_result.summary` 已与最终最新 `plan` 对齐
+- 更新 `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerCreateTests.java`，补充 clarify invalid state、adjust invalid state、第四次 adjust 返回 `429 ADJUST_LIMIT_EXCEEDED` 的覆盖。
+- 更新 `backend/src/test/java/com/weekendtravel/backend/controller/PlanFlowIntegrationTests.java`，补充 ambiguous input -> `CLARIFY` -> `POST /clarify` -> resume，以及 `PATCH /adjust` -> `adjust_result` -> `CONFIRM` 的端到端覆盖。
+- 新增并完善 QA 记录 `docs/qa/B1-006-clarify-adjust.md`，整理 generator 与 independent evaluator 的验证证据。
+
+### 验证记录
+
+- Generator 后端测试：`./backend/mvnw -f backend/pom.xml test` 通过，`Tests run: 45, Failures: 0, Errors: 0, Skipped: 0`，`BUILD SUCCESS`。
+- Generator 后端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./verify.ps1 -Target backend -Mode fast` 通过，输出 `[ok] mvnw.cmd test passed.` 和 `Verify passed.`。
+- Generator 运行态复核（fresh 实例 `8002`）：
+  - 明确时长 family 输入可达 `plan_ready` / `CONFIRM`
+  - 模糊输入先进入 `CLARIFY` 并发出 `clarification_request`
+  - `POST /clarify` 返回 `processing`，随后恢复到 `plan_ready` / `CONFIRM`
+  - `PATCH /adjust` 返回 `adjusting`，随后 stream 发出 `adjust_result` 且 `affectedSlots=["restaurant"]`
+  - `adjust_result.summary` 与最终 `plan.timeline[1].title` 一致
+- Independent evaluator 子代理完成只读 + 运行态验收并放行：
+  - 父工作树后端测试：`D:/Users/lenovo/Desktop/WeekendTravel/backend/mvnw -f D:/Users/lenovo/Desktop/WeekendTravel/backend/pom.xml test` 通过
+  - 父工作树 fast verify：`cd "D:/Users/lenovo/Desktop/WeekendTravel" && powershell.exe -NoProfile -ExecutionPolicy Bypass -File "D:/Users/lenovo/Desktop/WeekendTravel/verify.ps1" -Target backend -Mode fast` 通过
+  - fresh 实例 `8002` 上确认 ambiguous input -> `CLARIFY` -> `clarification_request` -> `POST /clarify` -> `plan_ready` / `CONFIRM`
+  - fresh 实例 `8002` 上确认 `PATCH /adjust` 发出 `adjust_result`，`summary` 与最终 `plan` 一致，且字段保持 camelCase、事件名与 `type` 一致
+- 独立 evaluator 最终结论为 `PASS`；runtime 证据已写入 `docs/qa/B1-006-clarify-adjust.md`。
+
+### 当前状态
+
+- `B1-006` 已完成并 verified。
+- 后端当前已支持低置信度输入进入 `CLARIFY`，以及 `POST /clarify` 后恢复到正式规划链路。
+- 后端当前已支持在 `CONFIRM` 状态下执行最多 3 次局部 `ADJUST`，并通过 `adjust_result` 返回最新完整 `plan`。
+- 前端 ClarifyBubble / AdjustPanel UI 仍留给后续 F1 任务；本轮不把 UI 缺失伪装成前端已完成。
+
+## 2026-05-28 B1-005 Plan B and DEGRADE rules
+
+### 已完成
+
+- 新增 `docs/contracts/B1-005-plan-b-degrade.md`，明确本轮在 `B1-004` 基础上只补 family demo 的 deterministic `Plan B / DEGRADE` 行为，不抢做 friends 通用规划、`CLARIFY / ADJUST / EXECUTE` 或真实外部服务。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanState.java`，补充 `DEGRADE` 状态以对齐 `docs/api-contract.md`。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanContext.java`，新增 `injectedPlanB`、`latestReason` 等上下文字段，用于承接重排次数、原因和后续指标区分。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanStateMachineService.java`，将单次 fallback 改为 bounded replan 流程；family happy path 仍可进入 `PACK`，`restaurantFull` / `routeTooFar` 可触发 `replan`，达到上限后进入 `DEGRADE` 并发送 `error(code=DEGRADE)`。
+- 新增 `backend/src/main/java/com/weekendtravel/backend/plan/sse/ErrorEvent.java`，补齐后端 `error` SSE payload 模型。
+- 更新 `backend/src/main/java/com/weekendtravel/backend/plan/PlanStreamService.java`，在发送 heartbeat 前先校验 `planId`，避免非法 stream 请求先写出 SSE 再异常中断。
+- 更新 `backend/src/test/java/com/weekendtravel/backend/controller/PlanControllerStreamTests.java`，补充 `plan_ready` 中 `isPlanB` / `replanCount` 字段断言。
+- 更新 `backend/src/test/java/com/weekendtravel/backend/controller/PlanFlowIntegrationTests.java`，覆盖 happy path、`restaurantFull` 注入、`routeTooFar` 注入，以及 `friends` 场景最小文案 / 输出回归。
+- 根据最终 review 结果，补齐了 `friends` 场景的最小搜索参数 / 文案分流，并修复了非法 `planId` stream 先发 heartbeat 的问题。
+- 新增并完善 QA 记录 `docs/qa/B1-005-plan-b-degrade.md`，整理 generator 与 independent evaluator 的验证证据。
+
+### 验证记录
+
+- Generator 后端测试：`./backend/mvnw -f backend/pom.xml test` 通过，`Tests run: 40, Failures: 0, Errors: 0, Skipped: 0`，`BUILD SUCCESS`。
+- Generator 后端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过，输出 `[ok] mvnw.cmd test passed.` 和 `Verify passed.`。
+- Generator 代码复核：补文档前对本轮差异做了精度 review，并据此修正了 replan 上限判断与 degrade 文案计数不一致的问题；最终 review 后又补齐了 friends 场景最小分流与非法 stream `planId` 先校验。
+- Independent evaluator 子代理完成只读验收并放行：
+  - 启动后端：`backend/mvnw -f backend/pom.xml spring-boot:run`
+  - 健康检查：`curl -sS -D - http://127.0.0.1:8000/health` 返回 `200` 与 `{"status":"ok","service":"WeekendTravel",...}`
+  - 后端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过
+  - 后端测试：`backend/mvnw -f backend/pom.xml test` 通过，原始独立验收时为 `39 tests, 0 failures`；本轮最终修正后 generator 复跑为 `40 tests, 0 failures`
+  - happy path create+stream 观察到 `PACK` 与 `plan_ready`
+  - `restaurantFull=true` 观察到 `replan`、`REPLAN`、`DEGRADE`、`error(code=DEGRADE)`
+  - `routeTooFar=true` 观察到 `replan`、`REPLAN`、`DEGRADE`、`error(code=DEGRADE)`
+  - `tool_result` 运行时 payload 含 `latencyMs`
+- 独立 evaluator 结论为 `PASS with caveat`；runtime 证据已写入 `docs/qa/B1-005-plan-b-degrade.md`。
+
+### 当前状态
+
+- `B1-005` 已完成并 verified。
+- family demo happy path 可到达 `PACK` / `plan_ready`；`restaurantFull` 和 `routeTooFar` 注入会进入 `replan`，达到上限后进入 `DEGRADE` 并返回可读错误。
+- 当前实现已补齐 friends 场景的最小文案 / 搜索参数分流，并修复了非法 `planId` stream 先发 heartbeat 的问题。
+- 更复杂的 friends 规则策略、execute/clarify/adjust 正式链路仍留给后续任务。
+
 ## 2026-05-27 DOC-001 Root README
 
 ### 已完成
