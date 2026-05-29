@@ -52,6 +52,7 @@ const requiredSseTypes = new Set([
   'state_change',
   'tool_call',
   'tool_result',
+  'clarification_request',
   'replan',
   'plan_ready',
 ])
@@ -195,6 +196,15 @@ function assertSsePayload(value, source) {
 
   if (value.type === 'tool_result') {
     assertNumber(value.latencyMs, `${source}.data.latencyMs`)
+  }
+
+  if (value.type === 'clarification_request') {
+    assertString(value.question, `${source}.data.question`)
+    assertString(value.field, `${source}.data.field`)
+    assertStringArray(value.options, `${source}.data.options`)
+    if (value.options.length < 2 || value.options.length > 3) {
+      throw new Error(`${source}.data.options must contain 2-3 options`)
+    }
   }
 
   if (value.type === 'adjust_result') {

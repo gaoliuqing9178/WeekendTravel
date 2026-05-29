@@ -60,8 +60,8 @@
 - 原因：WeekendTravel 是长期接力项目，测试者和实现者必须分离，避免 generator 为了完成任务而弱化验收、漏测用户路径或把“能编译”当成“已验证”。
 - 影响：`docs/dev-workflow.md`、`docs/quality.md`、QA 模板、contract 模板、AGENTS 入口和 handoff 均按该规则更新。后续任何功能若没有 evaluator 子代理证据，只能保持 `todo` / `in_progress` / `blocked`，不能标为 `verified`。
 
-### D-010 前端 evaluator 必须使用 Playwright MCP 和 Chrome DevTools MCP
+### D-010 前端 evaluator 浏览器验收使用 Chrome DevTools MCP
 
-- 决策：所有涉及前端 UI 的任务，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP。Playwright MCP 负责用户路径、模拟交互、状态等待、截图或 trace；Chrome DevTools MCP 负责页面快照、DOM / accessibility、console、network 和视觉复核。
-- 原因：WeekendTravel 前端验收不能只依赖脚本或单一浏览器路径；需要同时覆盖用户交互和浏览器诊断，避免 UI 看似可用但存在 console/network 错误、DOM 状态异常、遮挡、错位或关键内容不可见。
-- 影响：前端任务的 QA 报告必须分别记录 Playwright MCP 和 Chrome DevTools MCP 证据。缺少任一类 MCP 证据时，前端任务不能标记为 `verified`。
+- 决策：所有涉及前端 UI 的任务，evaluator 子代理只需要使用 Chrome DevTools MCP 做浏览器验收；不再强制要求 Playwright MCP。Chrome DevTools MCP 负责用户路径、模拟交互、状态等待、页面快照、DOM / accessibility、console、network 和视觉复核。
+- 原因：Playwright MCP 与 Chrome DevTools MCP 在用户路径、交互和截图验证上存在较多重叠；保留 Chrome DevTools MCP 可以同时覆盖交互与浏览器诊断，降低验收重复成本。
+- 影响：前端任务的 QA 报告必须记录 Chrome DevTools MCP 证据。缺少 Chrome DevTools MCP 证据时，前端任务不能标记为 `verified`；Playwright MCP 可作为补充证据，但不是必需项。

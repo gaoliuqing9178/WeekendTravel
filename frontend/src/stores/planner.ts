@@ -39,11 +39,14 @@ export const usePlannerStore = defineStore('planner', () => {
   const pendingClarification = ref<ClarificationRequestEvent | null>(null)
   const errorMessage = ref<string | null>(null)
   const submitMessage = ref<string | null>(null)
+  const clarifyMessage = ref<string | null>(null)
+  const isClarifying = ref(false)
   const executeMessage = ref<string | null>(null)
   const isExecuting = ref(false)
   const logEvents = ref<LogEvent[]>([createReadyEvent()])
 
   let eventSequence = 0
+  let clarificationSequence = 0
   let executionSequence = 0
 
   const scenarioLabel = computed(() =>
@@ -65,7 +68,9 @@ export const usePlannerStore = defineStore('planner', () => {
       !isExecuting.value,
   )
 
-  const isRunning = computed(() => isSubmitting.value || isExecuting.value)
+  const isRunning = computed(
+    () => isSubmitting.value || isClarifying.value || isExecuting.value,
+  )
 
   const planBReason = computed(() => {
     if (currentPlan.value?.isPlanB) {
@@ -88,7 +93,7 @@ export const usePlannerStore = defineStore('planner', () => {
     },
     onEvent(payload, meta) {
       handleSsePayload(payload, meta.id)
-      closeMockPlanningStreamAtConfirm(payload)
+      closeMockPlanningStreamAtPausePoint(payload)
     },
     onError(message) {
       errorMessage.value = message
@@ -125,8 +130,11 @@ export const usePlannerStore = defineStore('planner', () => {
     pendingClarification.value = null
     errorMessage.value = null
     submitMessage.value = '正在创建 plan...'
+    clarifyMessage.value = null
+    isClarifying.value = false
     executeMessage.value = null
     isExecuting.value = false
+    clarificationSequence += 1
     executionSequence += 1
     logEvents.value = [
       {
@@ -186,9 +194,83 @@ export const usePlannerStore = defineStore('planner', () => {
     pendingClarification.value = null
     errorMessage.value = null
     submitMessage.value = null
+    clarifyMessage.value = null
+    isClarifying.value = false
     executeMessage.value = null
     isExecuting.value = false
+    clarificationSequence += 1
     logEvents.value = [createReadyEvent()]
+  }
+
+  async function replyToClarification(reply: string) {
+    const normalizedReply = reply.trim()
+
+    if (
+      !normalizedReply ||
+      !planId.value ||
+      !pendingClarification.value ||
+      isClarifying.value
+    ) {
+      return
+    }
+
+    const token = clarificationSequence + 1
+    clarificationSequence = token
+    isClarifying.value = true
+    errorMessage.value = null
+    clarifyMessage.value = '正在提交回答...'
+    appendLogEvent({
+      id: nextLogId('evt-clarify-reply'),
+      type: 'client_event',
+      title: '回答反问',
+      detail: `planId=${planId.value}，reply=${normalizedReply}`,
+      timestamp: Date.now(),
+    })
+
+    try {
+      const response = await plannerClient.clarifyPlan(planId.value, {
+        reply: normalizedReply,
+      })
+
+      if (token !== clarificationSequence) {
+        return
+      }
+
+      pendingClarification.value = null
+      clarifyMessage.value = response.message
+      agentState.value = 'INTENT'
+      appendLogEvent({
+        id: nextLogId('evt-clarify-accepted'),
+        type: 'client_event',
+        title: '反问回答已提交',
+        detail: `planId=${response.planId}，status=${response.status}`,
+        timestamp: Date.now(),
+      })
+
+      if (plannerClient.mode === 'mock') {
+        await playMockPlanningEventsAfterClarification(token)
+      } else {
+        await sse.connect(response.planId)
+      }
+    } catch (error) {
+      if (token !== clarificationSequence) {
+        return
+      }
+
+      errorMessage.value = error instanceof Error ? error.message : String(error)
+      clarifyMessage.value = null
+      appendLogEvent({
+        id: nextLogId('evt-clarify-error'),
+        type: 'error',
+        title: '反问回答失败',
+        detail: errorMessage.value,
+        timestamp: Date.now(),
+      })
+    } finally {
+      if (token === clarificationSequence) {
+        isClarifying.value = false
+      }
+    }
   }
 
   async function confirmPlanExecution() {
@@ -353,13 +435,57 @@ export const usePlannerStore = defineStore('planner', () => {
     }
   }
 
-  function closeMockPlanningStreamAtConfirm(payload: SsePayload) {
+  function closeMockPlanningStreamAtPausePoint(payload: SsePayload) {
     if (plannerClient.mode !== 'mock') {
+      return
+    }
+
+    if (payload.type === 'clarification_request') {
+      sse.close('closed')
       return
     }
 
     if (payload.type === 'state_change' && payload.to === 'CONFIRM') {
       sse.close('closed')
+    }
+  }
+
+  async function playMockPlanningEventsAfterClarification(token: number) {
+    const frames = await plannerClient.getSseFixtureFrames()
+    const startIndex = frames.findIndex(
+      (frame) =>
+        frame.data.type === 'clarification_request' &&
+        frame.data.planId === planId.value,
+    )
+
+    if (startIndex < 0) {
+      throw new Error('mock fixture is missing clarification_request')
+    }
+
+    connectionState.value = 'open'
+    updateSubmitMessageForConnection('open')
+
+    for (const frame of frames.slice(startIndex + 1)) {
+      if (token !== clarificationSequence) {
+        return
+      }
+
+      await wait(90)
+
+      if (token !== clarificationSequence) {
+        return
+      }
+
+      handleSsePayload(frame.data, `fixture-clarify-${frame.data.type}`)
+
+      if (frame.data.type === 'state_change' && frame.data.to === 'CONFIRM') {
+        break
+      }
+    }
+
+    if (token === clarificationSequence) {
+      connectionState.value = 'closed'
+      updateSubmitMessageForConnection('closed')
     }
   }
 
@@ -544,11 +670,13 @@ export const usePlannerStore = defineStore('planner', () => {
     pendingClarification,
     errorMessage,
     submitMessage,
+    clarifyMessage,
     logEvents,
     scenarioLabel,
     isSubmitting,
     canSubmit,
     isExecuting,
+    isClarifying,
     canConfirmPlan,
     isRunning,
     canStart: canSubmit,
@@ -557,6 +685,7 @@ export const usePlannerStore = defineStore('planner', () => {
     apiMode: plannerClient.mode,
     setScenario,
     submitPlan,
+    replyToClarification,
     confirmPlanExecution,
     previewSkeletonFlow,
     resetSkeletonFlow,

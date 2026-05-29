@@ -15,7 +15,7 @@ WeekendTravel 是一个本地短时活动规划与执行 Agent Demo。用户输�
 
 截至当前文档更新：
 
-- 工作流规则 `WF-001` / `WF-002` 已建立：generator 完成开发后，最终测试必须交给独立 evaluator 子代理；前端 UI 验收必须同时包含 Playwright MCP 和 Chrome DevTools MCP 证据。
+- 工作流规则 `WF-001` / `WF-002` 已建立：generator 完成开发后，最终测试必须交给独立 evaluator 子代理；前端 UI 验收必须包含 Chrome DevTools MCP 证据，不再强制要求 Playwright MCP。
 - 后端已具备 Spring Web MVC 骨架、`GET /health`、`POST /api/plan`、`GET /api/plan/{planId}/stream`、CORS、B2 本地 POI / Search / Route / Availability / Booking / Message / ScenarioFlags 工具能力。
 - 前端已具备 Vue 3 工作台、API client、mock fixture mode、`InputPanel`、`useSSE` 和实时日志面板；默认以 mock fixture 回放开发，可通过 `VITE_API_MODE=real` 切到真实后端。
 - 源码中已经有 B1 状态机相关实现和测试文件；是否可以作为已完成能力，仍以 `feature_list.json` 中对应条目的 evaluator 证据为准。
@@ -234,10 +234,9 @@ POST /api/plan
 
 没有独立 evaluator 证据时，不要把 `feature_list.json` 中的任务标为 `verified`。
 
-涉及前端 UI 的任务，evaluator 必须同时提供：
+涉及前端 UI 的任务，evaluator 必须提供：
 
-- Playwright MCP：交互、状态等待、截图或 trace
-- Chrome DevTools MCP：页面快照、console、network、DOM / accessibility 或等价浏览器诊断
+- Chrome DevTools MCP：交互、状态等待、页面快照、console、network、DOM / accessibility 或等价浏览器诊断
 
 ## 重要文档入口
 

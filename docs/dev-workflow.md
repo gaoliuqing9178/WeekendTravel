@@ -27,7 +27,7 @@
 .\verify.ps1 -Target frontend -Mode fast
 ```
 
-7. 如果涉及 UI，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP 验证用户路径、模拟交互、截图视觉状态，并检查 console / network / DOM 或 accessibility 线索。
+7. 如果涉及 UI，evaluator 子代理只需要使用 Chrome DevTools MCP 验证用户路径、模拟交互、截图或快照视觉状态，并检查 console / network / DOM 或 accessibility 线索。
 
 ## 后端任务怎么启动
 
@@ -55,7 +55,7 @@
 
 3. 启动后端 `http://localhost:8000` 和前端 `http://localhost:5173`。
 4. 走真实用户路径：输入一句话 -> 建立 SSE -> 收到日志 -> 收到 `plan_ready` -> 点击确认 -> 收到 `done`。
-5. Evaluator 子代理写 `docs/qa/*.md` 报告，包含命令、截图或日志位置、通过/失败结论；如涉及前端 UI，报告必须分别记录 Playwright MCP 和 Chrome DevTools MCP 证据。
+5. Evaluator 子代理写 `docs/qa/*.md` 报告，包含命令、截图或日志位置、通过/失败结论；如涉及前端 UI，报告必须记录 Chrome DevTools MCP 证据。
 
 ## Generator / Evaluator 方式
 
@@ -69,7 +69,7 @@ Planner / Contract -> Generator -> Handoff to Evaluator Subagent -> Evaluator Te
 - Generator 可以做开发内准备检查，例如编译、typecheck、格式检查或启动服务，目的是尽早发现明显破损；这些结果不能单独作为 `verified` 证据。
 - 所有 generator agent 在完成开发后，测试阶段必须委托独立 evaluator 子代理执行，不能自己兼任最终测试者。
 - Evaluator 子代理负责像真实用户一样运行、点击、输入、检查 API、查看日志、写 QA 报告。
-- 前端 evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP：Playwright MCP 负责用户路径、模拟交互和截图，Chrome DevTools MCP 负责页面快照、console、network、DOM / accessibility 和必要的视觉复核。
+- 前端 evaluator 子代理只需要使用 Chrome DevTools MCP：覆盖用户路径、模拟交互、状态等待、页面快照、console、network、DOM / accessibility 和必要的视觉复核。
 - 前端 evaluator 截图后必须视觉检查截图检查是否出错，不能只看截图位置。
 - 小任务也不能由同一个 generator agent 自测后直接标记完成；如果无法启动 evaluator 子代理，任务状态只能保持 `todo` / `in_progress` / `blocked`，不能标为 `verified`。
 - 修复循环中，Generator 根据 evaluator 反馈修复；修完后仍必须交回 evaluator 子代理复测。

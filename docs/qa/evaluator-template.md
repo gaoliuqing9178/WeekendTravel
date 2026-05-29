@@ -37,14 +37,13 @@
 - 截图：
 - 日志：
 - API 输出：
-- Playwright trace：
+- 浏览器诊断：
 
 ## 前端浏览器 MCP 证据
 
 如本任务不涉及前端 UI，写“不适用”。
 
-- Playwright MCP：用户路径、模拟交互、截图或 trace 证据。
-- Chrome DevTools MCP：页面快照、console、network、DOM / accessibility 或视觉复核证据。
+- Chrome DevTools MCP：用户路径、模拟交互、页面快照、console、network、DOM / accessibility 或视觉复核证据。
 
 ## 放行结论
 
