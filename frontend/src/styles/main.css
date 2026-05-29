@@ -224,6 +224,7 @@ button:disabled,
 }
 
 .plan-card-header,
+.clarify-header,
 .confirm-panel-header,
 .execution-header,
 .section-heading,
@@ -236,10 +237,32 @@ button:disabled,
 }
 
 .plan-card-header p,
+.clarify-header p,
 .execution-header p {
   margin: 4px 0 0;
   color: #475569;
   line-height: 1.5;
+}
+
+.clarify-bubble {
+  border: 1px solid #bae6fd;
+  background: #f8fafc;
+}
+
+.clarify-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.clarify-options .n-button {
+  min-height: 44px;
+  white-space: normal;
+}
+
+.clarify-message {
+  margin-top: 12px;
+  line-height: 1.55;
 }
 
 .plan-card-body {
@@ -538,6 +561,7 @@ button:disabled,
   }
 
   .plan-card-header,
+  .clarify-header,
   .confirm-panel-header,
   .execution-header,
   .section-heading,
@@ -553,8 +577,17 @@ button:disabled,
   }
 
   .plan-actions li,
+  .clarify-options,
   .action-title-row {
     align-items: flex-start;
+  }
+
+  .clarify-options {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-actions li,
+  .action-title-row {
     flex-direction: column;
   }
 }

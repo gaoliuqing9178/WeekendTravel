@@ -80,17 +80,16 @@ Pinia store 至少能表达：
 
 完整模式后续应覆盖：
 
-- Playwright MCP 打开页面。
+- Chrome DevTools MCP 打开页面。
 - 输入 Demo 文本。
 - mock SSE 渲染到日志。
 - `plan_ready` 方案卡可见。
-- Plan B、CLARIFY、ADJUST、DONE、ERROR 状态截图或 trace。
+- Plan B、CLARIFY、ADJUST、DONE、ERROR 状态截图、页面快照或等价浏览器证据。
 
-前端 evaluator 子代理必须同时使用两类浏览器 MCP：
+前端 evaluator 子代理只需要使用 Chrome DevTools MCP：
 
-- Playwright MCP：模拟真实用户路径，包括打开页面、输入、点击、等待状态变化、必要时保存截图或 trace。
-- Chrome DevTools MCP：检查页面快照、DOM / accessibility 结构、console 错误、network 请求，并进行截图视觉复核。
+- Chrome DevTools MCP：模拟真实用户路径，包括打开页面、输入、点击、等待状态变化；检查页面快照、DOM / accessibility 结构、console 错误、network 请求，并进行截图或视觉复核。
 
-涉及 UI 的前端任务，QA 报告必须同时记录 Playwright MCP 证据和 Chrome DevTools MCP 证据。缺少任一类 MCP 证据时，前端任务不能标记为 `verified`。
+涉及 UI 的前端任务，QA 报告必须记录 Chrome DevTools MCP 证据。缺少 Chrome DevTools MCP 证据时，前端任务不能标记为 `verified`。
 
 Generator 可以在开发过程中先运行同类命令排除明显错误，但前端任务能否标记 `verified`，只看 evaluator 子代理的验证证据。

@@ -57,9 +57,8 @@ Evaluator 必须由 generator 之外的子代理担任。Evaluator 报告必须�
 
 ## 前端 Evaluator 浏览器要求
 
-涉及前端 UI 的任务，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP：
+涉及前端 UI 的任务，evaluator 子代理只需要使用 Chrome DevTools MCP：
 
-- Playwright MCP 用于真实用户路径、模拟交互、状态等待、截图或 trace。
-- Chrome DevTools MCP 用于页面快照、DOM / accessibility 检查、console 错误、network 请求和视觉复核。
-- QA 报告必须分别记录两类 MCP 的证据。缺少任一类 MCP 证据时，前端任务不能标记为 `verified`。
+- Chrome DevTools MCP 用于真实用户路径、模拟交互、状态等待、页面快照、DOM / accessibility 检查、console 错误、network 请求和视觉复核。
+- QA 报告必须记录 Chrome DevTools MCP 证据。缺少 Chrome DevTools MCP 证据时，前端任务不能标记为 `verified`。
 - 截图视觉检查至少关注文本溢出、遮挡、错位、空白页面、关键按钮状态和核心业务内容是否可见。

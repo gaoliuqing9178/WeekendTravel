@@ -1,5 +1,95 @@
 # Progress
 
+## 2026-05-29 WF-002 Chrome DevTools MCP only
+
+### 已完成
+
+- 将前端 UI 验收规则从“Playwright MCP + Chrome DevTools MCP 双工具强制”调整为“只强制 Chrome DevTools MCP，Playwright MCP 可作为补充证据”。
+- 更新活跃 workflow / quality / frontend contract / 模板 / handoff / README / decision log / feature metadata，使后续前端 UI 任务的 `verified` 门槛只依赖 Chrome DevTools MCP 证据。
+- 保留早期 F1 / INT / WF 的 Playwright MCP 记录作为历史验收事实；这些历史记录不再代表当前 workflow 硬规则。
+- 本轮不修改前端业务代码、不调整 `verify.ps1`，也不要求具体前端任务重跑浏览器验收。
+
+本轮新增或更新：
+
+- `AGENTS.md`
+- `README.md`
+- `docs/dev-workflow.md`
+- `docs/quality.md`
+- `docs/frontend-contract.md`
+- `docs/contracts/_template.md`
+- `docs/qa/evaluator-template.md`
+- `docs/contracts/WF-002-frontend-evaluator-browser-mcp.md`
+- `docs/contracts/DOC-001-root-readme.md`
+- `docs/decision-log.md`
+- `docs/handoff.md`
+- `docs/initiallizer-agent-prompt.md`
+- `frontend/F1-handoff.md`
+- `feature_list.json`
+- `progress.md`
+
+### 验证记录
+
+- Generator JSON 检查：`feature_list.json` 可通过 `ConvertFrom-Json` 解析。
+- Generator 活跃规则反向搜索：在 `AGENTS.md`、`README.md`、workflow、quality、frontend contract、模板、handoff、decision log、initializer prompt、DOC-001 contract 和 `feature_list.json` 中，未发现仍强制要求 Playwright MCP 与 Chrome DevTools MCP 同时作为当前验收门槛的活跃表述。
+- Generator 正向搜索：活跃入口均已写明前端 UI evaluator 必须提供 Chrome DevTools MCP 证据，覆盖用户路径、交互、状态等待、页面快照、console、network、DOM / accessibility 或等价浏览器诊断。
+- Independent evaluator 子代理 Parfit (`019e743f-9828-7191-9738-14491269e85d`) 完成只读复核并放行：
+  - `feature_list.json` 可解析。
+  - 活跃 workflow 规则已调整为前端 UI evaluator 必须使用 Chrome DevTools MCP。
+  - 活跃规则没有继续把 Playwright MCP 作为必需条件。
+  - 历史 QA、progress 和 feature evidence 中的 Playwright MCP 命中均为旧任务验收事实或旧规则回顾，不构成当前阻塞。
+- QA 报告：`docs/qa/WF-002-chrome-devtools-only.md`。
+
+### 当前状态
+
+- `WF-002` 当前规则是：涉及前端 UI 的任务，evaluator 子代理必须使用 Chrome DevTools MCP；缺少 Chrome DevTools MCP 证据时不能标记为 `verified`。
+- Playwright MCP 仍可作为补充证据，但不是必需项。
+- `WF-002` 已保持 `verified`，并追加本次 Chrome DevTools MCP only 调整的 evaluator 证据。
+
+## 2026-05-29 F1-006 ClarifyBubble
+
+### 已完成
+
+- 新增 `docs/contracts/F1-006-clarify-bubble.md`，明确本轮只交付前端 ClarifyBubble、clarify reply flow、mock fixture 暂停 / 恢复路径和验收边界，不抢做 AdjustPanel 或后端状态机扩展。
+- 新增 `frontend/src/components/ClarifyBubble.vue`，基于 `clarification_request` 渲染一个反问气泡，展示 `question`、`field` 和 2-3 个快捷选项。
+- 更新 `frontend/src/stores/planner.ts`，新增 `replyToClarification()`、`isClarifying`、`clarifyMessage` 和 mock clarify 后续回放逻辑：
+  - mock planning 先停在 `clarification_request`
+  - 用户点击选项后调用 `plannerClient.clarifyPlan(planId, { reply })`
+  - mock mode 继续播放 clarification 之后到 `plan_ready` / `CONFIRM` 的 fixture 事件
+  - real mode 成功后重新连接同一 `planId` 的 SSE stream
+- 更新 `frontend/src/App.vue` 和 `frontend/src/styles/main.css`，将 ClarifyBubble 接入输入面板与方案卡之间，并补齐响应式布局、loading / disabled 状态和可访问按钮文本。
+- 更新 `docs/fixtures/sse-events.jsonl`，将 mock fixture 调整为 `INTENT -> CLARIFY -> clarification_request` 后暂停，回答后继续到 `SKELETON / RECALL / VALIDATE / plan_ready / CONFIRM`。
+- 更新 `frontend/scripts/verify-fixtures.mjs`，将 `clarification_request` 纳入 required SSE types，并校验 `question`、`field` 和 2-3 个 options。
+- 新增 QA 报告 `docs/qa/F1-006-clarify-bubble.md`，并保存 evaluator 截图证据：
+  - `docs/qa/F1-006-playwright-mock.png`
+  - `docs/qa/F1-006-devtools-mock.png`
+- `feature_list.json` 已将 `F1-006` 标记为 `verified`，并写入 generator 与 independent evaluator 证据。
+
+### 验证记录
+
+- Generator 前端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast` 通过，覆盖：
+  - `pnpm verify:fixtures passed`
+  - `docs/fixtures/sse-events.jsonl -> 26 JSONL events`
+  - `pnpm typecheck passed`
+  - `Verify passed.`
+- Generator 构建检查：`npm run build` 在 `frontend/` 下通过，Vite production build 成功。
+- Generator 禁止字段检查：`rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures` 无命中。
+- Generator 浏览器冒烟：
+  - Playwright MCP 确认 mock mode 下只出现 1 个 ClarifyBubble，包含“请问大概想玩几个小时？”和 `3-4小时`、`4-6小时`、`6小时以上` 3 个选项；点击 `4-6小时` 后进入 `CONFIRM`，方案卡出现，确认执行按钮可用。
+  - Chrome DevTools MCP 确认 accessibility snapshot 包含 `region "需要确认"`、问题和 3 个回答按钮；console error / warn 为 0；mock mode 未访问真实 `/api/plan/*/clarify`。
+- Independent evaluator 子代理 Dewey (`019e7418-6911-76c1-888c-b41bc448e5a2`) 已完成验收并放行：
+  - 前端 fast verify 通过
+  - 禁止 snake_case 字段搜索无命中
+  - `feature_list.json` 可解析
+  - Playwright MCP mock 交互通过
+  - Chrome DevTools MCP snapshot / console / network 通过
+  - 最终结论：`PASS`
+
+### 当前状态
+
+- `F1-006` 已完成并 verified。
+- 前端当前具备 InputPanel、useSSE、LogPanel、PlanCard、ConfirmButton、ExecutionTracker 和 ClarifyBubble。
+- 本轮未做 `F1-007` AdjustPanel；后续可继续推进 `F1-007`，或在 integration 任务中补 real mode `/api/plan/{planId}/clarify` 浏览器网络证据。
+
 ## 2026-05-28 B1-006 CLARIFY and ADJUST states
 
 ### 已完成

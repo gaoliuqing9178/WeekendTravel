@@ -1,5 +1,30 @@
 # F1 Handoff
 
+## 2026-05-29 F1-006 ClarifyBubble
+
+F1-006 已完成并 verified。前端现在可以在 mock mode 下先停在 `clarification_request`，渲染唯一一个 ClarifyBubble；用户点击 `3-4小时`、`4-6小时` 或 `6小时以上` 后，前端会调用 `clarifyPlan(planId, { reply })`，并继续回放到 `plan_ready` / `CONFIRM`。
+
+本轮新增或关联的文件：
+- `docs/contracts/F1-006-clarify-bubble.md`
+- `docs/qa/F1-006-clarify-bubble.md`
+- `docs/qa/F1-006-playwright-mock.png`
+- `docs/qa/F1-006-devtools-mock.png`
+- `frontend/src/components/ClarifyBubble.vue`
+- `frontend/src/stores/planner.ts`
+- `frontend/src/App.vue`
+- `frontend/src/styles/main.css`
+- `frontend/scripts/verify-fixtures.mjs`
+- `docs/fixtures/sse-events.jsonl`
+
+独立 evaluator Dewey (`019e7418-6911-76c1-888c-b41bc448e5a2`) 验证结果：
+- 前端 fast verify 通过：`pnpm verify:fixtures passed`、`docs/fixtures/sse-events.jsonl -> 26 JSONL events`、`pnpm typecheck passed`、`Verify passed.`
+- 禁止 snake_case 字段搜索无命中：`plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no` 未出现在 `frontend\src frontend\scripts docs\fixtures`。
+- `feature_list.json` 可解析。
+- Playwright MCP：打开页面并提交 mock plan 后，`.clarify-bubble` 数量为 `1`，问题为“请问大概想玩几个小时？”，field 为 `durationHours`，选项为 `3-4小时`、`4-6小时`、`6小时以上`；点击 `4-6小时` 后气泡消失，方案卡出现，Agent 为 `CONFIRM`，确认执行按钮可用。
+- Chrome DevTools MCP：snapshot / accessibility 覆盖 `region "需要确认"`、问题和 3 个回答按钮；console error / warn 为 `0`；mock mode 未访问真实 `/api/plan/*/clarify`。
+
+注意：本轮 real mode 的职责是通过既有 `PlannerApiClient.clarifyPlan(planId, { reply })` 调用 `POST /api/plan/{planId}/clarify` 并显示后端响应或错误；evaluator 本轮只做 mock mode 浏览器验收，real mode 网络证据可在后续 integration 任务中补充。
+
 ## 2026-05-27 F1-005 PlanCard / ConfirmButton / ExecutionTracker
 
 F1-005 已完成并 verified。前端现在可以在 mock mode 下提交 Demo 输入，逐条回放 planning fixture，停在 `CONFIRM` 等待用户点击“确认执行”；确认后调用 `executePlan(planId, { confirmed: true })`，再用 fixture 中的 `execute_result` / `done` 更新 ExecutionTracker。
@@ -45,9 +70,9 @@ INT-001 已完成并 verified。真实 real mode 链路已经由独立 evaluator
 
 ## 当前状态
 
-F1-001、F1-002、F1-003、F1-004、F1-005 已完成并验证；INT-001 最小真实联调也已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
+F1-001、F1-002、F1-003、F1-004、F1-005、F1-006 已完成并验证；INT-001 最小真实联调也已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
 
-当前前端具备骨架、API client、mock fixture mode、正式 `InputPanel`、`useSSE`、实时日志面板、PlanCard、ConfirmButton 和 ExecutionTracker：
+当前前端具备骨架、API client、mock fixture mode、正式 `InputPanel`、`useSSE`、实时日志面板、PlanCard、ConfirmButton、ExecutionTracker 和 ClarifyBubble：
 - 已有首页工作台骨架。
 - 已有家庭 / 朋友两个 Demo 场景切换。
 - 已有正式 `frontend/src/components/InputPanel.vue`，包含自然语言输入、origin 输入、场景选择、提交按钮和提交状态提示。
@@ -59,9 +84,10 @@ F1-001、F1-002、F1-003、F1-004、F1-005 已完成并验证；INT-001 最小�
 - 已有 `frontend/src/composables/useSSE.ts`，mock mode 逐条回放 fixture SSE，real mode 通过 `openPlanStream(planId)` 连接 `/api/plan/{planId}/stream`。
 - 已有 `frontend/src/components/LogPanel.vue`，可以展示 `heartbeat`、`state_change`、`tool_call`、`tool_result`、`replan`、`clarification_request`、`adjust_result`、`plan_ready`、`execute_result`、`done`、`error`，并自动滚动到最新事件。
 - real mode 已通过 INT-001 验证：提交后页面能显示真实后端 `planId`，并在 LogPanel 渲染后端 SSE `state_change START -> INTENT`。
-- 点击“提交规划”后，mock client 会创建 fixture plan，`useSSE` 逐条回放 `docs/fixtures/sse-events.jsonl` 的 planning 事件并停在 `CONFIRM`；页面可见 PlanCard、Plan B、timeline、执行包和分享消息。
+- 点击“提交规划”后，mock client 会创建 fixture plan，`useSSE` 逐条回放 `docs/fixtures/sse-events.jsonl`；当前 fixture 会先停在 `CLARIFY` 并显示 ClarifyBubble，用户回答后继续到 `CONFIRM`；页面可见 PlanCard、Plan B、timeline、执行包和分享消息。
+- ClarifyBubble 基于 `pendingClarification` 渲染唯一一个反问气泡，包含问题、`durationHours` 和 3 个快捷选项；回答后调用 `clarifyPlan(planId, { reply })`。
 - 点击“确认执行”后，前端调用 `executePlan`，mock mode 继续播放 fixture execution 事件，ExecutionTracker 会按 action 显示完成状态和确认号。
-- 暂未实现 ClarifyBubble 或 AdjustPanel。
+- 暂未实现 AdjustPanel。
 
 ## 已完成文件
 
@@ -70,6 +96,7 @@ F1-001、F1-002、F1-003、F1-004、F1-005 已完成并验证；INT-001 最小�
 - `docs/contracts/F1-003-sse-log-panel.md`
 - `docs/contracts/F1-004-input-plan-api.md`
 - `docs/contracts/F1-005-plan-card-execution.md`
+- `docs/contracts/F1-006-clarify-bubble.md`
 - `docs/contracts/INT-001-one-input-sse.md`
 - `docs/qa/F1-002-api-client-fixtures.md`
 - `docs/qa/F1-002-devtools-confirm.png`
@@ -87,6 +114,9 @@ F1-001、F1-002、F1-003、F1-004、F1-005 已完成并验证；INT-001 最小�
 - `docs/qa/F1-005-plan-card-execution.md`
 - `docs/qa/F1-005-devtools-mock.png`
 - `docs/qa/F1-005-playwright-mock.png`
+- `docs/qa/F1-006-clarify-bubble.md`
+- `docs/qa/F1-006-devtools-mock.png`
+- `docs/qa/F1-006-playwright-mock.png`
 - `docs/qa/INT-001-one-input-sse.md`
 - `frontend/package.json`
 - `frontend/pnpm-lock.yaml`
@@ -103,6 +133,7 @@ F1-001、F1-002、F1-003、F1-004、F1-005 已完成并验证；INT-001 最小�
 - `frontend/src/components/PlanCard.vue`
 - `frontend/src/components/ConfirmButton.vue`
 - `frontend/src/components/ExecutionTracker.vue`
+- `frontend/src/components/ClarifyBubble.vue`
 - `frontend/src/main.ts`
 - `frontend/src/App.vue`
 - `frontend/src/stores/planner.ts`
@@ -307,12 +338,12 @@ unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied
 
 ## 下一步建议
 
-下一个 F1 小目标建议推进 `F1-006` ClarifyBubble 或 `F1-007` AdjustPanel。
+下一个 F1 小目标建议推进 `F1-007` AdjustPanel，或在 integration 任务中补 real mode clarify 网络证据。
 
-1. 若推进 `F1-006`，创建 `docs/contracts/F1-006-clarify-bubble.md`，基于 `clarification_request` 渲染一个反问气泡，并在 real mode 调用 `POST /api/plan/{planId}/clarify`。
-2. 若推进 `F1-007`，创建 `docs/contracts/F1-007-adjust-panel.md`，只在 `CONFIRM` 状态显示微调入口，并接入 `PATCH /api/plan/{planId}/adjust`。
-3. 若目标是完整 family 端到端路径，建议先推进 `B1-004` / `B1-005`，否则真实后端还不会产生完整 `plan_ready` 和 execute event。
-4. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 仍必须同时使用 Playwright MCP 和 Chrome DevTools MCP。
+1. 若推进 `F1-007`，创建 `docs/contracts/F1-007-adjust-panel.md`，只在 `CONFIRM` 状态显示微调入口，并接入 `PATCH /api/plan/{planId}/adjust`。
+2. 若目标是完整 family 端到端路径，建议推进 `INT-002`，并确认真实后端会产生完整 `plan_ready`、clarify / adjust 和 execute event。
+3. 若补 real mode clarify 网络证据，应在后端运行时触发 `CLARIFY`，点击 ClarifyBubble 选项后确认 network 包含 `POST /api/plan/{planId}/clarify` 和 `{ "reply": "<选项文本>" }`。
+4. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 必须使用 Chrome DevTools MCP，Playwright MCP 可作为补充但不再强制要求。
 
 ## F1 边界
 
@@ -321,5 +352,5 @@ unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied
 - 不在前端暴露真实 token、key 或个人路径。
 - 后端未完成前，优先用 `docs/fixtures/` 做独立开发。
 - Generator 完成开发后，测试阶段必须交给独立 evaluator 子代理执行；generator 自己跑的 typecheck、build、Playwright 或本地冒烟只能作为开发准备记录。
-- 前端 evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP：Playwright MCP 覆盖模拟交互、状态等待、截图或 trace；Chrome DevTools MCP 覆盖页面快照、console、network、DOM / accessibility 和视觉复核。
+- 前端 evaluator 子代理必须使用 Chrome DevTools MCP：覆盖模拟交互、状态等待、页面快照、console、network、DOM / accessibility 和视觉复核；Playwright MCP 可作为补充但不再强制要求。
 - 没有 evaluator 子代理验证证据，不要把 `feature_list.json` 中的任务标为 `verified`。

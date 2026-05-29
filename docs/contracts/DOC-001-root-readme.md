@@ -42,7 +42,7 @@ Evaluator 子代理：
 - 确认 README 包含项目目标、family/friends Demo 范围、前后端技术栈、端口、目录结构、初始化/安装/运行/验证命令。
 - 确认 README 引用关键入口文档。
 - 确认 README 未把未 verified 的能力写成已验证完成。
-- 确认 README 说明 camelCase、端口边界、`OPENAI_API_KEY`、evaluator 子代理和前端双 MCP 验收规则。
+- 确认 README 说明 camelCase、端口边界、`OPENAI_API_KEY`、evaluator 子代理和前端 Chrome DevTools MCP 验收规则。
 - 确认 `feature_list.json` 仍可解析。
 
 前端浏览器验收：

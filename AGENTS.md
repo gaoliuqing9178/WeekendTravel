@@ -55,4 +55,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target all
 
 所有 generator agent 在完成开发后，测试阶段必须委托独立 evaluator 子代理执行；generator 自己运行的本地冒烟、typecheck、build 或脚本结果只能作为开发准备记录，不能单独作为 `verified` 证据。没有 evaluator 子代理验证证据的功能不能标为 `verified`。
 
-涉及前端 UI 的任务，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP。Playwright MCP 用于模拟交互、状态等待、截图或 trace；Chrome DevTools MCP 用于页面快照、console、network、DOM / accessibility 和视觉复核。缺少任一类 MCP 证据时，前端任务不能标为 `verified`。
+涉及前端 UI 的任务，evaluator 子代理只需要使用 Chrome DevTools MCP 做浏览器验收。Chrome DevTools MCP 负责模拟交互、状态等待、页面快照、console、network、DOM / accessibility 和视觉复核；不再强制要求 Playwright MCP 证据。缺少 Chrome DevTools MCP 证据时，前端任务不能标为 `verified`。

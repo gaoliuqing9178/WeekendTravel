@@ -12,6 +12,7 @@ import {
   type GlobalThemeOverrides,
 } from 'naive-ui'
 
+import ClarifyBubble from '@/components/ClarifyBubble.vue'
 import ConfirmButton from '@/components/ConfirmButton.vue'
 import ExecutionTracker from '@/components/ExecutionTracker.vue'
 import InputPanel from '@/components/InputPanel.vue'
@@ -46,9 +47,9 @@ const themeOverrides: GlobalThemeOverrides = {
       <main class="app-shell">
         <section class="workspace-hero" aria-labelledby="app-title">
           <div class="hero-copy">
-            <NTag type="info" round>F1-005</NTag>
+            <NTag type="info" round>F1-006</NTag>
             <h1 id="app-title">WeekendTravel</h1>
-            <p>方案卡、确认执行和执行追踪已接入，mock mode 会停在可确认状态等待用户操作。</p>
+            <p>反问气泡已接入，用户回答后继续生成可确认的本地短时活动方案。</p>
           </div>
           <NSpace class="hero-actions" align="center" :size="12">
             <NTag :bordered="false" type="success">
@@ -64,6 +65,13 @@ const themeOverrides: GlobalThemeOverrides = {
           <NGridItem span="12 m:7">
             <div class="main-column">
               <InputPanel />
+              <ClarifyBubble
+                :clarification="planner.pendingClarification"
+                :loading="planner.isClarifying"
+                :message="planner.clarifyMessage"
+                :error-message="planner.errorMessage"
+                @reply="planner.replyToClarification"
+              />
               <PlanCard :plan="planner.currentPlan" />
             </div>
           </NGridItem>

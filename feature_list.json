@@ -1,6 +1,6 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-05-27",
+  "updatedAt": "2026-05-29",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
     {
@@ -17,7 +17,7 @@
         "README explains the project goal, family/friends demo scope, tech stacks, ports, directory structure, run commands, and verify commands",
         "README links to docs/api-contract.md, feature_list.json, progress.md, docs/handoff.md, backend/HANDOFF.md, and frontend/F1-handoff.md",
         "README does not mark unverified feature_list.json items as verified capability",
-        "README documents camelCase API fields, fixed ports, OPENAI_API_KEY boundary, evaluator subagent requirement, and frontend Playwright MCP plus Chrome DevTools MCP rule",
+        "README documents camelCase API fields, fixed ports, OPENAI_API_KEY boundary, evaluator subagent requirement, and frontend Chrome DevTools MCP rule",
         "feature_list.json remains parseable"
       ],
       "evidence": [
@@ -31,21 +31,23 @@
       "id": "WF-002",
       "track": "workflow",
       "owner": "Harness",
-      "title": "Frontend evaluator must use Playwright MCP and Chrome DevTools MCP",
+      "title": "Frontend evaluator must use Chrome DevTools MCP",
       "status": "verified",
       "priority": "P0",
       "dependsOn": ["WF-001"],
       "contract": "docs/contracts/WF-002-frontend-evaluator-browser-mcp.md",
       "acceptance": [
-        "Frontend evaluator requirements mention both Playwright MCP and Chrome DevTools MCP",
-        "Frontend QA reports must include simulated interaction, screenshot or trace, and visual inspection evidence",
+        "Frontend evaluator requirements mention Chrome DevTools MCP and do not require Playwright MCP",
+        "Frontend QA reports must include simulated interaction, screenshot or page snapshot, and visual inspection evidence",
         "Chrome DevTools MCP evidence must cover page snapshot plus console, network, DOM, accessibility, or equivalent browser diagnostics",
         "feature_list.json remains parseable"
       ],
       "evidence": [
         "2026-05-22: Generator updated frontend evaluator harness docs and added contract docs/contracts/WF-002-frontend-evaluator-browser-mcp.md.",
         "2026-05-22: Independent evaluator subagent Euler (019e4db4-865e-7fe2-85ed-4dd5e5b6f3c2) verified AGENTS.md, docs/dev-workflow.md, docs/frontend-contract.md, docs/quality.md, templates, handoffs, decision log, initializer prompt, progress, and feature_list.json; conclusion: pass.",
-        "2026-05-22: Evaluator evidence written to docs/qa/WF-002-frontend-evaluator-browser-mcp.md; feature_list.json parsed successfully with ConvertFrom-Json."
+        "2026-05-22: Evaluator evidence written to docs/qa/WF-002-frontend-evaluator-browser-mcp.md; feature_list.json parsed successfully with ConvertFrom-Json.",
+        "2026-05-29: Generator amended workflow docs so frontend UI evaluator checks require Chrome DevTools MCP only; Playwright MCP is optional supplemental evidence due overlap with DevTools interaction and screenshot coverage.",
+        "2026-05-29: Independent evaluator subagent Parfit (019e743f-9828-7191-9738-14491269e85d) verified active workflow docs no longer require Playwright MCP, Chrome DevTools MCP coverage remains required, and feature_list.json parses; conclusion: PASS. Evidence recorded in docs/qa/WF-002-chrome-devtools-only.md."
       ]
     },
     {
@@ -414,7 +416,7 @@
       "track": "frontend",
       "owner": "F1",
       "title": "ClarifyBubble",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["F1-003"],
       "contract": "docs/contracts/F1-006-clarify-bubble.md",
@@ -423,7 +425,13 @@
         "Bubble shows question and 2-3 options",
         "Reply calls POST /api/plan/{planId}/clarify in real API mode"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-29: Generator added contract docs/contracts/F1-006-clarify-bubble.md, frontend/src/components/ClarifyBubble.vue, Pinia replyToClarification flow, App integration, responsive ClarifyBubble styling, and fixture validation for clarification_request options.",
+        "2026-05-29: Generator updated docs/fixtures/sse-events.jsonl so mock planning pauses at CLARIFY, renders exactly one bubble with 3 options, and resumes to plan_ready / CONFIRM after a mock clarify reply.",
+        "2026-05-29: Generator verification passed: frontend fast verify -> pnpm verify:fixtures passed with docs/fixtures/sse-events.jsonl -> 26 JSONL events; pnpm typecheck passed; npm run build passed; forbidden snake_case field search had no matches.",
+        "2026-05-29: Independent evaluator Dewey (019e7418-6911-76c1-888c-b41bc448e5a2) verified contract/code, frontend fast verify, forbidden field search, feature_list.json parse, Playwright MCP mock interaction, and Chrome DevTools MCP snapshot/console/network evidence; conclusion: PASS.",
+        "2026-05-29: Evaluator evidence written to docs/qa/F1-006-clarify-bubble.md with screenshots docs/qa/F1-006-playwright-mock.png and docs/qa/F1-006-devtools-mock.png."
+      ]
     },
     {
       "id": "F1-007",

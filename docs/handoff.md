@@ -1,5 +1,41 @@
 # Handoff
 
+## 2026-05-29 WF-002 Chrome DevTools MCP only
+
+本轮按用户反馈调整前端 UI 验收规则：Playwright MCP 与 Chrome DevTools MCP 在交互、等待和截图检查上有重叠，后续 workflow 只强制保留 Chrome DevTools MCP 检查。Playwright MCP 可作为补充证据，但不再是前端任务标记 `verified` 的硬门槛。
+
+本轮新增或更新：
+
+- `AGENTS.md`
+- `README.md`
+- `docs/dev-workflow.md`
+- `docs/quality.md`
+- `docs/frontend-contract.md`
+- `docs/contracts/_template.md`
+- `docs/qa/evaluator-template.md`
+- `docs/contracts/WF-002-frontend-evaluator-browser-mcp.md`
+- `docs/contracts/DOC-001-root-readme.md`
+- `docs/decision-log.md`
+- `docs/handoff.md`
+- `docs/initiallizer-agent-prompt.md`
+- `frontend/F1-handoff.md`
+- `feature_list.json`
+- `progress.md`
+- `docs/qa/WF-002-chrome-devtools-only.md`
+
+接手提醒：
+
+- 涉及前端 UI 的后续任务，evaluator 子代理必须使用 Chrome DevTools MCP 覆盖用户路径、模拟交互、状态等待、页面快照、console、network、DOM / accessibility 或等价浏览器诊断。
+- 缺少 Chrome DevTools MCP 证据时，前端 UI 任务不能标记为 `verified`。
+- 历史 QA / progress / feature evidence 中的 Playwright MCP 记录是当时的验收事实，不代表当前仍强制 Playwright MCP。
+
+验证结果：
+
+- Generator 已确认 `feature_list.json` 可解析。
+- Generator 已确认活跃 workflow 文档不再把 Playwright MCP 作为前端 UI verified 的必需证据。
+- 独立 evaluator 子代理 Parfit (`019e743f-9828-7191-9738-14491269e85d`) 已完成只读复核并放行：`feature_list.json` 可解析，活跃 workflow 文档要求 Chrome DevTools MCP，且不再强制 Playwright MCP。
+- QA 报告：`docs/qa/WF-002-chrome-devtools-only.md`。
+
 ## 2026-05-28 B1-006 CLARIFY and ADJUST
 
 B1-006 已完成并 verified。当前后端已支持：低置信度输入先进入 `CLARIFY`、发送单个 `clarification_request`、通过 `POST /api/plan/{planId}/clarify` 恢复到正式规划链路；同时在 `CONFIRM` 状态下支持最多 3 次 `PATCH /api/plan/{planId}/adjust` 局部微调，并通过 `adjust_result` 返回最新完整 `plan`。
@@ -65,7 +101,7 @@ B1-006 已完成并 verified。当前后端已支持：低置信度输入先进�
 - 当前能力状态仍以 `feature_list.json` 和 evaluator 证据为准。
 - `B1-004` 仍未在 `feature_list.json` 标记为 verified；README 只说明源码中存在相关实现和测试文件，不把它当作已完成能力。
 - 涉及 API 字段变更仍必须先改 `docs/api-contract.md`。
-- 涉及前端 UI 的后续任务仍必须由 evaluator 同时使用 Playwright MCP 和 Chrome DevTools MCP。
+- 涉及前端 UI 的后续任务仍必须由 evaluator 使用 Chrome DevTools MCP；Playwright MCP 可作为补充但不再强制要求。
 
 验证结果：
 
@@ -98,7 +134,7 @@ INT-001 已完成并 verified。当前真实联调链路已经成立：前端 re
 
 ## 2026-05-22 前端 evaluator 浏览器 MCP 规则
 
-本轮补充前端验收硬规则：所有涉及前端 UI 的任务，evaluator 子代理必须同时使用 Playwright MCP 和 Chrome DevTools MCP。Playwright MCP 用于模拟真实用户交互、状态等待、截图或 trace；Chrome DevTools MCP 用于页面快照、console、network、DOM / accessibility 和视觉复核。
+当前前端验收硬规则：所有涉及前端 UI 的任务，evaluator 子代理必须使用 Chrome DevTools MCP。Chrome DevTools MCP 用于模拟真实用户交互、状态等待、页面快照、console、network、DOM / accessibility 和视觉复核；Playwright MCP 可作为补充但不再强制要求。
 
 本轮新增或更新：
 - `docs/contracts/WF-002-frontend-evaluator-browser-mcp.md`
@@ -114,12 +150,12 @@ INT-001 已完成并 verified。当前真实联调链路已经成立：前端 re
 - `progress.md`
 
 接手提醒：
-- 后续前端 evaluator 报告必须分别写 Playwright MCP 证据和 Chrome DevTools MCP 证据。
-- 缺少任一类 MCP 证据时，前端 UI 任务不能标记为 `verified`。
+- 后续前端 evaluator 报告必须写 Chrome DevTools MCP 证据。
+- 缺少 Chrome DevTools MCP 证据时，前端 UI 任务不能标记为 `verified`。
 
 验证结果：
 - 独立 evaluator 子代理 Euler (`019e4db4-865e-7fe2-85ed-4dd5e5b6f3c2`) 已只读检查本轮前端 harness 文档并放行。
-- evaluator 确认前端验收入口、QA 模板、handoff、decision log、progress 和 feature metadata 都已覆盖 Playwright MCP + Chrome DevTools MCP 双工具要求。
+- evaluator 曾确认前端验收入口、QA 模板、handoff、decision log、progress 和 feature metadata 覆盖双工具要求；该规则后续已调整为只强制 Chrome DevTools MCP。
 - `feature_list.json` 已通过 `ConvertFrom-Json` 解析，`WF-002` 已按 evaluator 证据标记为 `verified`。
 
 ## 2026-05-22 Harness 测试职责调整
