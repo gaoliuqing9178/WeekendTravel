@@ -160,6 +160,16 @@ button:disabled,
   background: #fff7ed;
 }
 
+.log-event.is-done {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.log-event.is-degrade {
+  border-color: #fdba74;
+  background: #fff7ed;
+}
+
 .log-event.is-error {
   border-color: #fecaca;
   background: #fef2f2;
@@ -174,6 +184,14 @@ button:disabled,
 
 .log-event.is-replan .log-event-marker {
   background: #f97316;
+}
+
+.log-event.is-done .log-event-marker {
+  background: #16a34a;
+}
+
+.log-event.is-degrade .log-event-marker {
+  background: #ea580c;
 }
 
 .log-event.is-error .log-event-marker {
@@ -228,6 +246,7 @@ button:disabled,
 .adjust-panel-header,
 .confirm-panel-header,
 .execution-header,
+.state-summary-header,
 .section-heading,
 .slot-title-row,
 .action-title-row {
@@ -240,10 +259,96 @@ button:disabled,
 .plan-card-header p,
 .clarify-header p,
 .adjust-panel-header p,
+.state-summary-header p,
 .execution-header p {
   margin: 4px 0 0;
   color: #475569;
   line-height: 1.5;
+}
+
+.plan-card.is-plan-b {
+  border: 1px solid #fed7aa;
+  background: #fffdf8;
+}
+
+.plan-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.state-summary-panel {
+  border: 1px solid #bae6fd;
+  background: #f8fafc;
+}
+
+.state-summary-body {
+  display: grid;
+  gap: 12px;
+}
+
+.state-summary-current {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.state-summary-current span {
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.state-summary-current strong {
+  color: #0f172a;
+  font-size: 1rem;
+}
+
+.terminal-state-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.terminal-state {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.terminal-state strong,
+.terminal-state small {
+  overflow-wrap: anywhere;
+}
+
+.terminal-state strong {
+  color: #0f172a;
+  font-size: 0.86rem;
+}
+
+.terminal-state small {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.terminal-state.is-active {
+  border-color: #f97316;
+  background: #fff7ed;
+}
+
+.state-summary-alert :where(strong, span) {
+  display: block;
+  line-height: 1.55;
 }
 
 .clarify-bubble {
@@ -618,6 +723,7 @@ button:disabled,
   .adjust-panel-header,
   .confirm-panel-header,
   .execution-header,
+  .state-summary-header,
   .section-heading,
   .slot-title-row,
   .action-title-row {
@@ -632,15 +738,23 @@ button:disabled,
 
   .plan-actions li,
   .clarify-options,
+  .state-summary-current,
+  .terminal-state-strip,
   .action-title-row {
     align-items: flex-start;
   }
 
-  .clarify-options {
+  .clarify-options,
+  .terminal-state-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .state-summary-current {
     grid-template-columns: 1fr;
   }
 
   .plan-actions li,
+  .state-summary-current,
   .action-title-row {
     flex-direction: column;
   }

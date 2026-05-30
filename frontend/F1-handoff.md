@@ -1,5 +1,32 @@
 # F1 Handoff
 
+## 2026-05-30 F1-008 Plan B highlight and error/degrade states
+
+F1-008 已完成并 verified。前端现在会在 mock mode 中把 `replan` / Plan B、`DONE`、`DEGRADE`、`FAILED` 和可读错误消息放到稳定可见入口：PlanCard header 有 `Plan B` 徽标，PlanCard 正文有 `Plan B 已启用` 和 `planBReason`，LogPanel 对 `replan` / `done` / `DEGRADE` / 普通 error 使用不同视觉状态，侧栏新增 `StateSummaryPanel` 展示当前状态、SSE 状态、`DONE / DEGRADE / FAILED` 终态轨道、Plan B 原因和终态提示。
+
+本轮新增或关联的文件：
+- `docs/contracts/F1-008-plan-b-error-states.md`
+- `docs/qa/F1-008-plan-b-error-states.md`
+- `docs/qa/F1-008-devtools-mock.png`
+- `docs/qa/F1-008-generator-devtools-mock.png`
+- `frontend/src/components/StateSummaryPanel.vue`
+- `frontend/src/components/PlanCard.vue`
+- `frontend/src/components/LogPanel.vue`
+- `frontend/src/App.vue`
+- `frontend/src/styles/main.css`
+- `frontend/scripts/verify-fixtures.mjs`
+
+独立 evaluator Evaluator (`019e78fc-cdfb-79e2-993f-3973a3183622`) 验证结果：
+- 前端 fast verify 通过：`pnpm verify:fixtures passed`、`docs/fixtures/sse-events.jsonl -> 28 JSONL events`、`pnpm typecheck passed`、`Verify passed.`
+- 禁止 snake_case 字段搜索无命中：`plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no` 未出现在 `frontend\src frontend\scripts docs\fixtures`。
+- `feature_list.json` 可解析。
+- Chrome DevTools MCP：打开 `http://127.0.0.1:5173/`，提交 mock plan，回答 `4-6小时` 后进入 `CONFIRM`，可见 `F1-008`、`Plan B`、`Plan B 已启用`、Plan B 原因、`状态总览`、`DONE / DEGRADE / FAILED` 终态轨道和 LogPanel `replan / Plan B #1`。
+- Chrome DevTools MCP：点击“确认执行”后进入 `DONE`，可见 DONE 摘要、done 日志、执行追踪 `3 / 3`、`MOCK-TBL-88421`、`MOCK-NOTE-122`、`MOCK-MSG-309`。
+- Chrome DevTools MCP 诊断：console error / warn 为 0；mock mode network 只有 Vite 模块和 fixture raw import，没有真实 `/api/plan/*` 请求。
+- 最终结论：`PASS`。
+
+注意：本轮只交付前端 UI 和 fixture 校验增强，不修改 `docs/api-contract.md`，不新增后端异常注入或真实后端 `error(code=DEGRADE)` 浏览器网络证据。真实后端异常链路建议留给 `INT-002` / `INT-003` 或单独 real mode integration 任务。
+
 ## 2026-05-30 F1-007 AdjustPanel
 
 F1-007 已完成并 verified。前端现在可以在 mock mode 下提交 Demo 输入、回答 ClarifyBubble、进入 `CONFIRM` 后显示 AdjustPanel；用户可在确认执行前提交最多 3 次局部微调。每次微调会调用 `adjustPlan(planId, { instruction })`，mock mode 继续播放 `adjust_result` 并更新方案卡，real mode 则调用 `PATCH /api/plan/{planId}/adjust` 后重新连接同一 `planId` 的 SSE stream。
@@ -371,13 +398,14 @@ unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied
 
 ## 下一步建议
 
-下一个 F1 小目标建议推进 `F1-008` Plan B highlight and error/degrade states，或在 integration 任务中补 real mode clarify / adjust 网络证据。
+F1-008 已完成。下一步建议转入 integration 或真实后端异常链路补证：
 
-1. 若推进 `F1-008`，创建 `docs/contracts/F1-008-plan-b-error-states.md`，重点覆盖 `replan` 事件日志高亮、PlanCard 的 Plan B badge / reason，以及 `DEGRADE`、`FAILED`、`DONE`、`error` 的可见状态。
-2. 若目标是完整 family 端到端路径，建议推进 `INT-002`，并确认真实后端会产生完整 `plan_ready`、clarify / adjust 和 execute event。
+1. 若目标是完整 family 端到端路径，建议推进 `INT-002`，并确认真实后端会产生完整 `plan_ready`、clarify / adjust、execute event，以及 done 或 documented degrade state。
+2. 若目标是 friends 端到端路径，建议推进 `INT-003`，覆盖朋友场景的活动、甜品 / 咖啡或拍照点、餐厅与执行包。
 3. 若补 real mode clarify 网络证据，应在后端运行时触发 `CLARIFY`，点击 ClarifyBubble 选项后确认 network 包含 `POST /api/plan/{planId}/clarify` 和 `{ "reply": "<选项文本>" }`。
 4. 若补 real mode adjust 网络证据，应在真实后端进入 `CONFIRM` 后提交 AdjustPanel，确认 network 包含 `PATCH /api/plan/{planId}/adjust` 和 `{ "instruction": "<微调要求>" }`，随后 SSE 收到 `adjust_result`。
-5. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 必须使用 Chrome DevTools MCP，Playwright MCP 可作为补充但不再强制要求。
+5. 若补真实后端异常证据，应触发 `error(code=DEGRADE)` 和非 DEGRADE error，确认 StateSummaryPanel 与 LogPanel 的 `DEGRADE` / `FAILED` 可见入口。
+6. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 必须使用 Chrome DevTools MCP，Playwright MCP 可作为补充但不再强制要求。
 
 ## F1 边界
 

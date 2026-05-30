@@ -1,5 +1,48 @@
 # Progress
 
+## 2026-05-30 F1-008 Plan B highlight and error/degrade states
+
+### 已完成
+- 新增 `docs/contracts/F1-008-plan-b-error-states.md`，明确本轮只交付前端 Plan B 高亮、终态 / 异常态可见入口和 Chrome DevTools MCP 验收边界，不修改 `docs/api-contract.md`。
+- 新增 `frontend/src/components/StateSummaryPanel.vue`，在侧栏稳定展示当前 Agent 状态、SSE 状态、`DONE / DEGRADE / FAILED` 终态轨道、Plan B 原因，以及 `DONE` / `DEGRADE` / `FAILED` / `error` 可读提示。
+- 更新 `frontend/src/App.vue`，将首屏标识切到 `F1-008`，接入 `StateSummaryPanel`，并把页面说明更新为 Plan B、降级、失败和完成状态保持可见。
+- 更新 `frontend/src/components/PlanCard.vue`，当 `plan.isPlanB=true` 时在卡片 header 显示 `Plan B` 徽标，并在正文显示 `Plan B 已启用` 与 `planBReason`。
+- 更新 `frontend/src/components/LogPanel.vue` 和 `frontend/src/styles/main.css`，将 `replan`、`done`、`error(code=DEGRADE)` 和普通 `error` 分成不同视觉状态，并为日志项补充可访问名称。
+- 更新 `frontend/scripts/verify-fixtures.mjs`，要求 `execute_result`、`done` 和 `error` 存在，并校验 Plan B `plan_ready` reason、`error(code=DEGRADE)`、`replan.reason/replanCount`、`done.summary` 等字段。
+- 新增 evaluator QA 报告与截图：
+  - `docs/qa/F1-008-plan-b-error-states.md`
+  - `docs/qa/F1-008-devtools-mock.png`
+  - `docs/qa/F1-008-generator-devtools-mock.png`
+- `feature_list.json` 已将 `F1-008` 标记为 `verified`，并写入 generator 与 independent evaluator 证据。
+
+### 验证记录
+
+- Generator 前端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast` 通过，覆盖：
+  - `pnpm verify:fixtures passed`
+  - `docs/fixtures/sse-events.jsonl -> 28 JSONL events`
+  - `pnpm typecheck passed`
+  - `Verify passed.`
+- Generator 构建检查：`pnpm build` 在 `frontend/` 下通过，Vite production build 成功。
+- Generator 禁止字段检查：`rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures` 无命中。
+- Generator Chrome DevTools MCP 冒烟：
+  - mock mode 下提交 plan，回答 ClarifyBubble `4-6小时` 后进入 `CONFIRM`。
+  - 页面可见 `F1-008`、`Plan B 已启用`、Plan B 原因、`状态总览`、`DONE / DEGRADE / FAILED` 终态轨道、LogPanel `replan / Plan B #1`。
+  - 点击确认执行后进入 `DONE`，可见 DONE 摘要、done 日志、执行追踪 `3 / 3` 和三个 mock 确认号。
+  - console error / warn 为 0；mock mode network 只有 Vite 模块和 fixture raw import，没有真实 `/api/plan/*` 请求。
+- Independent evaluator Evaluator (`019e78fc-cdfb-79e2-993f-3973a3183622`) 已完成正式验收并放行：
+  - 独立读取 F1-008 contract、api/frontend contract、F1 handoff、App、store、StateSummaryPanel、PlanCard、LogPanel、fixture verifier 和 SSE fixture。
+  - 前端 fast verify 通过。
+  - 禁止 snake_case 字段搜索无命中。
+  - `feature_list.json` 可解析。
+  - Chrome DevTools MCP browser path 通过：提交 mock plan -> 回答 `4-6小时` -> `CONFIRM` -> Plan B 可见 -> 终态轨道可见 -> 确认执行 -> `DONE` / `3 / 3` 可见。
+  - Chrome DevTools MCP snapshot / accessibility / DOM / console / network / screenshot 证据完整。
+  - 最终结论：`PASS`。
+
+### 当前状态
+- `F1-008` 已完成并 verified。
+- 前端当前具备 InputPanel、useSSE、LogPanel、PlanCard、ConfirmButton、ExecutionTracker、ClarifyBubble、AdjustPanel 和 StateSummaryPanel。
+- F1 计划内的前端基础能力已覆盖到 Plan B 高亮、微调、执行追踪、完成态和异常 / 降级状态可见入口；后续如需真实后端异常网络证据，应进入 `INT-002` / `INT-003` 或专门 real mode integration 任务。
+
 ## 2026-05-30 F1-007 AdjustPanel
 
 ### 已完成

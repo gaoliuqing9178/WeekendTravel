@@ -30,7 +30,11 @@ function slotKey(slot: TimeSlot) {
 </script>
 
 <template>
-  <NCard class="plan-card" :bordered="false">
+  <NCard
+    class="plan-card"
+    :class="{ 'is-plan-b': plan?.isPlanB }"
+    :bordered="false"
+  >
     <template #header>
       <div class="plan-card-header">
         <div>
@@ -38,9 +42,14 @@ function slotKey(slot: TimeSlot) {
           <p v-if="plan">{{ plan.summary }}</p>
           <p v-else>等待 plan_ready 事件生成可确认方案。</p>
         </div>
-        <NTag v-if="plan" :bordered="false" type="info">
-          {{ plan.status }}
-        </NTag>
+        <div v-if="plan" class="plan-card-tags">
+          <NTag v-if="plan.isPlanB" :bordered="false" type="warning">
+            Plan B
+          </NTag>
+          <NTag :bordered="false" type="info">
+            {{ plan.status }}
+          </NTag>
+        </div>
       </div>
     </template>
 
@@ -57,7 +66,7 @@ function slotKey(slot: TimeSlot) {
         :show-icon="false"
         class="plan-b-alert"
       >
-        <strong>Plan B</strong>
+        <strong>Plan B 已启用</strong>
         <span>{{ plan.planBReason }}</span>
       </NAlert>
 

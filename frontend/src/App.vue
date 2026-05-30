@@ -19,6 +19,7 @@ import ExecutionTracker from '@/components/ExecutionTracker.vue'
 import InputPanel from '@/components/InputPanel.vue'
 import LogPanel from '@/components/LogPanel.vue'
 import PlanCard from '@/components/PlanCard.vue'
+import StateSummaryPanel from '@/components/StateSummaryPanel.vue'
 import { usePlannerStore } from '@/stores/planner'
 
 const planner = usePlannerStore()
@@ -48,9 +49,9 @@ const themeOverrides: GlobalThemeOverrides = {
       <main class="app-shell">
         <section class="workspace-hero" aria-labelledby="app-title">
           <div class="hero-copy">
-            <NTag type="info" round>F1-007</NTag>
+            <NTag type="info" round>F1-008</NTag>
             <h1 id="app-title">WeekendTravel</h1>
-            <p>可确认方案已支持局部微调，用户最多调整 3 次后再确认执行。</p>
+            <p>Plan B、降级、失败和完成状态会在工作台里保持可见。</p>
           </div>
           <NSpace class="hero-actions" align="center" :size="12">
             <NTag :bordered="false" type="success">
@@ -98,6 +99,15 @@ const themeOverrides: GlobalThemeOverrides = {
                   重置
                 </NButton>
               </NCard>
+
+              <StateSummaryPanel
+                :agent-state="planner.agentState"
+                :connection-state="planner.connectionState"
+                :plan-id="planner.planId"
+                :plan-b-reason="planner.planBReason"
+                :error-message="planner.errorMessage"
+                :execute-message="planner.executeMessage"
+              />
 
               <AdjustPanel
                 v-if="planner.agentState === 'CONFIRM'"
