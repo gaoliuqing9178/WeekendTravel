@@ -1,6 +1,6 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-05-29",
+  "updatedAt": "2026-05-30",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
     {
@@ -438,7 +438,7 @@
       "track": "frontend",
       "owner": "F1",
       "title": "AdjustPanel",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["F1-005"],
       "contract": "docs/contracts/F1-007-adjust-panel.md",
@@ -447,7 +447,13 @@
         "PATCH /api/plan/{planId}/adjust is called in real API mode",
         "Adjust count is limited to 3"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-30: Generator added contract docs/contracts/F1-007-adjust-panel.md, frontend/src/components/AdjustPanel.vue, Pinia adjustPlan flow, App integration, responsive AdjustPanel styling, and fixture validation for adjust_result.",
+        "2026-05-30: Generator updated docs/fixtures/sse-events.jsonl so mock CONFIRM can submit adjust, replay ADJUST / VALIDATE / adjust_result, update the restaurant slot to 林间日式小食, and return to CONFIRM.",
+        "2026-05-30: Generator verification passed: frontend fast verify -> pnpm verify:fixtures passed with docs/fixtures/sse-events.jsonl -> 28 JSONL events; pnpm typecheck passed; npm run build passed; forbidden snake_case field search had no matches.",
+        "2026-05-30: Independent evaluator Reviewer (019e77f0-f608-7e33-9dbf-0b2bcc94091a) verified contract/code, frontend fast verify, forbidden field search, feature_list.json parse, and Chrome DevTools MCP mock interaction / snapshot / console / network evidence; conclusion: PASS.",
+        "2026-05-30: Evaluator evidence written to docs/qa/F1-007-adjust-panel.md with screenshot docs/qa/F1-007-devtools-mock.png; generator supplemental screenshot is docs/qa/F1-007-generator-devtools-mock.png."
+      ]
     },
     {
       "id": "F1-008",

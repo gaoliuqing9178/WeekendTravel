@@ -225,6 +225,7 @@ button:disabled,
 
 .plan-card-header,
 .clarify-header,
+.adjust-panel-header,
 .confirm-panel-header,
 .execution-header,
 .section-heading,
@@ -238,6 +239,7 @@ button:disabled,
 
 .plan-card-header p,
 .clarify-header p,
+.adjust-panel-header p,
 .execution-header p {
   margin: 4px 0 0;
   color: #475569;
@@ -263,6 +265,57 @@ button:disabled,
 .clarify-message {
   margin-top: 12px;
   line-height: 1.55;
+}
+
+.adjust-panel {
+  border: 1px solid #bfdbfe;
+  background: #f8fafc;
+}
+
+.adjust-progress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.adjust-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #f97316;
+  transition: width 180ms ease;
+}
+
+.adjust-presets {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.adjust-presets .n-button {
+  justify-content: flex-start;
+  min-height: 36px;
+  white-space: normal;
+}
+
+.adjust-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.adjust-submit,
+.adjust-disabled-reason,
+.adjust-message {
+  margin-top: 12px;
+}
+
+.adjust-disabled-reason {
+  color: #64748b;
+  line-height: 1.5;
 }
 
 .plan-card-body {
@@ -562,6 +615,7 @@ button:disabled,
 
   .plan-card-header,
   .clarify-header,
+  .adjust-panel-header,
   .confirm-panel-header,
   .execution-header,
   .section-heading,
@@ -602,6 +656,10 @@ button:disabled,
   }
 
   .execution-progress span {
+    transition: none;
+  }
+
+  .adjust-progress span {
     transition: none;
   }
 }

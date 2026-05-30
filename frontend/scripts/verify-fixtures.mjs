@@ -54,6 +54,7 @@ const requiredSseTypes = new Set([
   'tool_result',
   'clarification_request',
   'replan',
+  'adjust_result',
   'plan_ready',
 ])
 

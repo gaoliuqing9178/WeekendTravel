@@ -12,6 +12,7 @@ import {
   type GlobalThemeOverrides,
 } from 'naive-ui'
 
+import AdjustPanel from '@/components/AdjustPanel.vue'
 import ClarifyBubble from '@/components/ClarifyBubble.vue'
 import ConfirmButton from '@/components/ConfirmButton.vue'
 import ExecutionTracker from '@/components/ExecutionTracker.vue'
@@ -47,9 +48,9 @@ const themeOverrides: GlobalThemeOverrides = {
       <main class="app-shell">
         <section class="workspace-hero" aria-labelledby="app-title">
           <div class="hero-copy">
-            <NTag type="info" round>F1-006</NTag>
+            <NTag type="info" round>F1-007</NTag>
             <h1 id="app-title">WeekendTravel</h1>
-            <p>反问气泡已接入，用户回答后继续生成可确认的本地短时活动方案。</p>
+            <p>可确认方案已支持局部微调，用户最多调整 3 次后再确认执行。</p>
           </div>
           <NSpace class="hero-actions" align="center" :size="12">
             <NTag :bordered="false" type="success">
@@ -97,6 +98,19 @@ const themeOverrides: GlobalThemeOverrides = {
                   重置
                 </NButton>
               </NCard>
+
+              <AdjustPanel
+                v-if="planner.agentState === 'CONFIRM'"
+                :agent-state="planner.agentState"
+                :plan-id="planner.planId"
+                :adjust-count="planner.adjustCount"
+                :adjust-limit="planner.adjustLimit"
+                :can-adjust="planner.canAdjustPlan"
+                :loading="planner.isAdjusting"
+                :message="planner.adjustMessage"
+                :error-message="planner.adjustErrorMessage"
+                @adjust="planner.adjustPlan"
+              />
 
               <ConfirmButton
                 :agent-state="planner.agentState"

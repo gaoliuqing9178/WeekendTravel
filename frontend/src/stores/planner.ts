@@ -26,6 +26,7 @@ const familyPrompt =
 const friendsPrompt =
   '今天下午4个人出去玩，2个男生2个女生，不想离家太远，帮我安排一个能玩、能吃、能拍照的下午。'
 
+const adjustLimit = 3
 const plannerClient = createPlannerApiClient()
 
 export const usePlannerStore = defineStore('planner', () => {
@@ -41,12 +42,17 @@ export const usePlannerStore = defineStore('planner', () => {
   const submitMessage = ref<string | null>(null)
   const clarifyMessage = ref<string | null>(null)
   const isClarifying = ref(false)
+  const adjustCount = ref(0)
+  const adjustMessage = ref<string | null>(null)
+  const adjustErrorMessage = ref<string | null>(null)
+  const isAdjusting = ref(false)
   const executeMessage = ref<string | null>(null)
   const isExecuting = ref(false)
   const logEvents = ref<LogEvent[]>([createReadyEvent()])
 
   let eventSequence = 0
   let clarificationSequence = 0
+  let adjustSequence = 0
   let executionSequence = 0
 
   const scenarioLabel = computed(() =>
@@ -65,11 +71,25 @@ export const usePlannerStore = defineStore('planner', () => {
     () =>
       Boolean(planId.value && currentPlan.value) &&
       agentState.value === 'CONFIRM' &&
+      !isAdjusting.value &&
       !isExecuting.value,
   )
 
   const isRunning = computed(
-    () => isSubmitting.value || isClarifying.value || isExecuting.value,
+    () =>
+      isSubmitting.value ||
+      isClarifying.value ||
+      isAdjusting.value ||
+      isExecuting.value,
+  )
+
+  const canAdjustPlan = computed(
+    () =>
+      Boolean(planId.value && currentPlan.value) &&
+      agentState.value === 'CONFIRM' &&
+      adjustCount.value < adjustLimit &&
+      !isAdjusting.value &&
+      !isExecuting.value,
   )
 
   const planBReason = computed(() => {
@@ -97,6 +117,10 @@ export const usePlannerStore = defineStore('planner', () => {
     },
     onError(message) {
       errorMessage.value = message
+      if (isAdjusting.value) {
+        isAdjusting.value = false
+        adjustErrorMessage.value = message
+      }
       appendLogEvent({
         id: nextLogId('evt-sse-error'),
         type: 'error',
@@ -132,9 +156,14 @@ export const usePlannerStore = defineStore('planner', () => {
     submitMessage.value = '正在创建 plan...'
     clarifyMessage.value = null
     isClarifying.value = false
+    adjustCount.value = 0
+    adjustMessage.value = null
+    adjustErrorMessage.value = null
+    isAdjusting.value = false
     executeMessage.value = null
     isExecuting.value = false
     clarificationSequence += 1
+    adjustSequence += 1
     executionSequence += 1
     logEvents.value = [
       {
@@ -196,9 +225,14 @@ export const usePlannerStore = defineStore('planner', () => {
     submitMessage.value = null
     clarifyMessage.value = null
     isClarifying.value = false
+    adjustCount.value = 0
+    adjustMessage.value = null
+    adjustErrorMessage.value = null
+    isAdjusting.value = false
     executeMessage.value = null
     isExecuting.value = false
     clarificationSequence += 1
+    adjustSequence += 1
     logEvents.value = [createReadyEvent()]
   }
 
@@ -329,6 +363,89 @@ export const usePlannerStore = defineStore('planner', () => {
     }
   }
 
+  async function adjustPlan(instruction: string) {
+    const normalizedInstruction = instruction.trim()
+
+    if (!normalizedInstruction) {
+      adjustErrorMessage.value = '请输入微调要求'
+      return
+    }
+
+    if (adjustCount.value >= adjustLimit) {
+      adjustErrorMessage.value = '已达最大微调次数，请直接确认或重新发起规划'
+      appendLogEvent({
+        id: nextLogId('evt-adjust-limit'),
+        type: 'client_event',
+        title: '微调次数已用尽',
+        detail: `planId=${planId.value ?? 'unknown'}，adjustCount=${adjustCount.value}`,
+        timestamp: Date.now(),
+      })
+      return
+    }
+
+    if (!canAdjustPlan.value || !planId.value || !currentPlan.value) {
+      return
+    }
+
+    const token = adjustSequence + 1
+    const requestPlanId = planId.value
+    adjustSequence = token
+    isAdjusting.value = true
+    errorMessage.value = null
+    adjustErrorMessage.value = null
+    adjustMessage.value = '正在提交微调...'
+    appendLogEvent({
+      id: nextLogId('evt-adjust-request'),
+      type: 'client_event',
+      title: '提交微调',
+      detail: `planId=${requestPlanId}，instruction=${normalizedInstruction}`,
+      timestamp: Date.now(),
+    })
+
+    try {
+      const response = await plannerClient.adjustPlan(requestPlanId, {
+        instruction: normalizedInstruction,
+      })
+
+      if (token !== adjustSequence) {
+        return
+      }
+
+      adjustCount.value += 1
+      adjustMessage.value = response.message
+      appendLogEvent({
+        id: nextLogId('evt-adjust-accepted'),
+        type: 'client_event',
+        title: '微调已提交',
+        detail: `planId=${response.planId}，status=${response.status}`,
+        timestamp: Date.now(),
+      })
+
+      if (plannerClient.mode === 'mock') {
+        await playMockAdjustEvents(token)
+      } else {
+        await sse.connect(response.planId)
+      }
+    } catch (error) {
+      if (token !== adjustSequence) {
+        return
+      }
+
+      const message = error instanceof Error ? error.message : String(error)
+      isAdjusting.value = false
+      errorMessage.value = message
+      adjustErrorMessage.value = message
+      adjustMessage.value = null
+      appendLogEvent({
+        id: nextLogId('evt-adjust-error'),
+        type: 'error',
+        title: '微调失败',
+        detail: message,
+        timestamp: Date.now(),
+      })
+    }
+  }
+
   function handleSsePayload(payload: SsePayload, fallbackId: string) {
     appendLogEvent(toLogEvent(payload, fallbackId))
     applySsePayload(payload)
@@ -357,6 +474,9 @@ export const usePlannerStore = defineStore('planner', () => {
       case 'adjust_result':
         currentPlan.value = payload.plan
         pendingClarification.value = null
+        isAdjusting.value = false
+        adjustErrorMessage.value = null
+        adjustMessage.value = payload.summary
         agentState.value = payload.plan.status
         return
       case 'plan_ready':
@@ -380,6 +500,10 @@ export const usePlannerStore = defineStore('planner', () => {
       case 'error':
         errorMessage.value = payload.message
         agentState.value = payload.code === 'DEGRADE' ? 'DEGRADE' : 'FAILED'
+        if (isAdjusting.value) {
+          adjustErrorMessage.value = payload.message
+        }
+        isAdjusting.value = false
         isExecuting.value = false
         setCurrentPlanStatus(agentState.value)
         return
@@ -511,6 +635,46 @@ export const usePlannerStore = defineStore('planner', () => {
 
     if (token === executionSequence) {
       isExecuting.value = false
+    }
+  }
+
+  async function playMockAdjustEvents(token: number) {
+    const frames = await plannerClient.getSseFixtureFrames()
+    const confirmIndex = frames.findIndex(
+      (frame) => frame.data.type === 'state_change' && frame.data.to === 'CONFIRM',
+    )
+    const adjustResultIndex = frames.findIndex(
+      (frame, index) => index > confirmIndex && frame.data.type === 'adjust_result',
+    )
+
+    if (confirmIndex < 0 || adjustResultIndex < 0) {
+      throw new Error('mock fixture is missing adjust_result after CONFIRM')
+    }
+
+    connectionState.value = 'open'
+    updateSubmitMessageForConnection('open')
+
+    for (const frame of frames.slice(confirmIndex + 1, adjustResultIndex + 1)) {
+      if (token !== adjustSequence) {
+        return
+      }
+
+      await wait(140)
+
+      if (token !== adjustSequence) {
+        return
+      }
+
+      handleSsePayload(frame.data, `fixture-adjust-${frame.data.type}`)
+
+      if (frame.data.type === 'adjust_result') {
+        break
+      }
+    }
+
+    if (token === adjustSequence) {
+      connectionState.value = 'closed'
+      updateSubmitMessageForConnection('closed')
     }
   }
 
@@ -677,15 +841,22 @@ export const usePlannerStore = defineStore('planner', () => {
     canSubmit,
     isExecuting,
     isClarifying,
+    isAdjusting,
     canConfirmPlan,
+    canAdjustPlan,
     isRunning,
     canStart: canSubmit,
     planBReason,
     executeMessage,
+    adjustCount,
+    adjustLimit,
+    adjustMessage,
+    adjustErrorMessage,
     apiMode: plannerClient.mode,
     setScenario,
     submitPlan,
     replyToClarification,
+    adjustPlan,
     confirmPlanExecution,
     previewSkeletonFlow,
     resetSkeletonFlow,
