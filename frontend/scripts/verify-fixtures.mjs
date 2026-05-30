@@ -56,6 +56,9 @@ const requiredSseTypes = new Set([
   'replan',
   'adjust_result',
   'plan_ready',
+  'execute_result',
+  'done',
+  'error',
 ])
 
 for (const fileName of planFixtureFiles) {
@@ -78,6 +81,9 @@ if (sseLines.length === 0) {
 }
 
 const seenTypes = new Set()
+let hasPlanBPlan = false
+let hasDegradeError = false
+let hasDone = false
 
 sseLines.forEach((line, index) => {
   const source = `${sseFileName}:${index + 1}`
@@ -94,12 +100,40 @@ sseLines.forEach((line, index) => {
 
   seenTypes.add(frame.data.type)
   assertSsePayload(frame.data, source)
+
+  if (
+    frame.data.type === 'plan_ready' &&
+    frame.data.plan.isPlanB &&
+    frame.data.plan.planBReason
+  ) {
+    hasPlanBPlan = true
+  }
+
+  if (frame.data.type === 'error' && frame.data.code === 'DEGRADE') {
+    hasDegradeError = true
+  }
+
+  if (frame.data.type === 'done') {
+    hasDone = true
+  }
 })
 
 for (const requiredType of requiredSseTypes) {
   if (!seenTypes.has(requiredType)) {
     throw new Error(`${sseFileName} is missing ${requiredType}`)
   }
+}
+
+if (!hasPlanBPlan) {
+  throw new Error(`${sseFileName} must include a plan_ready Plan B with reason`)
+}
+
+if (!hasDone) {
+  throw new Error(`${sseFileName} must include done for terminal state coverage`)
+}
+
+if (!hasDegradeError) {
+  throw new Error(`${sseFileName} must include error(code=DEGRADE)`)
 }
 
 console.log(
@@ -195,6 +229,11 @@ function assertSsePayload(value, source) {
     return
   }
 
+  if (value.type === 'replan') {
+    assertString(value.reason, `${source}.data.reason`)
+    assertNumber(value.replanCount, `${source}.data.replanCount`)
+  }
+
   if (value.type === 'tool_result') {
     assertNumber(value.latencyMs, `${source}.data.latencyMs`)
   }
@@ -210,7 +249,24 @@ function assertSsePayload(value, source) {
 
   if (value.type === 'adjust_result') {
     assertStringArray(value.affectedSlots, `${source}.data.affectedSlots`)
+    assertString(value.summary, `${source}.data.summary`)
     assertPlan(value.plan, `${source}.data.plan`)
+  }
+
+  if (value.type === 'execute_result') {
+    assertString(value.actionId, `${source}.data.actionId`)
+    assertString(value.actionType, `${source}.data.actionType`)
+    assertString(value.status, `${source}.data.status`)
+    assertNullableString(value.confirmationNo, `${source}.data.confirmationNo`)
+  }
+
+  if (value.type === 'done') {
+    assertString(value.summary, `${source}.data.summary`)
+  }
+
+  if (value.type === 'error') {
+    assertString(value.code, `${source}.data.code`)
+    assertString(value.message, `${source}.data.message`)
   }
 
   if ('timestamp' in value) {

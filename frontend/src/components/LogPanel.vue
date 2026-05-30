@@ -45,6 +45,10 @@ function prefersReducedMotion() {
 }
 
 function tagType(event: LogEvent) {
+  if (event.type === 'error' && event.title === 'DEGRADE') {
+    return 'warning'
+  }
+
   if (event.type === 'error') {
     return 'error'
   }
@@ -71,7 +75,9 @@ function tagType(event: LogEvent) {
 function eventClass(event: LogEvent) {
   return {
     'is-replan': event.type === 'replan',
-    'is-error': event.type === 'error',
+    'is-degrade': event.type === 'error' && event.title === 'DEGRADE',
+    'is-error': event.type === 'error' && event.title !== 'DEGRADE',
+    'is-done': event.type === 'done',
   }
 }
 
@@ -119,6 +125,7 @@ function formatTime(timestamp: number) {
           :key="event.id"
           class="log-event"
           :class="eventClass(event)"
+          :aria-label="`${event.type}: ${event.title}`"
         >
           <div class="log-event-marker" aria-hidden="true" />
           <div class="log-event-body">

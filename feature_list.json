@@ -460,7 +460,7 @@
       "track": "frontend",
       "owner": "F1",
       "title": "Plan B highlight and error/degrade states",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["F1-003", "F1-005"],
       "contract": "docs/contracts/F1-008-plan-b-error-states.md",
@@ -469,7 +469,13 @@
         "PlanCard shows Plan B badge and reason",
         "DEGRADE, FAILED, DONE, and error states are visible"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-30: Generator added contract docs/contracts/F1-008-plan-b-error-states.md, frontend/src/components/StateSummaryPanel.vue, PlanCard Plan B header badge, LogPanel done/degrade/error visual classes, App integration, and stricter fixture validation for execute_result / done / error(code=DEGRADE).",
+        "2026-05-30: Generator verification passed: frontend fast verify -> pnpm verify:fixtures passed with docs/fixtures/sse-events.jsonl -> 28 JSONL events; pnpm typecheck passed; pnpm build passed; forbidden snake_case field search had no matches.",
+        "2026-05-30: Generator Chrome DevTools MCP smoke confirmed F1-008, Plan B badge/reason, terminal rail DONE / DEGRADE / FAILED, replan Plan B #1 log, DONE execution state, console error/warn 0, no real /api/plan/* requests in mock mode; supplemental screenshot docs/qa/F1-008-generator-devtools-mock.png.",
+        "2026-05-30: Independent evaluator Evaluator (019e78fc-cdfb-79e2-993f-3973a3183622) verified contract/code, frontend fast verify, forbidden field search, feature_list.json parse, and Chrome DevTools MCP mock interaction / snapshot / console / network / DOM-accessibility evidence; conclusion: PASS.",
+        "2026-05-30: Evaluator evidence written to docs/qa/F1-008-plan-b-error-states.md with screenshot docs/qa/F1-008-devtools-mock.png."
+      ]
     },
     {
       "id": "INT-001",
