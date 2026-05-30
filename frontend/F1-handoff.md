@@ -1,5 +1,33 @@
 # F1 Handoff
 
+## 2026-05-30 F1-007 AdjustPanel
+
+F1-007 已完成并 verified。前端现在可以在 mock mode 下提交 Demo 输入、回答 ClarifyBubble、进入 `CONFIRM` 后显示 AdjustPanel；用户可在确认执行前提交最多 3 次局部微调。每次微调会调用 `adjustPlan(planId, { instruction })`，mock mode 继续播放 `adjust_result` 并更新方案卡，real mode 则调用 `PATCH /api/plan/{planId}/adjust` 后重新连接同一 `planId` 的 SSE stream。
+
+本轮新增或关联的文件：
+
+- `docs/contracts/F1-007-adjust-panel.md`
+- `docs/qa/F1-007-adjust-panel.md`
+- `docs/qa/F1-007-devtools-mock.png`
+- `docs/qa/F1-007-generator-devtools-mock.png`
+- `frontend/src/components/AdjustPanel.vue`
+- `frontend/src/stores/planner.ts`
+- `frontend/src/App.vue`
+- `frontend/src/styles/main.css`
+- `frontend/scripts/verify-fixtures.mjs`
+- `docs/fixtures/sse-events.jsonl`
+
+独立 evaluator Reviewer (`019e77f0-f608-7e33-9dbf-0b2bcc94091a`) 验证结果：
+
+- 前端 fast verify 通过：`pnpm verify:fixtures passed`、`docs/fixtures/sse-events.jsonl -> 28 JSONL events`、`pnpm typecheck passed`、`Verify passed.`
+- 禁止 snake_case 字段搜索无命中：`plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no` 未出现在 `frontend\src frontend\scripts docs\fixtures`。
+- `feature_list.json` 可解析。
+- Chrome DevTools MCP：打开 `http://127.0.0.1:5173/`，提交 mock plan，回答 `4-6小时`，等待 `CONFIRM` 后确认 AdjustPanel 可见；提交一次微调后出现 `林间日式小食`、计数 `1 / 3`、Agent `CONFIRM`；再提交两次后出现 `3 / 3`、`已达最大微调次数`，三个快捷项、微调输入框和提交按钮均 disabled，确认执行按钮仍可用。
+- Chrome DevTools MCP 诊断：snapshot / accessibility 覆盖 ClarifyBubble、AdjustPanel、PlanCard、`adjust_result` 日志和 `3 / 3` 上限状态；DOM 复核 `hasRestaurant=true`、`hasAdjustCount=true`、`hasLimitReason=true`；console error / warn 为 0；mock mode 下 fetch / xhr 为空，没有真实 `/api/plan/*/adjust` 请求。
+- 最终结论：`PASS`。
+
+注意：本轮 F1-007 的 real mode 职责是通过既有 `PlannerApiClient.adjustPlan(planId, { instruction })` 调用 `PATCH /api/plan/{planId}/adjust`，并显示后端响应或错误；真实后端 `adjust_result` 浏览器网络证据可在后续 integration 任务中补充。
+
 ## 2026-05-29 F1-006 ClarifyBubble
 
 F1-006 已完成并 verified。前端现在可以在 mock mode 下先停在 `clarification_request`，渲染唯一一个 ClarifyBubble；用户点击 `3-4小时`、`4-6小时` 或 `6小时以上` 后，前端会调用 `clarifyPlan(planId, { reply })`，并继续回放到 `plan_ready` / `CONFIRM`。
@@ -70,7 +98,7 @@ INT-001 已完成并 verified。真实 real mode 链路已经由独立 evaluator
 
 ## 当前状态
 
-F1-001、F1-002、F1-003、F1-004、F1-005、F1-006 已完成并验证；INT-001 最小真实联调也已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
+F1-001、F1-002、F1-003、F1-004、F1-005、F1-006、F1-007 已完成并验证；INT-001 最小真实联调也已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
 
 当前前端具备骨架、API client、mock fixture mode、正式 `InputPanel`、`useSSE`、实时日志面板、PlanCard、ConfirmButton、ExecutionTracker 和 ClarifyBubble：
 - 已有首页工作台骨架。
@@ -87,7 +115,7 @@ F1-001、F1-002、F1-003、F1-004、F1-005、F1-006 已完成并验证；INT-001
 - 点击“提交规划”后，mock client 会创建 fixture plan，`useSSE` 逐条回放 `docs/fixtures/sse-events.jsonl`；当前 fixture 会先停在 `CLARIFY` 并显示 ClarifyBubble，用户回答后继续到 `CONFIRM`；页面可见 PlanCard、Plan B、timeline、执行包和分享消息。
 - ClarifyBubble 基于 `pendingClarification` 渲染唯一一个反问气泡，包含问题、`durationHours` 和 3 个快捷选项；回答后调用 `clarifyPlan(planId, { reply })`。
 - 点击“确认执行”后，前端调用 `executePlan`，mock mode 继续播放 fixture execution 事件，ExecutionTracker 会按 action 显示完成状态和确认号。
-- 暂未实现 AdjustPanel。
+- 已实现 `frontend/src/components/AdjustPanel.vue`，仅在 `CONFIRM` 状态出现，最多允许 3 次微调；mock mode 下提交微调会消费 `adjust_result` 并更新方案卡，real mode 下调用 `PATCH /api/plan/{planId}/adjust`。
 
 ## 已完成文件
 
@@ -97,6 +125,7 @@ F1-001、F1-002、F1-003、F1-004、F1-005、F1-006 已完成并验证；INT-001
 - `docs/contracts/F1-004-input-plan-api.md`
 - `docs/contracts/F1-005-plan-card-execution.md`
 - `docs/contracts/F1-006-clarify-bubble.md`
+- `docs/contracts/F1-007-adjust-panel.md`
 - `docs/contracts/INT-001-one-input-sse.md`
 - `docs/qa/F1-002-api-client-fixtures.md`
 - `docs/qa/F1-002-devtools-confirm.png`
@@ -117,6 +146,9 @@ F1-001、F1-002、F1-003、F1-004、F1-005、F1-006 已完成并验证；INT-001
 - `docs/qa/F1-006-clarify-bubble.md`
 - `docs/qa/F1-006-devtools-mock.png`
 - `docs/qa/F1-006-playwright-mock.png`
+- `docs/qa/F1-007-adjust-panel.md`
+- `docs/qa/F1-007-devtools-mock.png`
+- `docs/qa/F1-007-generator-devtools-mock.png`
 - `docs/qa/INT-001-one-input-sse.md`
 - `frontend/package.json`
 - `frontend/pnpm-lock.yaml`
@@ -134,6 +166,7 @@ F1-001、F1-002、F1-003、F1-004、F1-005、F1-006 已完成并验证；INT-001
 - `frontend/src/components/ConfirmButton.vue`
 - `frontend/src/components/ExecutionTracker.vue`
 - `frontend/src/components/ClarifyBubble.vue`
+- `frontend/src/components/AdjustPanel.vue`
 - `frontend/src/main.ts`
 - `frontend/src/App.vue`
 - `frontend/src/stores/planner.ts`
@@ -338,12 +371,13 @@ unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied
 
 ## 下一步建议
 
-下一个 F1 小目标建议推进 `F1-007` AdjustPanel，或在 integration 任务中补 real mode clarify 网络证据。
+下一个 F1 小目标建议推进 `F1-008` Plan B highlight and error/degrade states，或在 integration 任务中补 real mode clarify / adjust 网络证据。
 
-1. 若推进 `F1-007`，创建 `docs/contracts/F1-007-adjust-panel.md`，只在 `CONFIRM` 状态显示微调入口，并接入 `PATCH /api/plan/{planId}/adjust`。
+1. 若推进 `F1-008`，创建 `docs/contracts/F1-008-plan-b-error-states.md`，重点覆盖 `replan` 事件日志高亮、PlanCard 的 Plan B badge / reason，以及 `DEGRADE`、`FAILED`、`DONE`、`error` 的可见状态。
 2. 若目标是完整 family 端到端路径，建议推进 `INT-002`，并确认真实后端会产生完整 `plan_ready`、clarify / adjust 和 execute event。
 3. 若补 real mode clarify 网络证据，应在后端运行时触发 `CLARIFY`，点击 ClarifyBubble 选项后确认 network 包含 `POST /api/plan/{planId}/clarify` 和 `{ "reply": "<选项文本>" }`。
-4. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 必须使用 Chrome DevTools MCP，Playwright MCP 可作为补充但不再强制要求。
+4. 若补 real mode adjust 网络证据，应在真实后端进入 `CONFIRM` 后提交 AdjustPanel，确认 network 包含 `PATCH /api/plan/{planId}/adjust` 和 `{ "instruction": "<微调要求>" }`，随后 SSE 收到 `adjust_result`。
+5. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 必须使用 Chrome DevTools MCP，Playwright MCP 可作为补充但不再强制要求。
 
 ## F1 边界
 

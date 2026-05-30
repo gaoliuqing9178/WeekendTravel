@@ -1,5 +1,57 @@
 # Progress
 
+## 2026-05-30 F1-007 AdjustPanel
+
+### 已完成
+
+- 新增 `docs/contracts/F1-007-adjust-panel.md`，明确本轮只交付前端 AdjustPanel、`PATCH /api/plan/{planId}/adjust` 调用入口、mock `adjust_result` 回放、3 次微调上限和 Chrome DevTools MCP 验收边界。
+- 新增 `frontend/src/components/AdjustPanel.vue`，只在 `CONFIRM` 状态显示微调面板，包含 3 个快捷微调项、自由文本输入、提交按钮、次数进度、成功 / 错误状态和第 4 次阻止提示。
+- 更新 `frontend/src/stores/planner.ts`，新增 `adjustCount`、`adjustLimit`、`isAdjusting`、`canAdjustPlan`、`adjustMessage`、`adjustErrorMessage` 和 `adjustPlan(instruction)`：
+  - 空微调要求会被忽略并提示。
+  - 单个 plan 前端最多提交 3 次微调。
+  - real mode 调用 `plannerClient.adjustPlan(planId, { instruction })`，即 `PATCH /api/plan/{planId}/adjust`。
+  - mock mode 播放 `CONFIRM` 后的 `ADJUST -> VALIDATE -> adjust_result` fixture 片段。
+  - `adjust_result` 使用 `payload.plan` 更新 `currentPlan`，展示 `payload.summary`，并恢复到 `CONFIRM`。
+- 更新 `frontend/src/App.vue`，把 AdjustPanel 接入侧栏、放在确认执行入口之前，并将首屏 F1 标记更新为 `F1-007`。
+- 更新 `frontend/src/styles/main.css`，补齐 AdjustPanel 的布局、次数进度、快捷项、disabled / status 状态和 reduced-motion 处理。
+- 更新 `docs/fixtures/sse-events.jsonl`，补齐 mock `ADJUST` / `VALIDATE` / `adjust_result` 事件，并让 `adjust_result.plan` 包含完整 timeline / actions，把餐厅槽位更新为“林间日式小食”。
+- 更新 `frontend/scripts/verify-fixtures.mjs`，将 `adjust_result` 纳入 required SSE event types，防止后续 fixture 误删微调路径。
+- 新增 evaluator QA 报告与截图：
+  - `docs/qa/F1-007-adjust-panel.md`
+  - `docs/qa/F1-007-devtools-mock.png`
+  - `docs/qa/F1-007-generator-devtools-mock.png`
+- `feature_list.json` 已将 `F1-007` 标记为 `verified`，并写入 generator 与 independent evaluator 证据。
+
+### 验证记录
+
+- Generator 前端 fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast` 通过，覆盖：
+  - `pnpm verify:fixtures passed`
+  - `docs/fixtures/sse-events.jsonl -> 28 JSONL events`
+  - `pnpm typecheck passed`
+  - `Verify passed.`
+- Generator 构建检查：`npm run build` 在 `frontend/` 下通过，Vite production build 成功。
+- Generator 禁止字段检查：`rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures` 无命中。
+- Generator Chrome DevTools MCP 冒烟：
+  - mock mode 下提交 plan，回答 ClarifyBubble 后进入 `CONFIRM`。
+  - `AdjustPanel` 在 `CONFIRM` 状态出现，初始显示 `0 / 3`。
+  - 提交一次“换一家餐厅，要能订位”后出现 `林间日式小食`，微调计数变为 `1 / 3`，Agent 回到 `CONFIRM`。
+  - 连续提交到第 3 次后显示 `3 / 3` 和“已达最大微调次数”，快捷项、输入框、提交按钮均 disabled，确认执行按钮仍可用。
+  - console error / warn 为 0，mock mode 下无真实 `/api/plan/*/adjust` fetch / xhr。
+- Independent evaluator Reviewer (`019e77f0-f608-7e33-9dbf-0b2bcc94091a`) 已完成正式验收并放行：
+  - 独立读取 contract / api contract / frontend contract / handoff / AdjustPanel / store / App / client / fixture verifier / SSE fixture。
+  - 前端 fast verify 通过。
+  - 禁止 snake_case 字段搜索无命中。
+  - `feature_list.json` 可解析。
+  - Chrome DevTools MCP browser path 通过：提交 mock plan -> 回答 `4-6小时` -> `CONFIRM` -> AdjustPanel -> 3 次微调 -> 3/3 上限锁定。
+  - Chrome DevTools MCP snapshot / DOM / console / network / screenshot 证据完整。
+  - 最终结论：`PASS`。
+
+### 当前状态
+
+- `F1-007` 已完成并 verified。
+- 前端当前具备 InputPanel、useSSE、LogPanel、PlanCard、ConfirmButton、ExecutionTracker、ClarifyBubble 和 AdjustPanel。
+- 下一个 F1 小目标建议推进 `F1-008`：Plan B highlight and error/degrade states；或进入 `INT-002` / `INT-003` 做完整 family / friends 端到端联调。
+
 ## 2026-05-29 WF-002 Chrome DevTools MCP only
 
 ### 已完成
