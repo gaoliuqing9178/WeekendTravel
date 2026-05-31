@@ -113,7 +113,7 @@ export const usePlannerStore = defineStore('planner', () => {
     },
     onEvent(payload, meta) {
       handleSsePayload(payload, meta.id)
-      closeMockPlanningStreamAtPausePoint(payload)
+      closePlanningStreamAtPausePoint(payload)
     },
     onError(message) {
       errorMessage.value = message
@@ -342,6 +342,8 @@ export const usePlannerStore = defineStore('planner', () => {
 
       if (plannerClient.mode === 'mock') {
         await playMockExecutionEvents(token)
+      } else {
+        await sse.connect(response.planId)
       }
     } catch (error) {
       if (token !== executionSequence) {
@@ -559,7 +561,15 @@ export const usePlannerStore = defineStore('planner', () => {
     }
   }
 
-  function closeMockPlanningStreamAtPausePoint(payload: SsePayload) {
+  function closePlanningStreamAtPausePoint(payload: SsePayload) {
+    if (
+      plannerClient.mode === 'real' &&
+      (payload.type === 'clarification_request' || payload.type === 'plan_ready')
+    ) {
+      sse.close('closed')
+      return
+    }
+
     if (plannerClient.mode !== 'mock') {
       return
     }

@@ -1,5 +1,39 @@
 # Handoff
 
+## 2026-05-31 INT-002 Family scenario complete path
+
+INT-002 已完成并 verified。当前真实 family real mode 已跑通完整路径：`POST /api/plan` -> planning SSE -> `CLARIFY` -> `POST /api/plan/{planId}/clarify` -> `plan_ready` / `CONFIRM` -> `POST /api/plan/{planId}/execute` -> execution SSE -> `execute_result` -> `done` / `DONE`。
+
+本轮新增或更新：
+
+- `docs/contracts/INT-002-family-complete-path.md`
+- `docs/qa/INT-002-family-complete-path.md`
+- `docs/qa/INT-002-devtools-real.png`
+- `docs/qa/INT-002-generator-devtools-real.png`
+- `backend/src/main/java/com/weekendtravel/backend/controller/PlanController.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/PlanContext.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/PlanStateMachineService.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/api/ExecutePlanRequest.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/api/ExecutePlanResponse.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/sse/ExecuteResultEvent.java`
+- `backend/src/main/java/com/weekendtravel/backend/plan/sse/DoneEvent.java`
+- `frontend/src/stores/planner.ts`
+- `feature_list.json`
+- `progress.md`
+- `backend/HANDOFF.md`
+- `frontend/F1-handoff.md`
+
+验证结果：
+- Generator fast verify 通过：backend fast、frontend fast、all fast 均通过；后端 48 tests、0 failures，前端 `pnpm verify:fixtures` 与 `pnpm typecheck` 通过。
+- Forbidden snake_case 检查无命中，`feature_list.json` 可解析。
+- 独立 evaluator Evaluator (`019e7d13-a0dc-76d2-8a94-2e28f4a36d8c`, `INT-002-EVAL-CODEX-20260531T1615+0800`) 使用 Chrome DevTools MCP 验证 real mode family path，结论 `PASS`。
+- Chrome DevTools MCP 证据覆盖：默认 family 输入 -> `CLARIFY` -> `4-6小时` -> `plan_ready` / `CONFIRM` -> 确认执行 -> `DONE`；页面可见 `Mode real`、真实 `plan_79b2807ae0b3`、POI `小小科学工坊` / `四季家庭小厨`、ExecutionTracker `2 / 2`、`MOCK-TBL-50306`、`MOCK-MSG-99469`、LogPanel `execute_result` / `done`。
+- Console error / warn 为 0；network 包含 `POST /api/plan [202]`、规划流 `[200]`、`POST /clarify [200]`、后续规划流 `[200]`、`POST /execute [200]`、执行流 `[200]`。
+
+接手提醒：
+- `feature_list.json` 已将 `INT-002` 标记为 `verified`；`B1-004` 没有本轮单独 evaluator 证据，仍不单独改状态。
+- 下一步建议推进 `INT-003` friends complete path，或单独补真实异常 / degrade 证据；不要把 family happy path 证据泛化成 friends 或 21 golden cases 已完成。
+
 ## 2026-05-29 WF-002 Chrome DevTools MCP only
 
 本轮按用户反馈调整前端 UI 验收规则：Playwright MCP 与 Chrome DevTools MCP 在交互、等待和截图检查上有重叠，后续 workflow 只强制保留 Chrome DevTools MCP 检查。Playwright MCP 可作为补充证据，但不再是前端任务标记 `verified` 的硬门槛。
@@ -263,25 +297,25 @@ Initializer 已把仓库整理成长期 agent 开发 harness。前端 F1-001 Vue
 
 ## 尚未实现内容
 
-- 后端还没有 `POST /api/plan`、SSE stream、`POST /api/debug/scenario`、状态机、Tool、POI 数据或真实业务链路。
-- `frontend/` 已有 Vue/Vite/Pinia/Naive UI 骨架，但还没有 API client、fixture mode、真实 SSE、业务组件或完整 Playwright 自动化覆盖。
-- 还没有真实 API、SSE、状态机、Tool、POI 数据或端到端联调。
-- 当前 `B1-001` 和 `F1-001` 已具备验证证据并标记为 `verified`；其余功能仍按各自验证证据推进。
+- `INT-003` friends complete path 尚未完成；friends 场景不能复用 `INT-002` 的 family happy path 证据直接标记完成。
+- `QA-001` 21 Golden Cases 尚未执行；需要单独记录 family、friends、boundary case 和 SLO 指标。
+- 真实异常 / degrade 链路仍建议单独补证，尤其是真实后端 `error(code=DEGRADE)`、非 DEGRADE error、bookingFail / routeTooFar 等浏览器网络证据。
+- `B1-004` 仍未作为独立 feature 标记 `verified`；如要补状态，需要单独 contract / evaluator 证据，而不是只借用 `INT-002` 的集成证据。
 
 ## 最高优先级下一步
 
-后端优先：
+集成优先：
 
-1. 进入 `B1-002`，实现 `GET /api/plan/{planId}/stream` 的最小 SSE emitter 和 heartbeat。
-2. 进入 `B1-003`，实现 `POST /api/plan` 返回 `planId` 和 `status`。
-3. 按 `docs/dev-workflow.md` 继续为每轮任务补 contract、验证证据和 handoff。
+1. 进入 `INT-003`，跑通 friends scenario complete path。
+2. 进入真实异常 / degrade 补证任务，覆盖 `error(code=DEGRADE)`、非 DEGRADE error 和对应前端可见状态。
+3. 进入 `QA-001` 前先补 golden cases 执行计划，避免把单条 happy path 当作 21 cases 覆盖。
+4. 按 `docs/dev-workflow.md` 继续为每轮任务补 contract、独立 evaluator 证据、`feature_list.json`、`progress.md` 和 handoff。
 
-前端优先：
+前端 / 联调优先：
 
-1. 创建 `docs/contracts/F1-002-api-client-fixtures.md`。
-2. 实现 API client，字段只使用 `docs/api-contract.md` 的 camelCase 契约。
-3. 实现 mock fixture mode，读取 `docs/fixtures/*.json` 和 `docs/fixtures/*.jsonl`。
-4. 跑 `./verify.ps1 -Target frontend -Mode fast` 或等效 PowerShell Bypass 命令，补充 fixture 解析或 build/typecheck 证据。
+1. 继续保持 `frontend` fast verify 通过，避免 real mode 调整影响 mock fixture 与 typecheck。
+2. 推进 `INT-003` 时复用现有 real mode SSE / execute 消费能力，但 friends 场景仍要单独 evaluator 验证。
+3. 如补真实异常链路，优先让 Chrome DevTools MCP 记录 console、network、DOM / accessibility 和最终可见状态。
 
 ## 验证结果
 
@@ -340,5 +374,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target all
 - 每轮只推进一个清楚小目标。
 - API 字段变更先改 `docs/api-contract.md`。
 - 没有验证证据，不要把 `feature_list.json` 状态改成 `verified`。
-- 当前已完成并验证的最小任务是 `B1-001` 和 `F1-001`；继续推进时优先按依赖顺序做 `B1-002`、`B1-003`、`F1-002`。
+- 当前 `INT-002` 已完成并 verified；继续推进时优先做 `INT-003` 或真实异常 / degrade 补证，不要回退到旧的 B1/F1 初始化队列。
 - `verify.ps1` 已与 Maven Wrapper 工作流对齐，可直接用于 backend fast verify。

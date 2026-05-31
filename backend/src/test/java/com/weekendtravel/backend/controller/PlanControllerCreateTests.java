@@ -135,6 +135,28 @@ class PlanControllerCreateTests {
     }
 
     @Test
+    void executeRejectsInvalidState() throws Exception {
+        String planId = createPlanId("今天下午是空的，想和老婆孩子出去玩几个小时", "family");
+        HttpResponse<String> response = executePlan(planId, true);
+
+        assertEquals(409, response.statusCode());
+        JsonNode json = objectMapper.readTree(response.body());
+        assertEquals("INVALID_STATE", json.path("error").asText());
+        assertEquals("plan must be in CONFIRM state before execute", json.path("message").asText());
+    }
+
+    @Test
+    void executeRejectsUnconfirmedRequest() throws Exception {
+        String planId = createPlanId("今天下午是空的，想和老婆孩子出去玩几个小时", "family");
+        HttpResponse<String> response = executePlan(planId, false);
+
+        assertEquals(400, response.statusCode());
+        JsonNode json = objectMapper.readTree(response.body());
+        assertEquals("INVALID_INPUT", json.path("error").asText());
+        assertEquals("confirmed must be true", json.path("message").asText());
+    }
+
+    @Test
     void adjustRejectsFourthAttempt() throws Exception {
         String planId = createPlanId("今天下午想和老婆孩子找个轻松的亲子活动，再吃个不用排太久的晚饭，安排4小时左右", "family");
         HttpResponse<String> initialStream = streamPlan(planId);
@@ -210,6 +232,19 @@ class PlanControllerCreateTests {
                           "instruction": "%s"
                         }
                         """.formatted(instruction), StandardCharsets.UTF_8))
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+    }
+
+    private HttpResponse<String> executePlan(String planId, boolean confirmed) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:" + port + "/api/plan/" + planId + "/execute"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("""
+                        {
+                          "confirmed": %s
+                        }
+                        """.formatted(confirmed), StandardCharsets.UTF_8))
                 .build();
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
     }

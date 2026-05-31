@@ -9,6 +9,8 @@ import com.weekendtravel.backend.plan.api.ClarifyPlanRequest;
 import com.weekendtravel.backend.plan.api.ClarifyPlanResponse;
 import com.weekendtravel.backend.plan.api.CreatePlanRequest;
 import com.weekendtravel.backend.plan.api.CreatePlanResponse;
+import com.weekendtravel.backend.plan.api.ExecutePlanRequest;
+import com.weekendtravel.backend.plan.api.ExecutePlanResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +56,11 @@ public class PlanController {
     @PostMapping("/{planId}/clarify")
     public ResponseEntity<ClarifyPlanResponse> clarify(@PathVariable String planId, @RequestBody ClarifyPlanRequest request) {
         return ResponseEntity.ok(planStateMachineService.clarifyPlan(planId, request));
+    }
+
+    @PostMapping("/{planId}/execute")
+    public ResponseEntity<ExecutePlanResponse> execute(@PathVariable String planId, @RequestBody ExecutePlanRequest request) {
+        return ResponseEntity.ok(planStateMachineService.executePlan(planId, request));
     }
 
     @PatchMapping("/{planId}/adjust")

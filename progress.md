@@ -1,5 +1,34 @@
 # Progress
 
+## 2026-05-31 INT-002 Family scenario complete path
+
+### 已完成
+
+- 新增 `docs/contracts/INT-002-family-complete-path.md`，明确本轮只跑通真实 real mode family happy path：`POST /api/plan` -> planning SSE -> `plan_ready` / `CONFIRM` -> `POST /api/plan/{planId}/execute` -> execution SSE -> `execute_result` -> `done`。
+- 后端补齐 `POST /api/plan/{planId}/execute`、`ExecutePlanRequest` / `ExecutePlanResponse`、`ExecuteResultEvent`、`DoneEvent`，并让 `PlanStateMachineService` 支持 `CONFIRM -> EXECUTE -> DONE`。
+- 后端 family packed plan 现在带前端可渲染的 `poi` payload；执行阶段使用 `BookingTool` 处理 `reserve_table`，并以 deterministic mock 方式处理 `send_message`，返回 `MOCK-TBL-*` 与 `MOCK-MSG-*`。
+- 后端餐厅选择优先挑选支持 `reserve_table` 的 POI，避免 family happy path 在执行阶段因为餐厅动作不支持而失败。
+- 前端 real mode 收到 `clarification_request` 或 `plan_ready` 后会关闭规划流，避免停在确认态后持续重连；点击确认执行后会用同一个 `planId` 重新连接 SSE，消费真实 `execute_result` 与 `done`。
+- `feature_list.json` 已将 `INT-002` 标记为 `verified`，并写入 generator 与 independent evaluator 证据；`B1-004` 本轮没有单独 evaluator 证据，仍不单独改为 `verified`。
+
+### 验证记录
+
+- Generator backend fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过，后端 48 tests、0 failures、0 errors。
+- Generator frontend fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target frontend -Mode fast` 通过，`pnpm verify:fixtures` 与 `pnpm typecheck` 均通过。
+- Generator full fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target all -Mode fast` 通过。
+- Forbidden snake_case 检查无命中：`rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" backend\src frontend\src frontend\scripts docs\fixtures`。
+- `feature_list.json` 可解析，项目名输出 `WeekendTravel`。
+- 独立 evaluator Evaluator (`019e7d13-a0dc-76d2-8a94-2e28f4a36d8c`, `INT-002-EVAL-CODEX-20260531T1615+0800`) 已完成正式验收并放行，结论：`PASS`。
+- Chrome DevTools MCP real mode 路径通过：默认 family 输入提交 -> `CLARIFY` -> 点击 `4-6小时` -> `plan_ready` / `CONFIRM` -> 点击确认执行 -> `DONE`。
+- 页面证据包含：`Mode real`、真实 `plan_79b2807ae0b3`、PlanCard timeline POI `小小科学工坊` / `四季家庭小厨`、ExecutionTracker `2 / 2`、`MOCK-TBL-50306`、`MOCK-MSG-99469`、LogPanel `execute_result` 与 `done`。
+- Console error / warn 为 0；network 包含 `POST /api/plan [202]`、planning stream `[200]`、`POST /clarify [200]`、后续 planning stream `[200]`、`POST /execute [200]`、execution stream `[200]`，执行流包含两条 `execute_result` 和 `done`。
+- QA 报告：`docs/qa/INT-002-family-complete-path.md`；evaluator 截图：`docs/qa/INT-002-devtools-real.png`；generator 补充截图：`docs/qa/INT-002-generator-devtools-real.png`。
+
+### 当前状态
+
+- `INT-002` 已完成并 verified，family real mode 端到端路径已经从输入、澄清、方案确认、真实执行到 `DONE` 全链路打通。
+- 下一步集成建议转入 `INT-003` friends complete path，或在独立任务中补真实异常 / degrade 链路证据；不要把本轮 family 证据泛化成 friends path 已完成。
+
 ## 2026-05-30 F1-008 Plan B highlight and error/degrade states
 
 ### 已完成

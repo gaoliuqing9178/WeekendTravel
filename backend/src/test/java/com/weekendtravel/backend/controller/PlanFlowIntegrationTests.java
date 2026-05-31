@@ -105,6 +105,37 @@ class PlanFlowIntegrationTests {
     }
 
     @Test
+    void familyCompletePathExecutesActionsAndReachesDone() throws Exception {
+        resetScenarioFlags();
+        String planId = createFamilyPlanWithDuration();
+
+        HttpResponse<String> planningStream = streamPlan(planId);
+        assertEquals(200, planningStream.statusCode());
+        String planningBody = planningStream.body();
+        assertTrue(planningBody.contains("plan_ready"), planningBody);
+        assertTrue(planningBody.contains("CONFIRM"), planningBody);
+
+        HttpResponse<String> executeResponse = executePlan(planId, true);
+        assertEquals(200, executeResponse.statusCode());
+        JsonNode executeJson = objectMapper.readTree(executeResponse.body());
+        assertEquals(planId, executeJson.path("planId").asText());
+        assertEquals("executing", executeJson.path("status").asText());
+
+        HttpResponse<String> executionStream = streamPlan(planId);
+        assertEquals(200, executionStream.statusCode());
+        String executionBody = executionStream.body();
+        assertTrue(executionBody.contains("CONFIRM"), executionBody);
+        assertTrue(executionBody.contains("EXECUTE"), executionBody);
+        assertTrue(executionBody.contains("event:execute_result"), executionBody);
+        assertTrue(executionBody.contains("reserve_table"), executionBody);
+        assertTrue(executionBody.contains("send_message"), executionBody);
+        assertTrue(executionBody.contains("MOCK-TBL-"), executionBody);
+        assertTrue(executionBody.contains("MOCK-MSG-"), executionBody);
+        assertTrue(executionBody.contains("event:done"), executionBody);
+        assertTrue(executionBody.contains("DONE"), executionBody);
+    }
+
+    @Test
     void friendsScenarioReachesPlanReadyWithFriendsCopy() throws Exception {
         resetScenarioFlags();
         HttpResponse<String> createResponse = postPlan("今天下午4个人出去玩，想找个能拍照也能吃饭的地方", "friends");
@@ -234,6 +265,19 @@ class PlanFlowIntegrationTests {
                           "instruction": "%s"
                         }
                         """.formatted(instruction), StandardCharsets.UTF_8))
+                .build();
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+    }
+
+    private HttpResponse<String> executePlan(String planId, boolean confirmed) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:" + port + "/api/plan/" + planId + "/execute"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("""
+                        {
+                          "confirmed": %s
+                        }
+                        """.formatted(confirmed), StandardCharsets.UTF_8))
                 .build();
         return httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
     }
