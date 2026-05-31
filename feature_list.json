@@ -1,6 +1,6 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-05-30",
+  "updatedAt": "2026-05-31",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
     {
@@ -503,7 +503,7 @@
       "track": "integration",
       "owner": "B1/B2/F1",
       "title": "Family scenario complete path",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["INT-001", "B1-004", "B1-005", "B2-004", "F1-005", "F1-008"],
       "contract": "docs/contracts/INT-002-family-complete-path.md",
@@ -512,7 +512,13 @@
         "Confirm executes mock actions",
         "Flow reaches done or documented degrade state"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-05-31: Generator added contract docs/contracts/INT-002-family-complete-path.md and implemented the real family happy path across backend execute endpoint, execution SSE events, frontend real-mode reconnect after execute, and frontend-compatible POI payloads.",
+        "2026-05-31: Generator verification passed: backend fast verify -> 48 tests, 0 failures; frontend fast verify -> pnpm verify:fixtures and pnpm typecheck passed; all fast verify passed.",
+        "2026-05-31: Forbidden snake_case search across backend/src, frontend/src, frontend/scripts, and docs/fixtures had no matches; feature_list.json parsed as WeekendTravel.",
+        "2026-05-31: Independent evaluator Evaluator (019e7d13-a0dc-76d2-8a94-2e28f4a36d8c; INT-002-EVAL-CODEX-20260531T1615+0800) verified the real mode family path with Chrome DevTools MCP; conclusion: PASS.",
+        "2026-05-31: Evaluator evidence written to docs/qa/INT-002-family-complete-path.md with screenshot docs/qa/INT-002-devtools-real.png; path covered family input -> CLARIFY -> 4-6小时 -> plan_ready/CONFIRM -> execute -> DONE with execute_result and done. Generator supplemental screenshot: docs/qa/INT-002-generator-devtools-real.png."
+      ]
     },
     {
       "id": "INT-003",

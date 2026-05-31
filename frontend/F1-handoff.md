@@ -1,5 +1,30 @@
 # F1 Handoff
 
+## 2026-05-31 INT-002 Family scenario complete path
+
+INT-002 已完成并 verified。前端 real mode 现在可以跑通默认 family 输入的完整真实后端链路：提交规划后进入 `CLARIFY`，回答 `4-6小时` 后收到真实 `plan_ready` / `CONFIRM`，点击确认执行后调用真实 `POST /api/plan/{planId}/execute`，随后重新连接同一个 `planId` 的 SSE stream，消费后端 `execute_result` 与 `done`，最终进入 `DONE`。
+
+本轮新增或关联的文件：
+- `docs/contracts/INT-002-family-complete-path.md`
+- `docs/qa/INT-002-family-complete-path.md`
+- `docs/qa/INT-002-devtools-real.png`
+- `docs/qa/INT-002-generator-devtools-real.png`
+- `frontend/src/stores/planner.ts`
+
+前端侧关键变化：
+- real mode 在收到 `clarification_request` 或 `plan_ready` 后会关闭当前规划流，避免页面停在 `CLARIFY` / `CONFIRM` 时继续制造重连噪声。
+- real mode 点击确认执行后仍调用 `executePlan(planId, { confirmed: true })`，但成功后会用返回的同一个 `planId` 重新连接 SSE，等待真实执行事件。
+- mock mode 行为保持原样，仍使用 fixture 回放。
+- `execute_result` 会更新 ExecutionTracker 的 action status / confirmationNo；`done` 会把 Agent 状态推进到 `DONE` 并停止执行态。
+
+独立 evaluator Evaluator (`019e7d13-a0dc-76d2-8a94-2e28f4a36d8c`, `INT-002-EVAL-CODEX-20260531T1615+0800`) 验证结果：
+- full fast verify 通过：后端 48 tests、0 failures；前端 `pnpm verify:fixtures` 与 `pnpm typecheck` 通过。
+- forbidden snake_case 检查无命中，`feature_list.json` 可解析。
+- Chrome DevTools MCP real mode browser path 通过：默认 family 输入 -> `CLARIFY` -> `4-6小时` -> `plan_ready` / `CONFIRM` -> 确认执行 -> `DONE`。
+- 页面证据包含 `Mode real`、真实 `plan_79b2807ae0b3`、PlanCard timeline 的 `小小科学工坊` / `四季家庭小厨` POI、ExecutionTracker `2 / 2`、`MOCK-TBL-50306`、`MOCK-MSG-99469`、LogPanel `execute_result` 与 `done`。
+- Chrome DevTools MCP diagnostics：console error / warn 为 0；network 包含 `POST /api/plan [202]`、规划流 `[200]`、`POST /clarify [200]`、后续规划流 `[200]`、`POST /execute [200]`、执行流 `[200]`。
+- QA 报告：`docs/qa/INT-002-family-complete-path.md`；截图：`docs/qa/INT-002-devtools-real.png`。
+
 ## 2026-05-30 F1-008 Plan B highlight and error/degrade states
 
 F1-008 已完成并 verified。前端现在会在 mock mode 中把 `replan` / Plan B、`DONE`、`DEGRADE`、`FAILED` 和可读错误消息放到稳定可见入口：PlanCard header 有 `Plan B` 徽标，PlanCard 正文有 `Plan B 已启用` 和 `planBReason`，LogPanel 对 `replan` / `done` / `DEGRADE` / 普通 error 使用不同视觉状态，侧栏新增 `StateSummaryPanel` 展示当前状态、SSE 状态、`DONE / DEGRADE / FAILED` 终态轨道、Plan B 原因和终态提示。
@@ -139,6 +164,7 @@ F1-001、F1-002、F1-003、F1-004、F1-005、F1-006、F1-007 已完成并验证�
 - 已有 `frontend/src/composables/useSSE.ts`，mock mode 逐条回放 fixture SSE，real mode 通过 `openPlanStream(planId)` 连接 `/api/plan/{planId}/stream`。
 - 已有 `frontend/src/components/LogPanel.vue`，可以展示 `heartbeat`、`state_change`、`tool_call`、`tool_result`、`replan`、`clarification_request`、`adjust_result`、`plan_ready`、`execute_result`、`done`、`error`，并自动滚动到最新事件。
 - real mode 已通过 INT-001 验证：提交后页面能显示真实后端 `planId`，并在 LogPanel 渲染后端 SSE `state_change START -> INTENT`。
+- real mode 已通过 INT-002 验证：默认 family 输入可完成 `CLARIFY -> plan_ready / CONFIRM -> execute_result -> done -> DONE`，ExecutionTracker 可显示真实执行结果和 mock confirmationNo。
 - 点击“提交规划”后，mock client 会创建 fixture plan，`useSSE` 逐条回放 `docs/fixtures/sse-events.jsonl`；当前 fixture 会先停在 `CLARIFY` 并显示 ClarifyBubble，用户回答后继续到 `CONFIRM`；页面可见 PlanCard、Plan B、timeline、执行包和分享消息。
 - ClarifyBubble 基于 `pendingClarification` 渲染唯一一个反问气泡，包含问题、`durationHours` 和 3 个快捷选项；回答后调用 `clarifyPlan(planId, { reply })`。
 - 点击“确认执行”后，前端调用 `executePlan`，mock mode 继续播放 fixture execution 事件，ExecutionTracker 会按 action 显示完成状态和确认号。
@@ -398,14 +424,13 @@ unable to access 'C:\Users\lx8nb/.config/git/ignore': Permission denied
 
 ## 下一步建议
 
-F1-008 已完成。下一步建议转入 integration 或真实后端异常链路补证：
+INT-002 已完成。下一步建议转入剩余 integration 或真实异常链路补证：
 
-1. 若目标是完整 family 端到端路径，建议推进 `INT-002`，并确认真实后端会产生完整 `plan_ready`、clarify / adjust、execute event，以及 done 或 documented degrade state。
-2. 若目标是 friends 端到端路径，建议推进 `INT-003`，覆盖朋友场景的活动、甜品 / 咖啡或拍照点、餐厅与执行包。
-3. 若补 real mode clarify 网络证据，应在后端运行时触发 `CLARIFY`，点击 ClarifyBubble 选项后确认 network 包含 `POST /api/plan/{planId}/clarify` 和 `{ "reply": "<选项文本>" }`。
-4. 若补 real mode adjust 网络证据，应在真实后端进入 `CONFIRM` 后提交 AdjustPanel，确认 network 包含 `PATCH /api/plan/{planId}/adjust` 和 `{ "instruction": "<微调要求>" }`，随后 SSE 收到 `adjust_result`。
-5. 若补真实后端异常证据，应触发 `error(code=DEGRADE)` 和非 DEGRADE error，确认 StateSummaryPanel 与 LogPanel 的 `DEGRADE` / `FAILED` 可见入口。
-6. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 必须使用 Chrome DevTools MCP，Playwright MCP 可作为补充但不再强制要求。
+1. 若目标是完整 friends 端到端路径，建议推进 `INT-003`，覆盖朋友场景的活动、甜品 / 咖啡或拍照点、餐厅与执行包。
+2. 若补 real mode adjust 网络证据，应在真实后端进入 `CONFIRM` 后提交 AdjustPanel，确认 network 包含 `PATCH /api/plan/{planId}/adjust` 和 `{ "instruction": "<微调要求>" }`，随后 SSE 收到 `adjust_result`。
+3. 若补真实后端异常证据，应触发 `error(code=DEGRADE)` 和非 DEGRADE error，确认 StateSummaryPanel 与 LogPanel 的 `DEGRADE` / `FAILED` 可见入口。
+4. 若开始 `QA-001`，先不要把 INT-002 的 family happy path 证据泛化为 21 golden cases；golden cases 仍需要单独执行记录。
+5. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 必须使用 Chrome DevTools MCP，Playwright MCP 可作为补充但不再强制要求。
 
 ## F1 边界
 

@@ -1,5 +1,20 @@
 # Backend Handoff
 
+## 2026-05-31 INT-002 Family scenario complete path
+
+- [x] `INT-002` 已完成并 verified：真实 family real mode 已覆盖 `POST /api/plan`、规划 SSE、`POST /api/plan/{planId}/clarify`、`plan_ready` / `CONFIRM`、`POST /api/plan/{planId}/execute`、执行 SSE、`execute_result` 和 `done`。
+- [x] 新增合同：`../docs/contracts/INT-002-family-complete-path.md`。
+- [x] 新增 evaluator QA 报告与截图：`../docs/qa/INT-002-family-complete-path.md`、`../docs/qa/INT-002-devtools-real.png`；generator 补充截图为 `../docs/qa/INT-002-generator-devtools-real.png`。
+- [x] `PlanController` 已新增 `POST /api/plan/{planId}/execute`，请求体为 `{ "confirmed": true }`，成功返回 `status=executing`。
+- [x] `PlanStateMachineService` 已支持 `CONFIRM -> EXECUTE -> DONE`，执行流会发送每个 action 的 `execute_result`，最后发送 `done`。
+- [x] family packed plan 已补齐前端可渲染的 `poi` payload，timeline 可显示活动与餐厅 POI 信息。
+- [x] family restaurant selection 已优先选择支持 `reserve_table` 的餐厅，happy path 执行阶段不会因为动作不支持而 500。
+- [x] 执行阶段 `reserve_table` 走 `BookingTool`，`send_message` 走 deterministic mock execution，确认号形如 `MOCK-TBL-*` 与 `MOCK-MSG-*`。
+- [x] Generator verification 通过：backend fast verify、frontend fast verify、all fast verify 均通过；后端 48 tests、0 failures。
+- [x] 独立 evaluator Evaluator (`019e7d13-a0dc-76d2-8a94-2e28f4a36d8c`, `INT-002-EVAL-CODEX-20260531T1615+0800`) 已用 Chrome DevTools MCP 验证真实 family path，结论 `PASS`。
+
+注意：`B1-004` 仍未作为单独条目在 `feature_list.json` 标记为 verified；本轮只把已由 evaluator 证明的 integrated family path `INT-002` 标记为 verified。
+
 ## 2026-05-27 INT-001 联调验收
 
 - [x] `INT-001` 已完成并 verified：前端 real mode 一句 Demo 输入可以创建 plan，后端返回 `planId`，前端用同一个 `planId` 建立 SSE，并渲染 `state_change START -> INTENT`。
@@ -29,7 +44,7 @@
 - [x] Spring Boot + Maven 项目已初始化。
 - [x] `pom.xml`、`mvnw`、`src/main`、`src/test` 已存在。
 - [x] B2 POI mock 数据已落地为 `src/main/resources/mock/poi_data.json`，并通过 evaluator 验证。
-- [x] 当前已有健康检查 / CORS 骨架、B2 POI 数据、SearchTool、RouteTool、AvailabilityTool、BookingTool、MessageTool、ScenarioFlags、debug scenario API、最小 SSE stream 和最小 `POST /api/plan` 占位接口；状态机、MockApiService 仍未实现。
+- [x] 当前已有健康检查 / CORS、B2 POI 数据、SearchTool、RouteTool、AvailabilityTool、BookingTool、MessageTool、ScenarioFlags、debug scenario API、`POST /api/plan`、规划 SSE、clarify / adjust、`POST /api/plan/{planId}/execute`、`execute_result` 和 `done`；`MockApiService` 仍未单独抽象实现。
 - [ ] `GET /health` 已按 `docs/api-contract.md` 返回契约字段。
 - [x] CORS 已放通 `http://localhost:5173` 和 `http://127.0.0.1:5173`。
 - [x] `POST /api/plan` 已返回 `planId` 和 `status`。
@@ -78,7 +93,7 @@
 
 ## API / SSE 契约实现清单
 
-- [ ] `POST /api/plan/{planId}/execute` 支持确认执行。
+- [x] `POST /api/plan/{planId}/execute` 支持确认执行。
 - [x] `POST /api/plan/{planId}/clarify` 支持继续规划。
 - [x] `PATCH /api/plan/{planId}/adjust` 支持局部微调。
 - [x] SSE 事件名与 `type` 字段保持一致。
@@ -90,8 +105,8 @@
 - [x] 支持 `replan`。
 - [x] 支持 `adjust_result`。
 - [x] 支持 `plan_ready`。
-- [ ] 支持 `execute_result`。
-- [ ] 支持 `done`。
+- [x] 支持 `execute_result`。
+- [x] 支持 `done`。
 - [x] 支持 `error`。
 
 ## B2 Tool / Mock 数据清单

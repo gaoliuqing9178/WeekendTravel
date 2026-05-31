@@ -3,8 +3,12 @@ package com.weekendtravel.backend.plan;
 import com.weekendtravel.backend.b2.tool.AvailabilityRequest;
 import com.weekendtravel.backend.b2.tool.AvailabilityResult;
 import com.weekendtravel.backend.b2.tool.AvailabilityTool;
+import com.weekendtravel.backend.b2.tool.BookingRequest;
+import com.weekendtravel.backend.b2.tool.BookingResult;
+import com.weekendtravel.backend.b2.tool.BookingTool;
 import com.weekendtravel.backend.b2.tool.MessageActionSummary;
 import com.weekendtravel.backend.b2.tool.MessagePlanPayload;
+import com.weekendtravel.backend.b2.tool.MessagePoiPayload;
 import com.weekendtravel.backend.b2.tool.MessageRequest;
 import com.weekendtravel.backend.b2.tool.MessageResult;
 import com.weekendtravel.backend.b2.tool.MessageTimeSlot;
@@ -21,9 +25,13 @@ import com.weekendtravel.backend.plan.api.AdjustPlanResponse;
 import com.weekendtravel.backend.plan.api.ClarifyPlanRequest;
 import com.weekendtravel.backend.plan.api.ClarifyPlanResponse;
 import com.weekendtravel.backend.plan.api.CreatePlanRequest;
+import com.weekendtravel.backend.plan.api.ExecutePlanRequest;
+import com.weekendtravel.backend.plan.api.ExecutePlanResponse;
 import com.weekendtravel.backend.plan.sse.AdjustResultEvent;
 import com.weekendtravel.backend.plan.sse.ClarificationRequestEvent;
+import com.weekendtravel.backend.plan.sse.DoneEvent;
 import com.weekendtravel.backend.plan.sse.ErrorEvent;
+import com.weekendtravel.backend.plan.sse.ExecuteResultEvent;
 import com.weekendtravel.backend.plan.sse.PlanReadyEvent;
 import com.weekendtravel.backend.plan.sse.ReplanEvent;
 import com.weekendtravel.backend.plan.sse.StateChangeEvent;
@@ -34,6 +42,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +61,16 @@ public class PlanStateMachineService {
     private static final int MAX_ADJUST_ATTEMPTS = 3;
     private static final String SLOT = "weekendAfternoon";
     private static final String STATUS_CONFIRM = "CONFIRM";
+    private static final String STATUS_DONE = "DONE";
+    private static final String ACTION_RESERVE_TABLE = "reserve_table";
+    private static final String ACTION_SEND_MESSAGE = "send_message";
     private static final String ERROR_CODE_DEGRADE = "DEGRADE";
     private static final String CLARIFY_FIELD_DURATION_HOURS = "durationHours";
 
     private final SearchTool searchTool;
     private final RouteTool routeTool;
     private final AvailabilityTool availabilityTool;
+    private final BookingTool bookingTool;
     private final MessageTool messageTool;
     private final Map<String, PlanContext> plans = new ConcurrentHashMap<>();
 
@@ -65,11 +78,13 @@ public class PlanStateMachineService {
             SearchTool searchTool,
             RouteTool routeTool,
             AvailabilityTool availabilityTool,
+            BookingTool bookingTool,
             MessageTool messageTool
     ) {
         this.searchTool = searchTool;
         this.routeTool = routeTool;
         this.availabilityTool = availabilityTool;
+        this.bookingTool = bookingTool;
         this.messageTool = messageTool;
     }
 
@@ -86,7 +101,9 @@ public class PlanStateMachineService {
                 null,
                 null,
                 null,
-                null
+                null,
+                false,
+                false
         );
         plans.put(planId, context);
         return context;
@@ -106,6 +123,13 @@ public class PlanStateMachineService {
             continueAdjust(planId, emitter);
             return;
         }
+        if (context.currentState() == PlanState.CONFIRM && context.executionRequested()) {
+            continueExecution(planId, emitter);
+            return;
+        }
+        if (context.currentState() == PlanState.DONE && context.executionCompleted()) {
+            return;
+        }
         if (context.currentState() == PlanState.CONFIRM && context.packedPlan() != null) {
             emitter.send(SseEmitter.event().name("plan_ready").data(new PlanReadyEvent("plan_ready", planId, context.packedPlan())));
             return;
@@ -122,6 +146,20 @@ public class PlanStateMachineService {
         PendingClarification updated = context.pendingClarification().withReply(reply);
         plans.computeIfPresent(planId, (key, current) -> current.withPendingClarification(updated));
         return new ClarifyPlanResponse(planId, "processing", "已收到，继续规划中");
+    }
+
+    public ExecutePlanResponse executePlan(String planId, ExecutePlanRequest request) {
+        if (request == null || !Boolean.TRUE.equals(request.confirmed())) {
+            throw new IllegalArgumentException("confirmed must be true");
+        }
+        PlanContext context = requirePlan(planId);
+        if (context.currentState() != PlanState.CONFIRM || context.packedPlan() == null) {
+            throw new InvalidPlanStateException("plan must be in CONFIRM state before execute");
+        }
+        plans.computeIfPresent(planId, (key, current) -> current
+                .withExecutionRequested(true)
+                .withExecutionCompleted(false));
+        return new ExecutePlanResponse(planId, "executing", "开始执行，请关注右侧日志");
     }
 
     public AdjustPlanResponse adjustPlan(String planId, AdjustPlanRequest request) {
@@ -187,6 +225,41 @@ public class PlanStateMachineService {
         transition(planId, emitter, PlanState.ADJUST);
         transition(planId, emitter, PlanState.VALIDATE);
         validateAndPack(planId, emitter, adjustment.selection(), profile, adjustment.affectedSlots(), adjustment.summary());
+    }
+
+    private void continueExecution(String planId, SseEmitter emitter) throws IOException {
+        PlanContext context = requirePlan(planId);
+        if (context.packedPlan() == null || context.selectionSnapshot() == null) {
+            throw new InvalidPlanStateException("plan must be in CONFIRM state before execute");
+        }
+
+        transition(planId, emitter, PlanState.EXECUTE);
+        context = requirePlan(planId);
+
+        List<MessageActionSummary> executedActions = new ArrayList<>();
+        for (MessageActionSummary action : context.packedPlan().actions()) {
+            ExecuteResultEvent result = executeAction(context, action);
+            emitter.send(SseEmitter.event().name(result.type()).data(result));
+            executedActions.add(withActionResult(action, result));
+        }
+
+        MessagePlanPayload completedPlan = withPlanStatusAndActions(
+                context.packedPlan(),
+                STATUS_DONE,
+                executedActions
+        );
+        plans.computeIfPresent(planId, (key, current) -> current.withPackedPlan(completedPlan));
+
+        transition(planId, emitter, PlanState.DONE);
+        plans.computeIfPresent(planId, (key, current) -> current
+                .withExecutionRequested(false)
+                .withExecutionCompleted(true));
+        emitter.send(SseEmitter.event().name("done").data(new DoneEvent(
+                "done",
+                planId,
+                buildDoneSummary(executedActions),
+                System.currentTimeMillis()
+        )));
     }
 
     private void validateAndPack(
@@ -265,6 +338,93 @@ public class PlanStateMachineService {
         )));
     }
 
+    private ExecuteResultEvent executeAction(PlanContext context, MessageActionSummary action) {
+        if (ACTION_SEND_MESSAGE.equals(action.actionType())) {
+            long timestamp = System.currentTimeMillis();
+            return new ExecuteResultEvent(
+                    "execute_result",
+                    context.planId(),
+                    action.actionId(),
+                    action.actionType(),
+                    "success",
+                    "MOCK-MSG-" + confirmationSuffix(context.planId() + ":" + action.actionId()),
+                    timestamp
+            );
+        }
+
+        BookingResult booking = bookingTool.bookOrOrder(new BookingRequest(
+                context.planId(),
+                action.actionId(),
+                action.actionType(),
+                action.targetPoiId() == null ? targetPoiId(context, action.actionType()) : action.targetPoiId(),
+                action.description(),
+                context.planId() + ":" + action.actionId(),
+                action.confirmationNo()
+        ));
+        return new ExecuteResultEvent(
+                booking.type(),
+                booking.planId(),
+                booking.actionId(),
+                booking.actionType(),
+                booking.status(),
+                booking.confirmationNo(),
+                booking.timestamp()
+        );
+    }
+
+    private String targetPoiId(PlanContext context, String actionType) {
+        if ("buy_ticket".equals(actionType)) {
+            return context.selectionSnapshot().activity().poi().id();
+        }
+        return context.selectionSnapshot().restaurant().poi().id();
+    }
+
+    private MessageActionSummary withActionResult(MessageActionSummary action, ExecuteResultEvent result) {
+        return new MessageActionSummary(
+                action.actionId(),
+                action.actionType(),
+                action.targetPoiId(),
+                action.description(),
+                result.status(),
+                result.confirmationNo()
+        );
+    }
+
+    private MessagePlanPayload withPlanStatusAndActions(
+            MessagePlanPayload plan,
+            String status,
+            List<MessageActionSummary> actions
+    ) {
+        return new MessagePlanPayload(
+                plan.planId(),
+                plan.scenario(),
+                status,
+                plan.isPlanB(),
+                plan.planBReason(),
+                plan.summary(),
+                plan.timeline(),
+                actions,
+                plan.shareMessage(),
+                plan.totalDurationHours(),
+                plan.replanCount(),
+                plan.createdAt()
+        );
+    }
+
+    private String buildDoneSummary(List<MessageActionSummary> actions) {
+        long successCount = actions.stream().filter(action -> "success".equals(action.status())).count();
+        long failedCount = actions.stream().filter(action -> "failed".equals(action.status())).count();
+        long manualCount = actions.stream().filter(action -> "manual".equals(action.status())).count();
+        if (failedCount > 0 || manualCount > 0) {
+            return successCount + " 个动作已完成，" + failedCount + " 个失败，" + manualCount + " 个需人工处理";
+        }
+        return successCount + " 个动作已完成，行程执行包已生成";
+    }
+
+    private String confirmationSuffix(String seed) {
+        return String.format("%05d", Math.floorMod(seed.hashCode(), 100000));
+    }
+
     private PlanSelectionSnapshot selectCandidates(String planId, CreatePlanRequest request, ScenarioProfile profile, SseEmitter emitter) throws IOException {
         SearchResult activities = callSearch(planId, emitter, new SearchRequest(
                 request.scenario(),
@@ -286,7 +446,7 @@ public class PlanStateMachineService {
         ), profile.restaurantSearchSummary());
 
         SearchCandidate activity = firstCandidate(activities, "activity candidates are required");
-        SearchCandidate restaurant = firstCandidate(restaurants, "restaurant candidates are required");
+        SearchCandidate restaurant = firstReservableRestaurant(restaurants);
         return new PlanSelectionSnapshot(activity, restaurant, activities.candidates(), restaurants.candidates());
     }
 
@@ -332,8 +492,12 @@ public class PlanStateMachineService {
     private SearchCandidate searchFallbackRestaurant(PlanSelectionSnapshot selection) {
         return selection.restaurantCandidates().stream()
                 .filter(candidate -> !candidate.poi().id().equals(selection.restaurant().poi().id()))
+                .filter(candidate -> candidate.poi().actionTypes().contains(ACTION_RESERVE_TABLE))
                 .min(Comparator.comparingInt(candidate -> candidate.poi().distanceMinutesFromCenter()))
-                .orElse(selection.restaurant());
+                .orElseGet(() -> selection.restaurantCandidates().stream()
+                        .filter(candidate -> !candidate.poi().id().equals(selection.restaurant().poi().id()))
+                        .min(Comparator.comparingInt(candidate -> candidate.poi().distanceMinutesFromCenter()))
+                        .orElse(selection.restaurant()));
     }
 
     private SearchCandidate searchFallbackActivity(PlanSelectionSnapshot selection) {
@@ -428,6 +592,7 @@ public class PlanStateMachineService {
                         "activity",
                         selection.activity().poi().name(),
                         selection.activity().poi().name(),
+                        messagePoi(selection.activity(), decision.activityAvailability()),
                         profile.activityStartTime(),
                         profile.activityEndTime(),
                         selection.activity().poi().distanceMinutesFromCenter(),
@@ -438,6 +603,7 @@ public class PlanStateMachineService {
                         "restaurant",
                         selection.restaurant().poi().name(),
                         selection.restaurant().poi().name(),
+                        messagePoi(selection.restaurant(), decision.restaurantAvailability()),
                         profile.restaurantStartTime(),
                         profile.restaurantEndTime(),
                         decision.route().distanceMinutes(),
@@ -447,7 +613,8 @@ public class PlanStateMachineService {
         List<MessageActionSummary> actions = List.of(
                 new MessageActionSummary(
                         "act_" + context.planId() + "_reserve",
-                        "reserve_table",
+                        ACTION_RESERVE_TABLE,
+                        selection.restaurant().poi().id(),
                         profile.reserveActionText(),
                         "pending",
                         null
@@ -455,6 +622,7 @@ public class PlanStateMachineService {
                 new MessageActionSummary(
                         "act_" + context.planId() + "_message",
                         "send_message",
+                        null,
                         profile.messageActionText(),
                         "pending",
                         null
@@ -474,6 +642,20 @@ public class PlanStateMachineService {
                 OffsetDateTime.now().toString()
         ));
         return message.plan();
+    }
+
+    private MessagePoiPayload messagePoi(SearchCandidate candidate, AvailabilityResult availability) {
+        return new MessagePoiPayload(
+                candidate.poi().id(),
+                candidate.poi().name(),
+                candidate.poi().category(),
+                candidate.poi().address(),
+                candidate.poi().rating(),
+                candidate.poi().distanceMinutesFromCenter(),
+                candidate.poi().tags(),
+                availability.availabilityStatus(),
+                availability.waitMinutes()
+        );
     }
 
     private List<String> restaurantNotes(ScenarioProfile profile, String planBReason, boolean isPlanB) {
@@ -532,6 +714,13 @@ public class PlanStateMachineService {
         return result.candidates().stream()
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(message));
+    }
+
+    private SearchCandidate firstReservableRestaurant(SearchResult result) {
+        return result.candidates().stream()
+                .filter(candidate -> candidate.poi().actionTypes().contains(ACTION_RESERVE_TABLE))
+                .findFirst()
+                .orElseGet(() -> firstCandidate(result, "restaurant candidates are required"));
     }
 
     private PlanContext recordReplan(String planId, String reason, boolean injectedPlanB) {
