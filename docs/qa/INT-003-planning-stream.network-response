@@ -1,0 +1,60 @@
+event:heartbeat
+data:{"type":"heartbeat","planId":"plan_5ca109e3a00c","timestamp":1780324508900}
+
+event:state_change
+data:{"type":"state_change","planId":"plan_5ca109e3a00c","from":"START","to":"INTENT","timestamp":1780324508900}
+
+event:state_change
+data:{"type":"state_change","planId":"plan_5ca109e3a00c","from":"INTENT","to":"SKELETON","timestamp":1780324508901}
+
+event:state_change
+data:{"type":"state_change","planId":"plan_5ca109e3a00c","from":"SKELETON","to":"RECALL","timestamp":1780324508901}
+
+event:state_change
+data:{"type":"state_change","planId":"plan_5ca109e3a00c","from":"RECALL","to":"VALIDATE","timestamp":1780324508901}
+
+event:tool_call
+data:{"type":"tool_call","planId":"plan_5ca109e3a00c","tool":"searchLocalPlaces","status":"start","inputSummary":"æœç´¢æœ‹å‹æ´»åŠ¨å€™é€‰","timestamp":1780324508901}
+
+event:tool_result
+data:{"type":"tool_result","planId":"plan_5ca109e3a00c","tool":"searchLocalPlaces","status":"success","outputSummary":"æ‰¾åˆ° 2 ä¸ªå€™é€‰","latencyMs":1,"timestamp":1780324508903}
+
+event:tool_call
+data:{"type":"tool_call","planId":"plan_5ca109e3a00c","tool":"searchLocalPlaces","status":"start","inputSummary":"æœç´¢æœ‹å‹é¤åŽ…å€™é€‰","timestamp":1780324508903}
+
+event:tool_result
+data:{"type":"tool_result","planId":"plan_5ca109e3a00c","tool":"searchLocalPlaces","status":"success","outputSummary":"æ‰¾åˆ° 3 ä¸ªå€™é€‰","latencyMs":0,"timestamp":1780324508903}
+
+event:tool_call
+data:{"type":"tool_call","planId":"plan_5ca109e3a00c","tool":"searchLocalPlaces","status":"start","inputSummary":"æœç´¢æœ‹å‹å’–å•¡/ç”œå“å€™é€‰","timestamp":1780324508903}
+
+event:tool_result
+data:{"type":"tool_result","planId":"plan_5ca109e3a00c","tool":"searchLocalPlaces","status":"success","outputSummary":"æ‰¾åˆ° 3 ä¸ªå€™é€‰","latencyMs":0,"timestamp":1780324508903}
+
+event:tool_call
+data:{"type":"tool_call","planId":"plan_5ca109e3a00c","tool":"calculateRouteTime","status":"start","inputSummary":"æ ¡éªŒæ´»åŠ¨åˆ°é¤åŽ…è·¯çº¿","timestamp":1780324508904}
+
+event:tool_result
+data:{"type":"tool_result","planId":"plan_5ca109e3a00c","tool":"calculateRouteTime","status":"success","outputSummary":"ä»ŽåŸŽå¸‚å½±åƒå±•åˆ°æš®è‰²çƒ¤è‚‰çº¦11åˆ†é’Ÿï¼Œå»ºè®®çŸ­é€”ç§»åŠ¨ã€‚","latencyMs":1,"timestamp":1780324508905}
+
+event:tool_call
+data:{"type":"tool_call","planId":"plan_5ca109e3a00c","tool":"checkAvailability","status":"start","inputSummary":"æ£€æŸ¥åœ°ç‚¹ä½™ä½å’Œç­‰å¾…æ—¶é—´","timestamp":1780324508905}
+
+event:tool_result
+data:{"type":"tool_result","planId":"plan_5ca109e3a00c","tool":"checkAvailability","status":"success","outputSummary":"åŸŽå¸‚å½±åƒå±• çŠ¶æ€: available","latencyMs":1,"timestamp":1780324508906}
+
+event:tool_call
+data:{"type":"tool_call","planId":"plan_5ca109e3a00c","tool":"checkAvailability","status":"start","inputSummary":"æ£€æŸ¥åœ°ç‚¹ä½™ä½å’Œç­‰å¾…æ—¶é—´","timestamp":1780324508906}
+
+event:tool_result
+data:{"type":"tool_result","planId":"plan_5ca109e3a00c","tool":"checkAvailability","status":"success","outputSummary":"æš®è‰²çƒ¤è‚‰ çŠ¶æ€: available","latencyMs":0,"timestamp":1780324508906}
+
+event:state_change
+data:{"type":"state_change","planId":"plan_5ca109e3a00c","from":"VALIDATE","to":"PACK","timestamp":1780324508906}
+
+event:state_change
+data:{"type":"state_change","planId":"plan_5ca109e3a00c","from":"PACK","to":"CONFIRM","timestamp":1780324508907}
+
+event:plan_ready
+data:{"type":"plan_ready","planId":"plan_5ca109e3a00c","plan":{"planId":"plan_5ca109e3a00c","scenario":"friends","status":"CONFIRM","isPlanB":false,"planBReason":null,"summary":"æœ‹å‹æ´»åŠ¨ã€å’–å•¡/ç”œå“å’Œè½»æ¾èšé¤","timeline":[{"order":1,"type":"activity","title":"åŸŽå¸‚å½±åƒå±•","poiName":"åŸŽå¸‚å½±åƒå±•","poi":{"id":"poi_friend_activity_001","name":"åŸŽå¸‚å½±åƒå±•","category":"activity","address":"è‰ºæ–‡ä¸­å¿ƒ 2F","rating":4.7,"distanceMinutes":14,"tags":["é€‚åˆæ‹ç…§","å®¤å†…","æœ‹å‹å±€","è½»æ¾"],"availabilityStatus":"available","waitMinutes":8},"startTime":"14:30","endTime":"16:00","distanceMinutes":14,"notes":["é€‚åˆæœ‹å‹ä¸€èµ·æ”¾æ¾","å…¼é¡¾æ‹ç…§å’ŒèŠå¤©æ°›å›´"]},{"order":2,"type":"cafe","title":"è¡—è§’å’–å•¡","poiName":"è¡—è§’å’–å•¡","poi":{"id":"poi_friend_cafe_003","name":"è¡—è§’å’–å•¡","category":"cafe","address":"æ¢§æ¡è·¯ 18 å·","rating":4.5,"distanceMinutes":8,"tags":["æ‹ç…§","ç”œå“","èŠå¤©","æœ‹å‹å±€"],"availabilityStatus":"available","waitMinutes":10},"startTime":"16:15","endTime":"17:00","distanceMinutes":8,"notes":["é€‚åˆä¸­é€”ä¼‘æ¯å’Œæ‹ç…§","æ–¹ä¾¿ç»§ç»­èŠå¤©"]},{"order":3,"type":"restaurant","title":"æš®è‰²çƒ¤è‚‰","poiName":"æš®è‰²çƒ¤è‚‰","poi":{"id":"poi_friend_food_005","name":"æš®è‰²çƒ¤è‚‰","category":"restaurant","address":"æ¹–æ»¨è·¯ 66 å·","rating":4.6,"distanceMinutes":11,"tags":["é€‚åˆ4äºº","èƒ½è®¢ä½","æ°›å›´å¥½","æœ‹å‹èšé¤"],"availabilityStatus":"available","waitMinutes":12},"startTime":"17:30","endTime":"19:00","distanceMinutes":11,"notes":["é¤åŽ…å½“å‰å¯ç”¨","è·¯çº¿è¾ƒçŸ­ï¼Œé€‚åˆæœ‹å‹ç»§ç»­èšä¼š"]}],"actions":[{"actionId":"act_plan_5ca109e3a00c_reserve","actionType":"reserve_table","targetPoiId":"poi_friend_food_005","description":"é¢„çº¦ 17:30 çš„ 4 äººåº§ä½","status":"pending","confirmationNo":null},{"actionId":"act_plan_5ca109e3a00c_message","actionType":"send_message","targetPoiId":null,"description":"ç”Ÿæˆæœ‹å‹èšä¼šæ¶ˆæ¯","status":"pending","confirmationNo":null}],"shareMessage":"ä»Šå¤©ä¸‹åˆ 14:30 å…ˆåŽ»åŸŽå¸‚å½±åƒå±•ï¼Œ16:15 åŽ»è¡—è§’å’–å•¡ï¼Œ17:30 åŽ»æš®è‰²çƒ¤è‚‰ã€‚å·²å®‰æŽ’ï¼šé¢„çº¦ 17:30 çš„ 4 äººåº§ä½ã€‚æ•´ä½“å…¼é¡¾çŽ©ã€åƒã€æ‹ç…§å’ŒèŠå¤©ï¼Œè·¯çº¿æ¯”è¾ƒè½»æ¾ã€‚å…¨ç¨‹çº¦4.5å°æ—¶ã€‚","totalDurationHours":4.5,"replanCount":0,"createdAt":"2026-06-01T22:35:08.906893100+08:00"}}
+

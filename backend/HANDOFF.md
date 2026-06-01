@@ -1,5 +1,19 @@
 # Backend Handoff
 
+## 2026-06-01 INT-003 Friends scenario complete path
+
+- [x] `INT-003` 已完成并 verified：真实 friends real mode 已覆盖 `POST /api/plan`、规划 SSE、`plan_ready` / `CONFIRM`、`POST /api/plan/{planId}/execute`、执行 SSE、`execute_result` 和 `done`。
+- [x] 新增合同：`../docs/contracts/INT-003-friends-complete-path.md`。
+- [x] 新增 evaluator QA 报告、截图和 network raw 证据：`../docs/qa/INT-003-friends-complete-path.md`、`../docs/qa/INT-003-devtools-real.png`、`../docs/qa/INT-003-planning-stream.network-response`、`../docs/qa/INT-003-execution-stream.network-response`。
+- [x] `PlanStateMachineService` 的 friends planner 已在活动和餐厅之间加入 `cafe` / `dessert` social stop，friends packed plan 稳定输出 `activity + cafe/dessert + restaurant` 三段 timeline。
+- [x] `PlanSelectionSnapshot` 已记录 `socialStop` 和候选列表，activity / restaurant 微调保留该中途点。
+- [x] 执行阶段继续覆盖 `reserve_table` 和 `send_message`，确认号形如 `MOCK-TBL-*` 与 `MOCK-MSG-*`。
+- [x] `PlanFlowIntegrationTests` 已覆盖 friends `plan_ready -> execute -> done` 完整路径，并断言 friends plan 不混入家庭专属文案。
+- [x] Generator verification 通过：backend fast verify 48 tests、0 failures；frontend fast verify `pnpm verify:fixtures` 与 `pnpm typecheck` 通过；quoted snake_case field-key 检查无命中。
+- [x] 独立 evaluator Zeno (`019e8397-d87b-7f12-8312-2e83325f8c75`, `INT-003-EVAL-CODEX-20260601T2235+0800`) 已用 Chrome DevTools MCP 验证真实 friends path，结论 `PASS`。
+
+注意：`INT-003` 只代表 integrated friends happy path 的端到端证据；`QA-001` 的 21 Golden Cases 仍需单独执行记录。
+
 ## 2026-06-01 B1-004 State machine START to PACK close-out
 
 - [x] `B1-004` 已完成并 verified：后端 family happy path 已支持 `POST /api/plan` -> `GET /api/plan/{planId}/stream`，SSE 可观察到 `START -> INTENT -> SKELETON -> RECALL -> VALIDATE -> PACK`。
@@ -34,7 +48,7 @@
 - [x] Generator 后端 fast verify 通过：36 tests、0 failures、`BUILD SUCCESS`。
 - [x] 独立 evaluator Franklin (`019e691e-822d-7403-8ca3-df84e5f280c3`, `INT-001-EVAL-CODEX-20260527T1915+0800`) 已放行；Chrome DevTools MCP network 证据包含 `POST http://localhost:8000/api/plan [202]` 和 `GET /api/plan/{planId}/stream [200]`，SSE 响应体中 `state_change.data.planId` 与 POST 返回一致。
 
-注意：当前 `PlanStreamService` 仍是 Sprint 1 最小占位流，发送 `heartbeat` 和 `START -> INTENT` 后 complete。浏览器 EventSource 会进入 reconnect / `retrying`，这不阻塞 INT-001；完整状态机、`plan_ready`、执行事件和长流策略仍归后续 `B1-004`、`INT-002`、`INT-003`。
+注意：这是 INT-001 当时的历史限制；后续 `B1-004`、`INT-002` 和 `INT-003` 已分别补齐完整状态机与 family / friends happy path。
 
 ## 2026-05-28 B1-006 CLARIFY and ADJUST 验收
 
@@ -54,7 +68,7 @@
 - [x] Spring Boot + Maven 项目已初始化。
 - [x] `pom.xml`、`mvnw`、`src/main`、`src/test` 已存在。
 - [x] B2 POI mock 数据已落地为 `src/main/resources/mock/poi_data.json`，并通过 evaluator 验证。
-- [x] 当前已有健康检查 / CORS、B2 POI 数据、SearchTool、RouteTool、AvailabilityTool、BookingTool、MessageTool、ScenarioFlags、debug scenario API、`POST /api/plan`、规划 SSE、clarify / adjust、`POST /api/plan/{planId}/execute`、`execute_result` 和 `done`；`MockApiService` 仍未单独抽象实现。
+- [x] 当前已有健康检查 / CORS、B2 POI 数据、SearchTool、RouteTool、AvailabilityTool、BookingTool、MessageTool、ScenarioFlags、debug scenario API、`POST /api/plan`、family/friends 规划 SSE、clarify / adjust、`POST /api/plan/{planId}/execute`、`execute_result` 和 `done`；`MockApiService` 仍未单独抽象实现。
 - [ ] `GET /health` 已按 `docs/api-contract.md` 返回契约字段。
 - [x] CORS 已放通 `http://localhost:5173` 和 `http://127.0.0.1:5173`。
 - [x] `POST /api/plan` 已返回 `planId` 和 `status`。

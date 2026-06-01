@@ -1,5 +1,32 @@
 # Progress
 
+## 2026-06-01 INT-003 Friends scenario complete path
+
+### 已完成
+
+- 新增 `docs/contracts/INT-003-friends-complete-path.md`，明确本轮只跑通真实 real mode friends happy path：`POST /api/plan` -> planning SSE -> `plan_ready` / `CONFIRM` -> `POST /api/plan/{planId}/execute` -> execution SSE -> `execute_result` -> `done`。
+- 后端 friends planner 现在会在活动和餐厅之间加入 `cafe` / `dessert` 中途点；`PlanSelectionSnapshot` 记录该 social stop，friends packed plan 可稳定输出 `activity + cafe/dessert + restaurant` 三段 timeline。
+- 后端保留既有执行动作包：`reserve_table` 由 `BookingTool` 生成 `MOCK-TBL-*`，`send_message` 由 deterministic mock execution 生成 `MOCK-MSG-*`。
+- 后端集成测试 `PlanFlowIntegrationTests` 已把 friends 场景从“只到 plan_ready 文案”升级为完整 `plan_ready -> execute -> done` 路径，并断言 friends 文案不混入家庭 / 亲子专属话术。
+- 前端 real mode 无需新增代码；既有 `executePlan(planId, { confirmed: true })` 与执行 SSE 重连能力已被 INT-003 独立验收覆盖。
+- `feature_list.json` 已将 `INT-003` 标记为 `verified`，并写入 generator 与 independent evaluator 证据。
+
+### 验证记录
+
+- Generator backend fast verify：`.\verify.ps1 -Target backend -Mode fast` 通过，后端 48 tests、0 failures、0 errors、`BUILD SUCCESS`、`Verify passed.`。
+- Generator frontend fast verify：`.\verify.ps1 -Target frontend -Mode fast` 通过，`pnpm verify:fixtures` 与 `pnpm typecheck` 均通过。
+- Generator quoted snake_case field-key 检查无命中：`rg -n --pcre2 '\x22[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]*\x22\s*:' backend\src frontend\src frontend\scripts docs\fixtures`。
+- 独立 evaluator Zeno (`019e8397-d87b-7f12-8312-2e83325f8c75`, `INT-003-EVAL-CODEX-20260601T2235+0800`) 已完成正式验收并放行，结论：`PASS`。
+- Chrome DevTools MCP real mode 路径通过：选择 `朋友` -> 提交 friends demo 输入 -> `plan_ready` / `CONFIRM` -> 点击确认执行 -> `DONE`。
+- 页面证据包含：`Mode real`、真实 `plan_5ca109e3a00c`、summary `朋友活动、咖啡/甜品和轻松聚餐`、timeline `城市影像展` / `街角咖啡` / `暮色烤肉`、ExecutionTracker `2 / 2`、`MOCK-TBL-94672`、`MOCK-MSG-43835`、LogPanel `execute_result` 与 `done`。
+- Console error / warn 为 0；network 包含 `POST /api/plan [202]`、planning stream `[200]`、`POST /execute [200]`、execution stream `[200]`，请求体确认 `scenario:"friends"`，执行流包含两条 `execute_result` 和 `done`。
+- QA 报告：`docs/qa/INT-003-friends-complete-path.md`；evaluator 截图：`docs/qa/INT-003-devtools-real.png`；raw network 证据：`docs/qa/INT-003-planning-stream.network-response`、`docs/qa/INT-003-execution-stream.network-response`。
+
+### 当前状态
+
+- `INT-003` 已完成并 verified，friends real mode 端到端路径已经从输入、方案确认、真实执行到 `DONE` 全链路打通。
+- 下一步集成建议转入真实异常 / degrade 链路补证，或进入 `QA-001` 21 Golden Cases；不要把 INT-002 / INT-003 两条 happy path 泛化成 golden cases 已完成。
+
 ## 2026-06-01 B1-004 State machine START to PACK close-out
 
 ### 已完成
@@ -21,7 +48,7 @@
 ### 当前状态
 
 - `B1-004` 已完成并 verified。
-- 后续不需要再把 `B1-004` 当作未收口前置项；继续推进时可优先看 `INT-003` friends complete path 或真实异常 / degrade 补证。
+- 后续不需要再把 `B1-004` 当作未收口前置项；`INT-003` 也已在 2026-06-01 完成，继续推进时可优先看真实异常 / degrade 补证或 `QA-001`。
 
 ## 2026-05-31 INT-002 Family scenario complete path
 
@@ -50,7 +77,7 @@
 ### 当前状态
 
 - `INT-002` 已完成并 verified，family real mode 端到端路径已经从输入、澄清、方案确认、真实执行到 `DONE` 全链路打通。
-- 下一步集成建议转入 `INT-003` friends complete path，或在独立任务中补真实异常 / degrade 链路证据；不要把本轮 family 证据泛化成 friends path 已完成。
+- 历史说明：本节生成时 `INT-003` 尚未完成；当前 `INT-003` 已在 2026-06-01 verified。后续建议转入真实异常 / degrade 链路补证或 `QA-001`。
 
 ## 2026-05-30 F1-008 Plan B highlight and error/degrade states
 
@@ -93,7 +120,7 @@
 ### 当前状态
 - `F1-008` 已完成并 verified。
 - 前端当前具备 InputPanel、useSSE、LogPanel、PlanCard、ConfirmButton、ExecutionTracker、ClarifyBubble、AdjustPanel 和 StateSummaryPanel。
-- F1 计划内的前端基础能力已覆盖到 Plan B 高亮、微调、执行追踪、完成态和异常 / 降级状态可见入口；后续如需真实后端异常网络证据，应进入 `INT-002` / `INT-003` 或专门 real mode integration 任务。
+- F1 计划内的前端基础能力已覆盖到 Plan B 高亮、微调、执行追踪、完成态和异常 / 降级状态可见入口；`INT-002` / `INT-003` happy path 已完成，后续如需真实后端异常网络证据，应进入专门 real mode integration 任务。
 
 ## 2026-05-30 F1-007 AdjustPanel
 
@@ -145,7 +172,7 @@
 
 - `F1-007` 已完成并 verified。
 - 前端当前具备 InputPanel、useSSE、LogPanel、PlanCard、ConfirmButton、ExecutionTracker、ClarifyBubble 和 AdjustPanel。
-- 下一个 F1 小目标建议推进 `F1-008`：Plan B highlight and error/degrade states；或进入 `INT-002` / `INT-003` 做完整 family / friends 端到端联调。
+- 历史说明：本节生成时下一步仍是 `F1-008` 或 `INT-002` / `INT-003`；这些任务当前均已完成，后续应转向真实异常 / degrade 补证或 `QA-001`。
 
 ## 2026-05-29 WF-002 Chrome DevTools MCP only
 
@@ -412,7 +439,7 @@
 
 - `INT-001` 已完成并 verified。
 - Sprint 1 最小真实联调链路已经成立：前端 real mode 可以提交一句 Demo 输入，后端返回 `planId`，前端用该 `planId` 连接 SSE 并渲染真实后端 `state_change`。
-- 当前后端最小 SSE stream 会在发送必需事件后 complete，浏览器 EventSource 因此进入 `retrying` 并可能重复显示 `heartbeat` / `state_change`；这不阻塞 INT-001，完整状态机和长流行为留给后续 `B1-004` / `INT-002` / `INT-003`。
+- 历史说明：INT-001 当时的最小 SSE stream 会在发送必需事件后 complete；后续 `B1-004`、`INT-002` 和 `INT-003` 已分别补齐完整状态机与 family / friends happy path。
 - 下一步集成建议仍是先推进 `B1-004` 状态机 START -> PACK，再接 `F1-005` / `INT-002` 的 plan_ready 和执行路径。
 
 ## 2026-05-26 F1-004 InputPanel and POST /api/plan
