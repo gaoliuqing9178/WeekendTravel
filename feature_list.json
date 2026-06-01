@@ -1,6 +1,6 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-05-31",
+  "updatedAt": "2026-06-01",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
     {
@@ -140,7 +140,7 @@
       "track": "backend",
       "owner": "B1",
       "title": "Agent state machine START to PACK",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["B1-002", "B1-003", "B2-002", "B2-003"],
       "contract": "docs/contracts/B1-004-state-machine-start-pack.md",
@@ -150,7 +150,12 @@
         "Every state transition emits state_change",
         "Candidate ranking documents and applies score = 0.4 relevance + 0.3 distance + 0.2 rating + 0.1 availability health"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-06-01: Generator confirmed existing backend implementation satisfies B1-004 contract via PlanStateMachineService, PlanStreamService, PlanControllerStreamTests, and PlanFlowIntegrationTests; no production code change was needed.",
+        "2026-06-01: Generator verification passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target backend -Mode fast -> 48 tests, 0 failures, BUILD SUCCESS, Verify passed.",
+        "2026-06-01: Independent evaluator Volta (019e837b-353a-7990-ae11-a71a58741421) ran backend fast verify and real HTTP POST /api/plan plus GET /api/plan/{planId}/stream sampling; observed heartbeat, state_change, tool_call, tool_result, START/INTENT/SKELETON/RECALL/VALIDATE/PACK, latencyMs, and plan_ready; verdict: PASS.",
+        "2026-06-01: Evaluator evidence written to docs/qa/B1-004-state-machine-start-pack.md; progress.md, docs/handoff.md, and backend/HANDOFF.md synced."
+      ]
     },
     {
       "id": "B1-005",

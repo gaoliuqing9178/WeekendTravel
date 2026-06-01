@@ -1,5 +1,28 @@
 # Progress
 
+## 2026-06-01 B1-004 State machine START to PACK close-out
+
+### 已完成
+
+- 检查 `B1-004` 补流程前状态：代码和测试已经满足 `docs/contracts/B1-004-state-machine-start-pack.md`，但 `feature_list.json` 仍是 `todo` 且 evidence 为空。
+- 新增独立 evaluator QA 报告：`docs/qa/B1-004-state-machine-start-pack.md`。
+- 将 `feature_list.json` 中 `B1-004` 更新为 `verified`，并写入 generator 验证与 independent evaluator 证据。
+- 同步 `docs/handoff.md` 与 `backend/HANDOFF.md`，把旧的 `B1-004` 未单独收口提醒改为已收口状态。
+
+### 验证记录
+
+- Generator backend fast verify：`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target backend -Mode fast` 通过，后端 48 tests、0 failures、`BUILD SUCCESS`、`Verify passed.`。
+- `feature_list.json` 可通过 `ConvertFrom-Json` 解析。
+- 独立 evaluator Volta (`019e837b-353a-7990-ae11-a71a58741421`) 做了只读复核并放行，结论：`PASS`。
+- Evaluator 运行 backend fast verify 通过，并临时启动后端做真实 HTTP 抽样：`POST /api/plan` 返回 `planId=plan_c7092ab341f0` 与 `status=processing`，随后 `GET /api/plan/{planId}/stream` 返回 200。
+- Evaluator 观察到 SSE 事件：`heartbeat`、`state_change`、`tool_call`、`tool_result`、`plan_ready`；状态链包含 `START -> INTENT -> SKELETON -> RECALL -> VALIDATE -> PACK`，当前实现随后进入 `CONFIRM`，属于后续确认链路扩展，不阻塞 B1-004。
+- Evaluator 确认 `tool_result` 包含 `latencyMs`，`plan_ready.plan` 是可消费 camelCase payload，排序公式实现为 `0.4 * relevance + 0.3 * distance + 0.2 * rating + 0.1 * availability`。
+
+### 当前状态
+
+- `B1-004` 已完成并 verified。
+- 后续不需要再把 `B1-004` 当作未收口前置项；继续推进时可优先看 `INT-003` friends complete path 或真实异常 / degrade 补证。
+
 ## 2026-05-31 INT-002 Family scenario complete path
 
 ### 已完成
@@ -9,7 +32,7 @@
 - 后端 family packed plan 现在带前端可渲染的 `poi` payload；执行阶段使用 `BookingTool` 处理 `reserve_table`，并以 deterministic mock 方式处理 `send_message`，返回 `MOCK-TBL-*` 与 `MOCK-MSG-*`。
 - 后端餐厅选择优先挑选支持 `reserve_table` 的 POI，避免 family happy path 在执行阶段因为餐厅动作不支持而失败。
 - 前端 real mode 收到 `clarification_request` 或 `plan_ready` 后会关闭规划流，避免停在确认态后持续重连；点击确认执行后会用同一个 `planId` 重新连接 SSE，消费真实 `execute_result` 与 `done`。
-- `feature_list.json` 已将 `INT-002` 标记为 `verified`，并写入 generator 与 independent evaluator 证据；`B1-004` 本轮没有单独 evaluator 证据，仍不单独改为 `verified`。
+- `feature_list.json` 已将 `INT-002` 标记为 `verified`，并写入 generator 与 independent evaluator 证据；`B1-004` 已在 2026-06-01 另行补齐单独 evaluator 证据并标记为 `verified`。
 
 ### 验证记录
 
@@ -306,7 +329,7 @@
 - 新增根目录 `README.md`，作为 WeekendTravel 的项目入口文档。
 - README 覆盖项目目标、`family` / `friends` Demo 范围、前后端技术栈、默认端口、目录结构、初始化检查、依赖安装、本地运行、mock / real mode 切换和仓库级验证命令。
 - README 指向 `docs/api-contract.md`、`feature_list.json`、`progress.md`、`docs/handoff.md`、`backend/HANDOFF.md`、`frontend/F1-handoff.md` 和常用长期文档入口。
-- README 明确当前能力状态以 `feature_list.json` 和 evaluator 证据为准；`B1-004` 仍不标记为已完成，只说明源码中已有相关实现和测试文件。
+- README 明确当前能力状态以 `feature_list.json` 和 evaluator 证据为准；当时 `B1-004` 尚未标记完成，已在 2026-06-01 通过独立 evaluator 证据补齐。
 - 新增 `docs/contracts/DOC-001-root-readme.md`，记录本轮 README 验收边界。
 - 新增 `docs/qa/DOC-001-root-readme.md`，整理独立 evaluator 子代理 CodeChecker 的只读 PASS 结论。
 - 更新 `feature_list.json`，新增 `DOC-001` 并按 evaluator 证据标记为 `verified`。
@@ -329,7 +352,7 @@
 
 - `DOC-001` 已完成并 verified。
 - 本轮不涉及前端 UI、后端 API 或业务代码变更。
-- `B1-004`、`F1-005`、`INT-*` 等原有未完成条目状态不变，仍以后续各自 contract 和 evaluator 证据推进。
+- 历史说明：本节生成时 `B1-004`、`F1-005`、`INT-*` 等原有未完成条目状态不变；其中 `B1-004` 已在 2026-06-01 补齐单独 evaluator 证据并标记为 `verified`。
 ## 2026-05-27 F1-005 PlanCard, ConfirmButton, and ExecutionTracker
 
 ### 已完成

@@ -1,5 +1,15 @@
 # Backend Handoff
 
+## 2026-06-01 B1-004 State machine START to PACK close-out
+
+- [x] `B1-004` 已完成并 verified：后端 family happy path 已支持 `POST /api/plan` -> `GET /api/plan/{planId}/stream`，SSE 可观察到 `START -> INTENT -> SKELETON -> RECALL -> VALIDATE -> PACK`。
+- [x] 新增 evaluator QA 报告：`../docs/qa/B1-004-state-machine-start-pack.md`。
+- [x] `PlanStateMachineService` 已发送 `heartbeat` 之后的规划状态链、`tool_call` / `tool_result`、`plan_ready`，并保留后续 `PACK -> CONFIRM` 扩展。
+- [x] `tool_result` 包含 `latencyMs`，`plan_ready.plan` 是可消费 camelCase payload。
+- [x] Generator 后端 fast verify 通过：48 tests、0 failures、`BUILD SUCCESS`、`Verify passed.`。
+- [x] 独立 evaluator Volta (`019e837b-353a-7990-ae11-a71a58741421`) 已只读复核并放行：backend fast verify 通过，真实 HTTP 抽样 `POST /api/plan` -> `GET /api/plan/{planId}/stream` 通过，结论 `PASS`。
+- [x] `feature_list.json` 已将 `B1-004` 标记为 `verified` 并写入 evidence。
+
 ## 2026-05-31 INT-002 Family scenario complete path
 
 - [x] `INT-002` 已完成并 verified：真实 family real mode 已覆盖 `POST /api/plan`、规划 SSE、`POST /api/plan/{planId}/clarify`、`plan_ready` / `CONFIRM`、`POST /api/plan/{planId}/execute`、执行 SSE、`execute_result` 和 `done`。
@@ -13,7 +23,7 @@
 - [x] Generator verification 通过：backend fast verify、frontend fast verify、all fast verify 均通过；后端 48 tests、0 failures。
 - [x] 独立 evaluator Evaluator (`019e7d13-a0dc-76d2-8a94-2e28f4a36d8c`, `INT-002-EVAL-CODEX-20260531T1615+0800`) 已用 Chrome DevTools MCP 验证真实 family path，结论 `PASS`。
 
-注意：`B1-004` 仍未作为单独条目在 `feature_list.json` 标记为 verified；本轮只把已由 evaluator 证明的 integrated family path `INT-002` 标记为 verified。
+注意：`B1-004` 已在 2026-06-01 作为单独条目补齐 evaluator 证据并标记为 verified；`INT-002` 仍只代表 integrated family path 的端到端证据。
 
 ## 2026-05-27 INT-001 联调验收
 
