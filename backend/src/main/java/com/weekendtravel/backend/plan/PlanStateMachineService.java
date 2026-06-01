@@ -444,10 +444,32 @@ public class PlanStateMachineService {
                 profile.groupSize(),
                 6
         ), profile.restaurantSearchSummary());
+        SearchCandidate socialStop = null;
+        List<SearchCandidate> socialStopCandidates = List.of();
+        if (profile.hasSocialStop()) {
+            SearchResult socialStops = callSearch(planId, emitter, new SearchRequest(
+                    request.scenario(),
+                    profile.socialStopCategories(),
+                    profile.socialStopKeyword(request.text()),
+                    MAX_DISTANCE_MINUTES,
+                    profile.minAge(),
+                    profile.groupSize(),
+                    4
+            ), profile.socialStopSearchSummary());
+            socialStop = firstCandidate(socialStops, "social stop candidates are required");
+            socialStopCandidates = socialStops.candidates();
+        }
 
         SearchCandidate activity = firstCandidate(activities, "activity candidates are required");
         SearchCandidate restaurant = firstReservableRestaurant(restaurants);
-        return new PlanSelectionSnapshot(activity, restaurant, activities.candidates(), restaurants.candidates());
+        return new PlanSelectionSnapshot(
+                activity,
+                socialStop,
+                restaurant,
+                activities.candidates(),
+                socialStopCandidates,
+                restaurants.candidates()
+        );
     }
 
     private ValidationDecision validateSelection(String planId, PlanSelectionSnapshot selection, ScenarioProfile profile, SseEmitter emitter) throws IOException {
@@ -509,7 +531,15 @@ public class PlanStateMachineService {
 
     private boolean sameSelection(PlanSelectionSnapshot current, PlanSelectionSnapshot next) {
         return current.activity().poi().id().equals(next.activity().poi().id())
+                && sameCandidate(current.socialStop(), next.socialStop())
                 && current.restaurant().poi().id().equals(next.restaurant().poi().id());
+    }
+
+    private boolean sameCandidate(SearchCandidate current, SearchCandidate next) {
+        if (current == null || next == null) {
+            return current == next;
+        }
+        return current.poi().id().equals(next.poi().id());
     }
 
     private AdjustmentSelection applyAdjustment(PlanSelectionSnapshot selection, String instruction) {
@@ -567,11 +597,19 @@ public class PlanStateMachineService {
             return "已完成局部调整";
         }
         if (affectedSlots.contains("activity") && !plan.timeline().isEmpty()) {
-            String activityTitle = plan.timeline().get(0).title();
+            String activityTitle = plan.timeline().stream()
+                    .filter(slot -> "activity".equals(slot.type()))
+                    .findFirst()
+                    .map(MessageTimeSlot::title)
+                    .orElse(plan.timeline().get(0).title());
             return "已将活动调整为 " + activityTitle + "，其余安排保持不变";
         }
         if (affectedSlots.contains("restaurant") && plan.timeline().size() > 1) {
-            String restaurantTitle = plan.timeline().get(1).title();
+            String restaurantTitle = plan.timeline().stream()
+                    .filter(slot -> "restaurant".equals(slot.type()))
+                    .findFirst()
+                    .map(MessageTimeSlot::title)
+                    .orElse(plan.timeline().get(plan.timeline().size() - 1).title());
             return "已将餐厅换为 " + restaurantTitle + "，其余安排保持不变";
         }
         return "已完成局部调整";
@@ -586,30 +624,42 @@ public class PlanStateMachineService {
         CreatePlanRequest request = context.request();
         boolean isPlanB = context.replanCount() > 0;
         String planBReason = isPlanB ? context.latestReason() : null;
-        List<MessageTimeSlot> timeline = List.of(
-                new MessageTimeSlot(
-                        1,
-                        "activity",
-                        selection.activity().poi().name(),
-                        selection.activity().poi().name(),
-                        messagePoi(selection.activity(), decision.activityAvailability()),
-                        profile.activityStartTime(),
-                        profile.activityEndTime(),
-                        selection.activity().poi().distanceMinutesFromCenter(),
-                        profile.activityNotes()
-                ),
-                new MessageTimeSlot(
-                        2,
-                        "restaurant",
-                        selection.restaurant().poi().name(),
-                        selection.restaurant().poi().name(),
-                        messagePoi(selection.restaurant(), decision.restaurantAvailability()),
-                        profile.restaurantStartTime(),
-                        profile.restaurantEndTime(),
-                        decision.route().distanceMinutes(),
-                        restaurantNotes(profile, planBReason, isPlanB)
-                )
-        );
+        List<MessageTimeSlot> timeline = new ArrayList<>();
+        timeline.add(new MessageTimeSlot(
+                1,
+                "activity",
+                selection.activity().poi().name(),
+                selection.activity().poi().name(),
+                messagePoi(selection.activity(), decision.activityAvailability()),
+                profile.activityStartTime(),
+                profile.activityEndTime(),
+                selection.activity().poi().distanceMinutesFromCenter(),
+                profile.activityNotes()
+        ));
+        if (selection.socialStop() != null) {
+            timeline.add(new MessageTimeSlot(
+                    2,
+                    selection.socialStop().poi().category(),
+                    selection.socialStop().poi().name(),
+                    selection.socialStop().poi().name(),
+                    messagePoi(selection.socialStop()),
+                    profile.socialStopStartTime(),
+                    profile.socialStopEndTime(),
+                    selection.socialStop().poi().distanceMinutesFromCenter(),
+                    profile.socialStopNotes()
+            ));
+        }
+        timeline.add(new MessageTimeSlot(
+                timeline.size() + 1,
+                "restaurant",
+                selection.restaurant().poi().name(),
+                selection.restaurant().poi().name(),
+                messagePoi(selection.restaurant(), decision.restaurantAvailability()),
+                profile.restaurantStartTime(),
+                profile.restaurantEndTime(),
+                decision.route().distanceMinutes(),
+                restaurantNotes(profile, planBReason, isPlanB)
+        ));
         List<MessageActionSummary> actions = List.of(
                 new MessageActionSummary(
                         "act_" + context.planId() + "_reserve",
@@ -655,6 +705,20 @@ public class PlanStateMachineService {
                 candidate.poi().tags(),
                 availability.availabilityStatus(),
                 availability.waitMinutes()
+        );
+    }
+
+    private MessagePoiPayload messagePoi(SearchCandidate candidate) {
+        return new MessagePoiPayload(
+                candidate.poi().id(),
+                candidate.poi().name(),
+                candidate.poi().category(),
+                candidate.poi().address(),
+                candidate.poi().rating(),
+                candidate.poi().distanceMinutesFromCenter(),
+                candidate.poi().tags(),
+                candidate.poi().availabilityStatus(),
+                candidate.poi().waitMinutes()
         );
     }
 
@@ -792,20 +856,26 @@ public class PlanStateMachineService {
                     FRIENDS_GROUP_SIZE,
                     "拍照",
                     "聚餐",
+                    List.of("cafe", "dessert"),
+                    "拍照",
                     "搜索朋友活动候选",
                     "搜索朋友餐厅候选",
+                    "搜索朋友咖啡/甜品候选",
+                    "14:30",
                     "16:00",
-                    "18:00",
-                    "18:20",
-                    "19:40",
+                    "16:15",
+                    "17:00",
+                    "17:30",
+                    "19:00",
                     List.of("适合朋友一起放松", "兼顾拍照和聊天氛围"),
+                    List.of("适合中途休息和拍照", "方便继续聊天"),
                     List.of("餐厅当前可用", "路线较短，适合朋友继续聚会"),
                     "已优先保留活动安排",
-                    "预约 18:20 的 4 人座位",
+                    "预约 17:30 的 4 人座位",
                     "生成朋友聚会消息",
-                    3.7,
+                    4.5,
                     "朋友活动后改去更近且可用的聚餐地点",
-                    "朋友活动搭配轻松聚餐"
+                    "朋友活动、咖啡/甜品和轻松聚餐"
             );
         }
         return new ScenarioProfile(
@@ -813,13 +883,19 @@ public class PlanStateMachineService {
                 FAMILY_GROUP_SIZE,
                 "亲子",
                 "儿童椅",
+                List.of(),
+                "",
                 "搜索家庭活动候选",
                 "搜索家庭餐厅候选",
+                "",
                 "14:00",
                 "16:00",
+                null,
+                null,
                 "16:30",
                 "17:45",
                 List.of("适合 5 岁儿童", "室内活动，天气影响小"),
+                List.of(),
                 List.of("餐厅当前可用", "路线较短，适合带孩子转场"),
                 "已优先保留活动地点",
                 "预约 16:30 的家庭座位",
@@ -876,13 +952,19 @@ public class PlanStateMachineService {
             int groupSize,
             String activityKeyword,
             String restaurantKeyword,
+            List<String> socialStopCategories,
+            String socialStopKeyword,
             String activitySearchSummary,
             String restaurantSearchSummary,
+            String socialStopSearchSummary,
             String activityStartTime,
             String activityEndTime,
+            String socialStopStartTime,
+            String socialStopEndTime,
             String restaurantStartTime,
             String restaurantEndTime,
             List<String> activityNotes,
+            List<String> socialStopNotes,
             List<String> defaultRestaurantNotes,
             String fallbackRestaurantNote,
             String reserveActionText,
@@ -897,6 +979,17 @@ public class PlanStateMachineService {
 
         private String restaurantKeyword(String text) {
             return containsKeyword(text, "排队", "晚饭", "餐厅", "吃", "聚餐") ? restaurantKeyword : "";
+        }
+
+        private boolean hasSocialStop() {
+            return socialStopCategories != null && !socialStopCategories.isEmpty();
+        }
+
+        private String socialStopKeyword(String text) {
+            if (!hasSocialStop()) {
+                return "";
+            }
+            return containsKeyword(text, "拍照", "咖啡", "甜品", "下午茶", "聊天") ? socialStopKeyword : "";
         }
 
         private String summary(boolean isPlanB) {

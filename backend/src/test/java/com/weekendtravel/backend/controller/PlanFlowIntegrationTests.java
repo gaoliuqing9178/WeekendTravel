@@ -136,7 +136,7 @@ class PlanFlowIntegrationTests {
     }
 
     @Test
-    void friendsScenarioReachesPlanReadyWithFriendsCopy() throws Exception {
+    void friendsScenarioCompletePathIncludesCafeOrDessertAndExecutesActions() throws Exception {
         resetScenarioFlags();
         HttpResponse<String> createResponse = postPlan("今天下午4个人出去玩，想找个能拍照也能吃饭的地方", "friends");
 
@@ -150,9 +150,31 @@ class PlanFlowIntegrationTests {
         String bodyText = streamResponse.body();
         assertTrue(bodyText.contains("plan_ready"), bodyText);
         assertTrue(bodyText.contains("\"scenario\":\"friends\""), bodyText);
-        assertTrue(bodyText.contains("朋友活动搭配轻松聚餐"), bodyText);
-        assertTrue(bodyText.contains("预约 18:20 的 4 人座位"), bodyText);
+        assertTrue(bodyText.contains("\"type\":\"activity\""), bodyText);
+        assertTrue(bodyText.contains("\"type\":\"cafe\"") || bodyText.contains("\"type\":\"dessert\""), bodyText);
+        assertTrue(bodyText.contains("\"type\":\"restaurant\""), bodyText);
+        assertTrue(bodyText.contains("朋友活动、咖啡/甜品和轻松聚餐"), bodyText);
+        assertTrue(bodyText.contains("预约 17:30 的 4 人座位"), bodyText);
         assertFalse(bodyText.contains("适合 5 岁儿童"), bodyText);
+
+        HttpResponse<String> executeResponse = executePlan(planId, true);
+        assertEquals(200, executeResponse.statusCode());
+        JsonNode executeJson = objectMapper.readTree(executeResponse.body());
+        assertEquals(planId, executeJson.path("planId").asText());
+        assertEquals("executing", executeJson.path("status").asText());
+
+        HttpResponse<String> executionStream = streamPlan(planId);
+        assertEquals(200, executionStream.statusCode());
+        String executionBody = executionStream.body();
+        assertTrue(executionBody.contains("CONFIRM"), executionBody);
+        assertTrue(executionBody.contains("EXECUTE"), executionBody);
+        assertTrue(executionBody.contains("event:execute_result"), executionBody);
+        assertTrue(executionBody.contains("reserve_table"), executionBody);
+        assertTrue(executionBody.contains("send_message"), executionBody);
+        assertTrue(executionBody.contains("MOCK-TBL-"), executionBody);
+        assertTrue(executionBody.contains("MOCK-MSG-"), executionBody);
+        assertTrue(executionBody.contains("event:done"), executionBody);
+        assertTrue(executionBody.contains("DONE"), executionBody);
     }
 
     @Test

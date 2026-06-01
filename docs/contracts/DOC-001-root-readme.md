@@ -11,7 +11,7 @@
 
 - 不修改前端或后端业务代码。
 - 不修改 API 契约字段、端口、状态机或 fixture。
-- 不把 `B1-004` 或其他未 verified 条目标记为已完成。
+- 不把任何未 verified 条目标记为已完成。
 - 不运行前端浏览器 UI 验收；本轮是文档入口任务，不涉及 UI 行为变更。
 
 ## 用户路径
@@ -32,7 +32,7 @@
 
 - `feature_list.json` 必须保持可解析。
 - README 对当前状态的描述必须与 `feature_list.json` 保持一致。
-- `B1-004` 当前仍是 `todo`，README 只能说明源码中存在相关实现和测试文件，是否完成以 `feature_list.json` 的 evaluator 证据为准。
+- README 不应自行声明未 verified 条目已完成；具体能力是否完成以 `feature_list.json` 的当前状态和 evaluator 证据为准。
 
 ## 验收方式
 
@@ -70,7 +70,7 @@ API / 日志 / 截图证据：
 
 - 根目录没有 `README.md`，失败。
 - README 缺少项目目标、运行方式或验证方式，失败。
-- README 误称 `B1-004` 或其他 `todo` 条目已 verified，失败。
+- README 误称任何 `todo` 条目已 verified，失败。
 - README 没有指向 `docs/api-contract.md` 或 `feature_list.json`，失败。
 - `feature_list.json` 不能解析，失败。
 - 没有独立 evaluator 子代理验证证据，不能标记为 `verified`。

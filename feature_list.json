@@ -1,6 +1,6 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-05-31",
+  "updatedAt": "2026-06-01",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
     {
@@ -140,7 +140,7 @@
       "track": "backend",
       "owner": "B1",
       "title": "Agent state machine START to PACK",
-      "status": "todo",
+      "status": "verified",
       "priority": "P0",
       "dependsOn": ["B1-002", "B1-003", "B2-002", "B2-003"],
       "contract": "docs/contracts/B1-004-state-machine-start-pack.md",
@@ -150,7 +150,12 @@
         "Every state transition emits state_change",
         "Candidate ranking documents and applies score = 0.4 relevance + 0.3 distance + 0.2 rating + 0.1 availability health"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-06-01: Generator confirmed existing backend implementation satisfies B1-004 contract via PlanStateMachineService, PlanStreamService, PlanControllerStreamTests, and PlanFlowIntegrationTests; no production code change was needed.",
+        "2026-06-01: Generator verification passed: powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\\verify.ps1 -Target backend -Mode fast -> 48 tests, 0 failures, BUILD SUCCESS, Verify passed.",
+        "2026-06-01: Independent evaluator Volta (019e837b-353a-7990-ae11-a71a58741421) ran backend fast verify and real HTTP POST /api/plan plus GET /api/plan/{planId}/stream sampling; observed heartbeat, state_change, tool_call, tool_result, START/INTENT/SKELETON/RECALL/VALIDATE/PACK, latencyMs, and plan_ready; verdict: PASS.",
+        "2026-06-01: Evaluator evidence written to docs/qa/B1-004-state-machine-start-pack.md; progress.md, docs/handoff.md, and backend/HANDOFF.md synced."
+      ]
     },
     {
       "id": "B1-005",
@@ -525,7 +530,7 @@
       "track": "integration",
       "owner": "B1/B2/F1",
       "title": "Friends scenario complete path",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["INT-001", "B1-004", "B2-004", "F1-005"],
       "contract": "docs/contracts/INT-003-friends-complete-path.md",
@@ -534,7 +539,12 @@
         "Plan includes activity, dessert/cafe or photo stop, and restaurant",
         "Confirm executes mock actions"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-06-01: Generator added contract docs/contracts/INT-003-friends-complete-path.md and implemented the real friends happy path by adding a cafe/dessert social stop to backend friends planning while keeping the existing real-mode frontend execute SSE flow.",
+        "2026-06-01: Generator verification passed: backend fast verify -> 48 tests, 0 failures; frontend fast verify -> pnpm verify:fixtures and pnpm typecheck passed; quoted snake_case field-key scan across backend/src, frontend/src, frontend/scripts, and docs/fixtures had no matches.",
+        "2026-06-01: Independent evaluator Zeno (019e8397-d87b-7f12-8312-2e83325f8c75; INT-003-EVAL-CODEX-20260601T2235+0800) verified the real mode friends path with Chrome DevTools MCP; conclusion: PASS.",
+        "2026-06-01: Evaluator evidence written to docs/qa/INT-003-friends-complete-path.md with screenshot docs/qa/INT-003-devtools-real.png and raw network responses docs/qa/INT-003-planning-stream.network-response and docs/qa/INT-003-execution-stream.network-response; path covered friends input -> plan_ready/CONFIRM with activity + cafe + restaurant -> execute -> DONE with execute_result and done."
+      ]
     },
     {
       "id": "QA-001",
