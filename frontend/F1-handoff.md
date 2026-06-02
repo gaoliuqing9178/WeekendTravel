@@ -1,5 +1,32 @@
 # F1 Handoff
 
+## 2026-06-02 QA-001 21 Golden Cases list and execution record
+
+QA-001 已完成并 verified。本轮没有修改前端 UI，也没有新增 Chrome DevTools MCP 截图；QA evaluator 使用真实后端 API / SSE 执行 21 条 Golden Cases，单独补齐了 family / friends / boundary 的执行记录。
+
+本轮新增或关联的文件：
+
+- `docs/contracts/QA-001-golden-cases.md`
+- `docs/qa/QA-001-run-golden-cases.py`
+- `docs/qa/QA-001-golden-cases.md`
+- `docs/qa/QA-001-golden-cases-results.json`
+
+前端侧关键结论：
+
+- 14 条正常 family / friends case 均通过真实后端规划与执行链路，到达 `plan_ready`、`execute_result` 和 `done`。
+- friends case 均校验 activity + cafe/dessert + restaurant，说明后端输出仍满足前端 PlanCard / timeline 的核心渲染假设。
+- 本轮是 API / SSE QA 记录，不代表真实浏览器 21 case UI regression；如后续需要浏览器回归，应另开任务并按 `WF-002` 使用 Chrome DevTools MCP。
+
+QA evaluator 验证结果：
+
+- 21 / 21 Golden Cases PASS。
+- Normal family/friends planning P95：43.34 ms。
+- Normal feasibility rate：100%。
+- Normal Plan B rate：0%。
+- Injected Plan B trigger accuracy：100%。
+- Intent / scenario accuracy：100%。
+- 最终回归检查：frontend fast verify 通过，`pnpm verify:fixtures` 与 `pnpm typecheck` 均通过；forbidden snake_case 字段扫描无命中。
+
 ## 2026-06-01 INT-003 Friends scenario complete path
 
 INT-003 已完成并 verified。前端 real mode 现在可以跑通 friends 输入的完整真实后端链路：选择 `朋友` 场景并提交 friends demo 输入后收到真实 `plan_ready` / `CONFIRM`，方案卡显示 `activity + cafe + restaurant` 三段 friends timeline，点击确认执行后调用真实 `POST /api/plan/{planId}/execute`，随后重新连接同一个 `planId` 的 SSE stream，消费后端 `execute_result` 与 `done`，最终进入 `DONE`。
@@ -454,7 +481,7 @@ INT-002 和 INT-003 均已完成。下一步建议转入真实异常链路补证
 
 1. 若补 real mode adjust 网络证据，应在真实后端进入 `CONFIRM` 后提交 AdjustPanel，确认 network 包含 `PATCH /api/plan/{planId}/adjust` 和 `{ "instruction": "<微调要求>" }`，随后 SSE 收到 `adjust_result`。
 2. 若补真实后端异常证据，应触发 `error(code=DEGRADE)` 和非 DEGRADE error，确认 StateSummaryPanel 与 LogPanel 的 `DEGRADE` / `FAILED` 可见入口。
-3. 若开始 `QA-001`，先不要把 INT-002 / INT-003 的 happy path 证据泛化为 21 golden cases；golden cases 仍需要单独执行记录。
+3. `QA-001` 已在 2026-06-02 完成 API / SSE 21 Golden Cases 执行记录；如需浏览器版 21 case regression，应另开任务并使用 Chrome DevTools MCP。
 4. 保持 `.\verify.ps1 -Target frontend -Mode fast` 通过；涉及 UI 验收时 evaluator 必须使用 Chrome DevTools MCP，Playwright MCP 可作为补充但不再强制要求。
 
 ## F1 边界
