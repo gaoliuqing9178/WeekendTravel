@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import {
   NButton,
-  NCard,
   NConfigProvider,
-  NGrid,
-  NGridItem,
   NMessageProvider,
-  NSpace,
-  NStatistic,
   NTag,
   type GlobalThemeOverrides,
 } from 'naive-ui'
@@ -18,6 +13,7 @@ import ConfirmButton from '@/components/ConfirmButton.vue'
 import ExecutionTracker from '@/components/ExecutionTracker.vue'
 import InputPanel from '@/components/InputPanel.vue'
 import LogPanel from '@/components/LogPanel.vue'
+import MapStage from '@/components/MapStage.vue'
 import PlanCard from '@/components/PlanCard.vue'
 import StateSummaryPanel from '@/components/StateSummaryPanel.vue'
 import { usePlannerStore } from '@/stores/planner'
@@ -26,9 +22,9 @@ const planner = usePlannerStore()
 
 const themeOverrides: GlobalThemeOverrides = {
   common: {
-    primaryColor: '#0EA5E9',
-    primaryColorHover: '#0284C7',
-    primaryColorPressed: '#0369A1',
+    primaryColor: '#F97316',
+    primaryColorHover: '#EA580C',
+    primaryColorPressed: '#C2410C',
     borderRadius: '8px',
     fontFamily:
       'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -40,32 +36,46 @@ const themeOverrides: GlobalThemeOverrides = {
     borderRadius: '8px',
   },
 }
-
 </script>
 
 <template>
   <NConfigProvider :theme-overrides="themeOverrides">
     <NMessageProvider>
       <main class="app-shell">
-        <section class="workspace-hero" aria-labelledby="app-title">
-          <div class="hero-copy">
-            <NTag type="info" round>F1-008</NTag>
-            <h1 id="app-title">WeekendTravel</h1>
-            <p>Plan B、降级、失败和完成状态会在工作台里保持可见。</p>
-          </div>
-          <NSpace class="hero-actions" align="center" :size="12">
-            <NTag :bordered="false" type="success">
-              {{ planner.agentState }}
-            </NTag>
-            <NTag :bordered="false" type="warning">
-              {{ planner.connectionState }}
-            </NTag>
-          </NSpace>
-        </section>
+        <MapStage
+          :agent-state="planner.agentState"
+          :connection-state="planner.connectionState"
+          :plan="planner.currentPlan"
+          :plan-id="planner.planId"
+          :plan-b-reason="planner.planBReason"
+          :events="planner.logEvents"
+        />
 
-        <NGrid :cols="12" :x-gap="20" :y-gap="20" responsive="screen">
-          <NGridItem span="12 m:7">
-            <div class="main-column">
+        <section class="planner-drawer" aria-label="规划抽屉">
+          <div class="drawer-handle" aria-hidden="true">
+            <span></span>
+          </div>
+
+          <header class="drawer-header">
+            <div>
+              <span class="drawer-eyebrow">出行主理人</span>
+              <h2>把今天下午排顺</h2>
+            </div>
+            <div class="drawer-status" aria-label="当前模式">
+              <NTag :bordered="false" type="success">
+                {{ planner.scenarioLabel }}
+              </NTag>
+              <NTag :bordered="false" type="warning">
+                {{ planner.apiMode }}
+              </NTag>
+              <NButton quaternary size="small" @click="planner.resetSkeletonFlow">
+                重置
+              </NButton>
+            </div>
+          </header>
+
+          <div class="drawer-content">
+            <section class="drawer-primary" aria-label="需求和行程">
               <InputPanel />
               <ClarifyBubble
                 :clarification="planner.pendingClarification"
@@ -75,30 +85,13 @@ const themeOverrides: GlobalThemeOverrides = {
                 @reply="planner.replyToClarification"
               />
               <PlanCard :plan="planner.currentPlan" />
-            </div>
-          </NGridItem>
+            </section>
 
-          <NGridItem span="12 m:5">
-            <div class="side-column">
-              <NCard title="Pinia 状态" :bordered="false">
-                <div class="state-grid">
-                  <NStatistic label="场景" :value="planner.scenarioLabel" />
-                  <NStatistic label="Mode" :value="planner.apiMode" />
-                  <NStatistic
-                    label="Plan ID"
-                    :value="planner.planId ?? '未创建'"
-                  />
-                  <NStatistic label="Agent" :value="planner.agentState" />
-                  <NStatistic label="SSE" :value="planner.connectionState" />
-                </div>
-                <NButton
-                  class="reset-button"
-                  quaternary
-                  @click="planner.resetSkeletonFlow"
-                >
-                  重置
-                </NButton>
-              </NCard>
+            <aside class="drawer-secondary" aria-label="Agent 动态和执行">
+              <LogPanel
+                :events="planner.logEvents"
+                :connection-state="planner.connectionState"
+              />
 
               <StateSummaryPanel
                 :agent-state="planner.agentState"
@@ -136,16 +129,9 @@ const themeOverrides: GlobalThemeOverrides = {
                 :actions="planner.currentPlan?.actions ?? []"
                 :agent-state="planner.agentState"
               />
-            </div>
-          </NGridItem>
-
-          <NGridItem span="12">
-            <LogPanel
-              :events="planner.logEvents"
-              :connection-state="planner.connectionState"
-            />
-          </NGridItem>
-        </NGrid>
+            </aside>
+          </div>
+        </section>
       </main>
     </NMessageProvider>
   </NConfigProvider>
