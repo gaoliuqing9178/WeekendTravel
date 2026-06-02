@@ -1,5 +1,48 @@
 # Progress
 
+## 2026-06-02 QA-001 21 Golden Cases list and execution record
+
+### 已完成
+
+- 新增 `docs/contracts/QA-001-golden-cases.md`，明确 21 条 Golden Cases 的 family / friends / boundary 分类、执行路径、SLO 口径和失败阈值。
+- 新增 QA 执行脚本 `docs/qa/QA-001-run-golden-cases.py`，通过真实后端 `http://127.0.0.1:8000` 自动执行 create / stream / clarify / adjust / execute / debug scenario flags。
+- 新增 QA 报告 `docs/qa/QA-001-golden-cases.md` 和机器可读结果 `docs/qa/QA-001-golden-cases-results.json`。
+- 21 条 Golden Cases 已单独执行并全部 PASS：family 7 / 7，friends 7 / 7，boundary 7 / 7。
+- `feature_list.json` 已将 `QA-001` 标记为 `verified` 并写入 QA evaluator 证据。
+
+### 验证记录
+
+- 后端以 `.\backend\mvnw.cmd -f backend\pom.xml spring-boot:run` 启动，Tomcat 监听 `8000`；启动日志在 `docs/qa/QA-001-backend-run.out`。
+- QA evaluator 执行：`py -c "exec(open('docs\\qa\\QA-001-run-golden-cases.py', encoding='utf-8').read())"`。
+- 执行结果：21 / 21 PASS。
+- 覆盖路径：
+  - 正常 family / friends case 均到达 `plan_ready`，随后执行到 `execute_result` / `done`。
+  - friends case 均校验 activity + cafe/dessert + restaurant。
+  - `clarification_request` 覆盖 `FAM-001`、`FAM-007`、`FRI-007`、`BND-001`。
+  - `restaurantFull`、`routeTooFar`、`ageMismatch` 均触发 `replan` / `REPLAN` 并最终 `error(code=DEGRADE)`。
+  - `bookingFail` 执行期返回 `failed, success`，最终仍进入 `DONE`。
+  - `PATCH /api/plan/{planId}/adjust` 收到 `adjust_result`，随后执行到 `DONE`。
+  - invalid scenario 返回 400 `INVALID_INPUT`。
+- SLO / 指标：
+  - Planning P95 all created cases：40.00 ms。
+  - Normal family/friends planning P95：43.34 ms。
+  - Normal feasibility rate：100%。
+  - Normal Plan B rate：0%。
+  - Injected Plan B trigger accuracy：100%。
+  - Intent / scenario accuracy：100%。
+- 最终回归检查：
+  - `feature_list.json` 和 `docs/qa/QA-001-golden-cases-results.json` 均可解析。
+  - forbidden snake_case 字段扫描无命中。
+  - backend fast verify 通过：48 tests、0 failures、`BUILD SUCCESS`、`Verify passed.`。
+  - frontend fast verify 通过：fixture 校验和 `pnpm typecheck` 均通过。
+  - 本轮启动的后端进程已停止，`8000` 端口已释放。
+
+### 当前状态
+
+- `QA-001` 已完成并 verified。
+- 本轮是 API / SSE Golden Cases 执行记录，不涉及前端 UI 改动，Chrome DevTools MCP 不适用。
+- 若后续要做真实浏览器 21 Golden Cases regression，应另开 UI regression 任务，并按 `WF-002` 使用 Chrome DevTools MCP 记录页面、console、network 和视觉状态。
+
 ## 2026-06-01 INT-003 Friends scenario complete path
 
 ### 已完成
@@ -25,7 +68,7 @@
 ### 当前状态
 
 - `INT-003` 已完成并 verified，friends real mode 端到端路径已经从输入、方案确认、真实执行到 `DONE` 全链路打通。
-- 下一步集成建议转入真实异常 / degrade 链路补证，或进入 `QA-001` 21 Golden Cases；不要把 INT-002 / INT-003 两条 happy path 泛化成 golden cases 已完成。
+- 历史说明：本节生成时下一步建议进入 `QA-001`；当前 `QA-001` 已在 2026-06-02 verified。后续可转入真实异常 / degrade 浏览器补证或 UI regression。
 
 ## 2026-06-01 B1-004 State machine START to PACK close-out
 

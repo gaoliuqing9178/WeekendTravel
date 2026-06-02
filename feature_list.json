@@ -1,6 +1,6 @@
 {
   "project": "WeekendTravel",
-  "updatedAt": "2026-06-01",
+  "updatedAt": "2026-06-02",
   "statusValues": ["todo", "in_progress", "blocked", "verified"],
   "items": [
     {
@@ -551,7 +551,7 @@
       "track": "qa",
       "owner": "QA",
       "title": "21 Golden Cases list and execution record",
-      "status": "todo",
+      "status": "verified",
       "priority": "P1",
       "dependsOn": ["INT-002", "INT-003"],
       "contract": "docs/contracts/QA-001-golden-cases.md",
@@ -562,7 +562,12 @@
         "SLO metrics are recorded",
         "Injected Plan B trigger accuracy and normal Plan B rate are reported as separate metrics"
       ],
-      "evidence": []
+      "evidence": [
+        "2026-06-02: QA evaluator added contract docs/contracts/QA-001-golden-cases.md and execution harness docs/qa/QA-001-run-golden-cases.py for 7 family, 7 friends, and 7 boundary Golden Cases.",
+        "2026-06-02: QA evaluator ran real backend API/SSE Golden Cases against http://127.0.0.1:8000; 21/21 cases passed. Evidence written to docs/qa/QA-001-golden-cases.md and docs/qa/QA-001-golden-cases-results.json.",
+        "2026-06-02: Recorded SLO metrics: planning P95 all created cases 40.00 ms, normal family/friends planning P95 43.34 ms, normal feasibility rate 100%, normal Plan B rate 0%, injected Plan B trigger accuracy 100%, intent/scenario accuracy 100%.",
+        "2026-06-02: Final QA checks passed: feature_list.json and QA results JSON parse, forbidden snake_case field scan had no matches, backend fast verify passed with 48 tests, and frontend fast verify passed with fixture validation plus typecheck."
+      ]
     }
   ]
 }

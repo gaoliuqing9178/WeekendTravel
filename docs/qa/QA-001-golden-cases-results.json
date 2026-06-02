@@ -1,0 +1,2097 @@
+{
+  "runId": "QA-001-EVAL-CODEX-20260602T1647+0800",
+  "executedAt": "2026-06-02T16:47:00+08:00",
+  "baseUrl": "http://127.0.0.1:8000",
+  "health": {
+    "status": 200,
+    "payload": {
+      "status": "ok",
+      "service": "WeekendTravel",
+      "timestamp": 1780390324201
+    },
+    "elapsedMs": 43.66
+  },
+  "cases": [
+    {
+      "caseId": "FAM-001",
+      "category": "family",
+      "scenario": "family",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_fa4e84beb3e3",
+      "createStatus": 202,
+      "clarified": true,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 19.02,
+      "adjustMs": 0.0,
+      "executionMs": 24.51,
+      "totalMs": 62.36,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "clarification_request",
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "CLARIFY"
+        },
+        {
+          "from": "CLARIFY",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "亲子活动搭配家庭友好晚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FAM-002",
+      "category": "family",
+      "scenario": "family",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_3a1cdb44ba90",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 3.79,
+      "adjustMs": 0.0,
+      "executionMs": 25.44,
+      "totalMs": 31.96,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "亲子活动搭配家庭友好晚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FAM-003",
+      "category": "family",
+      "scenario": "family",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_7d50131e2cbd",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 2.7199999999999998,
+      "adjustMs": 0.0,
+      "executionMs": 13.2,
+      "totalMs": 47.12,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "亲子活动搭配家庭友好晚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FAM-004",
+      "category": "family",
+      "scenario": "family",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_47b15cd8ee56",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 31.65,
+      "adjustMs": 0.0,
+      "executionMs": 16.69,
+      "totalMs": 65.33,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "亲子活动搭配家庭友好晚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FAM-005",
+      "category": "family",
+      "scenario": "family",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_b9e210a4f3ac",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 39.44,
+      "adjustMs": 0.0,
+      "executionMs": 30.83,
+      "totalMs": 73.05,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "亲子活动搭配家庭友好晚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FAM-006",
+      "category": "family",
+      "scenario": "family",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_ccc18a6e5e87",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 31.22,
+      "adjustMs": 0.0,
+      "executionMs": 16.06,
+      "totalMs": 79.24,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "亲子活动搭配家庭友好晚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FAM-007",
+      "category": "family",
+      "scenario": "family",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_d66ac07e2479",
+      "createStatus": 202,
+      "clarified": true,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 16.92,
+      "adjustMs": 0.0,
+      "executionMs": 27.3,
+      "totalMs": 46.81,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "clarification_request",
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "CLARIFY"
+        },
+        {
+          "from": "CLARIFY",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "亲子活动搭配家庭友好晚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FRI-001",
+      "category": "friends",
+      "scenario": "friends",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_aa3c19547c7d",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 17.61,
+      "adjustMs": 0.0,
+      "executionMs": 29.9,
+      "totalMs": 79.28,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "朋友活动、咖啡/甜品和轻松聚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FRI-002",
+      "category": "friends",
+      "scenario": "friends",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_590e0598e931",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 33.379999999999995,
+      "adjustMs": 0.0,
+      "executionMs": 30.310000000000002,
+      "totalMs": 96.15,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "朋友活动、咖啡/甜品和轻松聚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FRI-003",
+      "category": "friends",
+      "scenario": "friends",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_ee16c38d121d",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 29.759999999999998,
+      "adjustMs": 0.0,
+      "executionMs": 14.43,
+      "totalMs": 46.48,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "朋友活动、咖啡/甜品和轻松聚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FRI-004",
+      "category": "friends",
+      "scenario": "friends",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_102930bd8835",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 29.06,
+      "adjustMs": 0.0,
+      "executionMs": 15.450000000000001,
+      "totalMs": 46.93,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "朋友活动、咖啡/甜品和轻松聚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FRI-005",
+      "category": "friends",
+      "scenario": "friends",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_c5c951e27b1c",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 18.84,
+      "adjustMs": 0.0,
+      "executionMs": 13.85,
+      "totalMs": 63.73,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "朋友活动、咖啡/甜品和轻松聚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FRI-006",
+      "category": "friends",
+      "scenario": "friends",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_2c6eeea7ed94",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 3.54,
+      "adjustMs": 0.0,
+      "executionMs": 1.82,
+      "totalMs": 7.43,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "朋友活动、咖啡/甜品和轻松聚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "FRI-007",
+      "category": "friends",
+      "scenario": "friends",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_2195682f799c",
+      "createStatus": 202,
+      "clarified": true,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 50.59,
+      "adjustMs": 0.0,
+      "executionMs": 29.9,
+      "totalMs": 82.91,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "clarification_request",
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "CLARIFY"
+        },
+        {
+          "from": "CLARIFY",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "朋友活动、咖啡/甜品和轻松聚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "BND-001",
+      "category": "boundary",
+      "scenario": "family",
+      "expect": "normal",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_e9499616ad95",
+      "createStatus": 202,
+      "clarified": true,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 15.780000000000001,
+      "adjustMs": 0.0,
+      "executionMs": 2.63,
+      "totalMs": 35.27,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "clarification_request",
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "CLARIFY"
+        },
+        {
+          "from": "CLARIFY",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "亲子活动搭配家庭友好晚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "BND-002",
+      "category": "boundary",
+      "scenario": "family",
+      "expect": "degrade",
+      "flags": {
+        "restaurantFull": true,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_d2063fa0948d",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": false,
+      "planningMs": 15.959999999999999,
+      "adjustMs": 0.0,
+      "executionMs": 0.0,
+      "totalMs": 31.1,
+      "finalState": "DEGRADE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "replan",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "replan",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "error"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "REPLAN"
+        },
+        {
+          "from": "REPLAN",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "REPLAN"
+        },
+        {
+          "from": "REPLAN",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "DEGRADE"
+        }
+      ],
+      "planSummary": null,
+      "planIsPlanB": null,
+      "planReplanCount": null,
+      "executeStatuses": [],
+      "errorCode": "DEGRADE",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "BND-003",
+      "category": "boundary",
+      "scenario": "family",
+      "expect": "degrade",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": true,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_77085535d8d7",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": false,
+      "planningMs": 12.790000000000001,
+      "adjustMs": 0.0,
+      "executionMs": 0.0,
+      "totalMs": 14.63,
+      "finalState": "DEGRADE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "replan",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "replan",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "error"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "REPLAN"
+        },
+        {
+          "from": "REPLAN",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "REPLAN"
+        },
+        {
+          "from": "REPLAN",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "DEGRADE"
+        }
+      ],
+      "planSummary": null,
+      "planIsPlanB": null,
+      "planReplanCount": null,
+      "executeStatuses": [],
+      "errorCode": "DEGRADE",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "BND-004",
+      "category": "boundary",
+      "scenario": "family",
+      "expect": "bookingFail",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": true,
+        "ageMismatch": false
+      },
+      "planId": "plan_1920cc73c593",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": true,
+      "planningMs": 32.55,
+      "adjustMs": 0.0,
+      "executionMs": 30.08,
+      "totalMs": 94.21,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "亲子活动搭配家庭友好晚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "failed",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "BND-005",
+      "category": "boundary",
+      "scenario": "family",
+      "expect": "degrade",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": true
+      },
+      "planId": "plan_365a9d00ce5e",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": false,
+      "executed": false,
+      "planningMs": 14.73,
+      "adjustMs": 0.0,
+      "executionMs": 0.0,
+      "totalMs": 17.11,
+      "finalState": "DEGRADE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "replan",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "replan",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "error"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "REPLAN"
+        },
+        {
+          "from": "REPLAN",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "REPLAN"
+        },
+        {
+          "from": "REPLAN",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "DEGRADE"
+        }
+      ],
+      "planSummary": null,
+      "planIsPlanB": null,
+      "planReplanCount": null,
+      "executeStatuses": [],
+      "errorCode": "DEGRADE",
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "BND-006",
+      "category": "boundary",
+      "scenario": "family",
+      "expect": "adjust",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": "plan_217e6ec32bc9",
+      "createStatus": 202,
+      "clarified": false,
+      "adjusted": true,
+      "executed": true,
+      "planningMs": 2.73,
+      "adjustMs": 24.98,
+      "executionMs": 2.3899999999999997,
+      "totalMs": 32.03,
+      "finalState": "DONE",
+      "eventTypes": [
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "plan_ready",
+        "heartbeat",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "replan",
+        "state_change",
+        "state_change",
+        "state_change",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "tool_call",
+        "tool_result",
+        "state_change",
+        "state_change",
+        "adjust_result",
+        "heartbeat",
+        "state_change",
+        "execute_result",
+        "execute_result",
+        "state_change",
+        "done"
+      ],
+      "stateTransitions": [
+        {
+          "from": "START",
+          "to": "INTENT"
+        },
+        {
+          "from": "INTENT",
+          "to": "SKELETON"
+        },
+        {
+          "from": "SKELETON",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "ADJUST"
+        },
+        {
+          "from": "ADJUST",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "REPLAN"
+        },
+        {
+          "from": "REPLAN",
+          "to": "RECALL"
+        },
+        {
+          "from": "RECALL",
+          "to": "VALIDATE"
+        },
+        {
+          "from": "VALIDATE",
+          "to": "PACK"
+        },
+        {
+          "from": "PACK",
+          "to": "CONFIRM"
+        },
+        {
+          "from": "CONFIRM",
+          "to": "EXECUTE"
+        },
+        {
+          "from": "EXECUTE",
+          "to": "DONE"
+        }
+      ],
+      "planSummary": "亲子活动搭配家庭友好晚餐",
+      "planIsPlanB": false,
+      "planReplanCount": 0,
+      "executeStatuses": [
+        "success",
+        "success"
+      ],
+      "errorCode": null,
+      "pass": true,
+      "failures": []
+    },
+    {
+      "caseId": "BND-007",
+      "category": "boundary",
+      "scenario": "solo",
+      "expect": "invalid",
+      "flags": {
+        "restaurantFull": false,
+        "routeTooFar": false,
+        "bookingFail": false,
+        "ageMismatch": false
+      },
+      "planId": null,
+      "createStatus": 400,
+      "clarified": false,
+      "adjusted": false,
+      "executed": false,
+      "planningMs": 2.54,
+      "adjustMs": 0.0,
+      "executionMs": 0.0,
+      "totalMs": 30.27,
+      "finalState": "INVALID_INPUT",
+      "eventTypes": [],
+      "stateTransitions": [],
+      "planSummary": null,
+      "planIsPlanB": null,
+      "planReplanCount": null,
+      "executeStatuses": [],
+      "errorCode": "INVALID_INPUT",
+      "pass": true,
+      "failures": []
+    }
+  ],
+  "metrics": {
+    "caseCount": 21,
+    "passCount": 21,
+    "failCount": 0,
+    "planningMsP95AllCreated": 40.0,
+    "planningMsP95NormalNonInjected": 43.34,
+    "normalNonInjectedFeasibilityRate": 1.0,
+    "normalNonInjectedPlanBRate": 0.0,
+    "injectedPlanBTriggerAccuracy": 1.0,
+    "intentScenarioAccuracy": 1.0,
+    "injectedPlanBCaseIds": [
+      "BND-002",
+      "BND-003",
+      "BND-005"
+    ],
+    "normalNonInjectedCaseIds": [
+      "FAM-001",
+      "FAM-002",
+      "FAM-003",
+      "FAM-004",
+      "FAM-005",
+      "FAM-006",
+      "FAM-007",
+      "FRI-001",
+      "FRI-002",
+      "FRI-003",
+      "FRI-004",
+      "FRI-005",
+      "FRI-006",
+      "FRI-007"
+    ]
+  }
+}

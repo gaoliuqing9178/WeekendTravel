@@ -1,5 +1,38 @@
 # Handoff
 
+## 2026-06-02 QA-001 21 Golden Cases list and execution record
+
+QA-001 已完成并 verified。本轮由 QA evaluator 单独执行 21 条 Golden Cases，不复用 `INT-002` / `INT-003` 的 happy path 证据。执行范围为真实后端 API / SSE：`POST /api/plan`、`GET /api/plan/{planId}/stream`、`POST /clarify`、`PATCH /adjust`、`POST /execute` 和 `POST /api/debug/scenario`。
+
+本轮新增或更新：
+
+- `docs/contracts/QA-001-golden-cases.md`
+- `docs/qa/QA-001-run-golden-cases.py`
+- `docs/qa/QA-001-golden-cases.md`
+- `docs/qa/QA-001-golden-cases-results.json`
+- `docs/qa/QA-001-backend-run.out`
+- `docs/qa/QA-001-backend-run.err`
+- `feature_list.json`
+- `progress.md`
+- `docs/handoff.md`
+- `backend/HANDOFF.md`
+- `frontend/F1-handoff.md`
+
+验证结果：
+
+- QA evaluator 执行 21 条 Golden Cases，结果 21 / 21 PASS。
+- family 7 / 7 和 friends 7 / 7 均到达 `plan_ready`，随后执行到 `execute_result` / `done`。
+- friends case 均校验 activity + cafe/dessert + restaurant。
+- boundary 7 / 7 覆盖 clarify、`restaurantFull`、`routeTooFar`、`bookingFail`、`ageMismatch`、`PATCH /adjust` 和 invalid scenario。
+- SLO / 指标：Planning P95 all created cases 40.00 ms；normal family/friends planning P95 43.34 ms；normal feasibility rate 100%；normal Plan B rate 0%；injected Plan B trigger accuracy 100%；intent/scenario accuracy 100%。
+- 最终回归检查通过：`feature_list.json` 和 QA results JSON 可解析；forbidden snake_case 字段扫描无命中；backend fast verify 48 tests 通过；frontend fast verify 通过；本轮启动的后端进程已停止。
+
+接手提醒：
+
+- `QA-001` 现在已闭环；不要再把 21 Golden Cases 当作待执行事项。
+- 本轮没有前端 UI 改动，Chrome DevTools MCP 不适用；若后续要做真实浏览器 21 case 回归，应另开 UI regression，并按 `WF-002` 使用 Chrome DevTools MCP。
+- `bookingFail` 是执行期失败注入，只记录执行降级表现，不计入规划期 injected Plan B trigger accuracy。
+
 ## 2026-06-01 INT-003 Friends scenario complete path
 
 INT-003 已完成并 verified。当前真实 friends real mode 已跑通完整路径：`POST /api/plan` -> planning SSE -> `plan_ready` / `CONFIRM` -> `POST /api/plan/{planId}/execute` -> execution SSE -> `execute_result` -> `done` / `DONE`。friends 方案已稳定包含 `activity`、`cafe` 或 `dessert` 中途点、`restaurant` 三段 timeline。
@@ -31,8 +64,8 @@ INT-003 已完成并 verified。当前真实 friends real mode 已跑通完整�
 
 接手提醒：
 
-- `feature_list.json` 已将 `INT-003` 标记为 `verified`；`INT-002` / `INT-003` 分别只代表 family / friends happy path，不代表 21 Golden Cases 已完成。
-- 下一步建议推进真实异常 / degrade 补证，或进入 `QA-001` 前先补 golden cases 执行计划。
+- `feature_list.json` 已将 `INT-003` 标记为 `verified`；`INT-002` / `INT-003` 分别只代表 family / friends happy path。历史说明：本节生成时 21 Golden Cases 尚未完成，当前 `QA-001` 已在 2026-06-02 verified。
+- 下一步建议推进真实异常 / degrade 浏览器补证，或另开真实浏览器 21 case UI regression。
 
 ## 2026-06-01 B1-004 State machine START to PACK close-out
 
@@ -90,7 +123,7 @@ INT-002 已完成并 verified。当前真实 family real mode 已跑通完整路
 
 接手提醒：
 - `feature_list.json` 已将 `INT-002` 标记为 `verified`；`B1-004` 已在 2026-06-01 另行补齐单独 evaluator 证据并标记为 `verified`。
-- 历史说明：本节生成时 `INT-003` 尚未完成；当前 `INT-003` 已在 2026-06-01 verified。后续建议单独补真实异常 / degrade 证据，且不要把 family / friends happy path 泛化成 21 golden cases 已完成。
+- 历史说明：本节生成时 `INT-003` 尚未完成；当前 `INT-003` 已在 2026-06-01 verified，`QA-001` 已在 2026-06-02 verified。后续建议单独补真实异常 / degrade 浏览器证据。
 
 ## 2026-05-29 WF-002 Chrome DevTools MCP only
 
@@ -356,7 +389,7 @@ Initializer 已把仓库整理成长期 agent 开发 harness。前端 F1-001 Vue
 ## 尚未实现内容
 
 - `INT-003` friends complete path 已在 2026-06-01 完成；friends 场景必须引用自己的 INT-003 evaluator 证据，不能复用 `INT-002` 的 family happy path 证据。
-- `QA-001` 21 Golden Cases 尚未执行；需要单独记录 family、friends、boundary case 和 SLO 指标。
+- `QA-001` 21 Golden Cases 已在 2026-06-02 完成并 verified；API / SSE 执行记录见 `docs/qa/QA-001-golden-cases.md` 和 `docs/qa/QA-001-golden-cases-results.json`。
 - 真实异常 / degrade 链路仍建议单独补证，尤其是真实后端 `error(code=DEGRADE)`、非 DEGRADE error、bookingFail / routeTooFar 等浏览器网络证据。
 - 历史说明：本提醒中的 `B1-004` 状态已在 2026-06-01 补齐单独 contract / evaluator 证据并标记为 `verified`；不要再按旧状态处理。
 
@@ -365,7 +398,7 @@ Initializer 已把仓库整理成长期 agent 开发 harness。前端 F1-001 Vue
 集成优先：
 
 1. 进入真实异常 / degrade 补证任务，覆盖 `error(code=DEGRADE)`、非 DEGRADE error 和对应前端可见状态。
-2. 进入 `QA-001` 前先补 golden cases 执行计划，避免把 family / friends 两条 happy path 当作 21 cases 覆盖。
+2. 如需更高层回归，另开真实浏览器 21 Golden Cases UI regression，避免把 API / SSE QA-001 证据误当成浏览器证据。
 3. 按 `docs/dev-workflow.md` 继续为每轮任务补 contract、独立 evaluator 证据、`feature_list.json`、`progress.md` 和 handoff。
 
 前端 / 联调优先：
@@ -430,5 +463,5 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\verify.ps1 -Target all
 - 每轮只推进一个清楚小目标。
 - API 字段变更先改 `docs/api-contract.md`。
 - 没有验证证据，不要把 `feature_list.json` 状态改成 `verified`。
-- 当前 `INT-002` 和 `INT-003` 已完成并 verified；继续推进时优先做真实异常 / degrade 补证或 `QA-001`，不要回退到旧的 B1/F1 初始化队列。
+- 当前 `INT-002`、`INT-003` 和 `QA-001` 已完成并 verified；继续推进时优先做真实异常 / degrade 浏览器补证或 UI regression，不要回退到旧的 B1/F1 初始化队列。
 - `verify.ps1` 已与 Maven Wrapper 工作流对齐，可直接用于 backend fast verify。

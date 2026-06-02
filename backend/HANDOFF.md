@@ -1,5 +1,18 @@
 # Backend Handoff
 
+## 2026-06-02 QA-001 21 Golden Cases list and execution record
+
+- [x] `QA-001` 已完成并 verified：QA evaluator 使用真实后端 API / SSE 执行 21 条 Golden Cases，结果 21 / 21 PASS。
+- [x] 新增 QA contract：`../docs/contracts/QA-001-golden-cases.md`。
+- [x] 新增执行脚本和证据：`../docs/qa/QA-001-run-golden-cases.py`、`../docs/qa/QA-001-golden-cases.md`、`../docs/qa/QA-001-golden-cases-results.json`。
+- [x] 后端启动日志：`../docs/qa/QA-001-backend-run.out`；stderr：`../docs/qa/QA-001-backend-run.err`。
+- [x] 覆盖真实接口：`GET /health`、`POST /api/plan`、`GET /api/plan/{planId}/stream`、`POST /api/plan/{planId}/clarify`、`PATCH /api/plan/{planId}/adjust`、`POST /api/plan/{planId}/execute`、`POST /api/debug/scenario`。
+- [x] 覆盖边界：`restaurantFull`、`routeTooFar`、`ageMismatch` 均触发 `replan` / `REPLAN` 并最终 `error(code=DEGRADE)`；`bookingFail` 执行期出现 `failed, success` 后仍 `DONE`；invalid scenario 返回 400 `INVALID_INPUT`。
+- [x] SLO / 指标：normal family/friends feasibility 100%，normal Plan B rate 0%，injected Plan B trigger accuracy 100%，intent/scenario accuracy 100%。
+- [x] 最终回归检查通过：backend fast verify 48 tests、0 failures；forbidden snake_case 字段扫描无命中；`feature_list.json` 和 QA results JSON 可解析。
+
+注意：`QA-001` 是 API / SSE 执行记录，不代表真实浏览器 21 case UI regression 已完成；如后续做 UI 回归，需要另开任务并使用 Chrome DevTools MCP。
+
 ## 2026-06-01 INT-003 Friends scenario complete path
 
 - [x] `INT-003` 已完成并 verified：真实 friends real mode 已覆盖 `POST /api/plan`、规划 SSE、`plan_ready` / `CONFIRM`、`POST /api/plan/{planId}/execute`、执行 SSE、`execute_result` 和 `done`。
@@ -12,7 +25,7 @@
 - [x] Generator verification 通过：backend fast verify 48 tests、0 failures；frontend fast verify `pnpm verify:fixtures` 与 `pnpm typecheck` 通过；quoted snake_case field-key 检查无命中。
 - [x] 独立 evaluator Zeno (`019e8397-d87b-7f12-8312-2e83325f8c75`, `INT-003-EVAL-CODEX-20260601T2235+0800`) 已用 Chrome DevTools MCP 验证真实 friends path，结论 `PASS`。
 
-注意：`INT-003` 只代表 integrated friends happy path 的端到端证据；`QA-001` 的 21 Golden Cases 仍需单独执行记录。
+注意：`INT-003` 只代表 integrated friends happy path 的端到端证据。历史说明：本节生成时 `QA-001` 尚未执行；当前 `QA-001` 已在 2026-06-02 verified。
 
 ## 2026-06-01 B1-004 State machine START to PACK close-out
 
