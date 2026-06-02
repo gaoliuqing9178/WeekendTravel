@@ -13,6 +13,7 @@ const props = defineProps<{
 const logViewport = ref<HTMLElement | null>(null)
 
 const eventCountLabel = computed(() => `${props.events.length} 条事件`)
+const latestEvent = computed(() => [...props.events].reverse()[0] ?? null)
 
 watch(
   () => props.events.length,
@@ -93,12 +94,13 @@ function formatTime(timestamp: number) {
     <template #header>
       <div class="log-panel-header">
         <div>
-          <span id="log-panel-title" class="log-panel-title">实时日志面板</span>
-          <p>按 SSE 事件顺序追加，最新事件会自动滚动到可见区域。</p>
+          <span id="log-panel-title" class="log-panel-title">Agent 思考进程</span>
+          <p v-if="latestEvent">{{ latestEvent.detail }}</p>
+          <p v-else>等待新的规划动态。</p>
         </div>
         <div class="log-panel-meta" aria-label="日志状态">
           <NTag :bordered="false" size="small" type="info">
-            {{ connectionState }}
+            {{ connectionState === 'open' ? '进行中' : connectionState }}
           </NTag>
           <NTag :bordered="false" size="small">
             {{ eventCountLabel }}
@@ -106,6 +108,12 @@ function formatTime(timestamp: number) {
         </div>
       </div>
     </template>
+
+    <div v-if="latestEvent" class="agent-thought-card" role="status">
+      <span>{{ latestEvent.type }}</span>
+      <strong>{{ latestEvent.title }}</strong>
+      <p>{{ latestEvent.detail }}</p>
+    </div>
 
     <div
       ref="logViewport"

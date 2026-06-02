@@ -1,0 +1,12 @@
+event:heartbeat
+data:{"type":"heartbeat","planId":"plan_13b98173cf56","timestamp":1780407037776}
+
+event:state_change
+data:{"type":"state_change","planId":"plan_13b98173cf56","from":"START","to":"INTENT","timestamp":1780407037777}
+
+event:state_change
+data:{"type":"state_change","planId":"plan_13b98173cf56","from":"INTENT","to":"CLARIFY","timestamp":1780407037777}
+
+event:clarification_request
+data:{"type":"clarification_request","planId":"plan_13b98173cf56","question":"è¯·é—®å¤§æ¦‚æƒ³çŽ©å‡ ä¸ªå°æ—¶ï¼Ÿ","field":"durationHours","options":["3-4å°æ—¶","4-6å°æ—¶","6å°æ—¶ä»¥ä¸Š"],"timestamp":1780407037778}
+

@@ -1,5 +1,53 @@
 # F1 Handoff
 
+## 2026-06-02 F1-009 Map-centric UI redesign
+
+F1-009 已完成并 verified。本轮按 `docs/NewUi.md` 把前端主界面从旧的开发者后台式双栏推倒重做为“地图舞台 + 规划抽屉”：桌面端是全屏地图背景和右侧抽屉，移动端是地图背景和底部抽屉。既有输入、CLARIFY、Plan B、微调、确认执行、ExecutionTracker、DONE / DEGRADE / FAILED 可见入口继续保留。
+
+本轮新增或关联的文件：
+
+- `docs/contracts/F1-009-map-centric-ui-redesign.md`
+- `docs/qa/F1-009-map-centric-ui-redesign.md`
+- `docs/qa/F1-009-devtools-mock.png`
+- `docs/qa/F1-009-devtools-mobile.png`
+- `docs/qa/F1-redesign-generator-devtools-mock.png`
+- `docs/qa/F1-redesign-generator-mobile-top.png`
+- `frontend/src/components/MapStage.vue`
+- `frontend/src/App.vue`
+- `frontend/src/components/PlanCard.vue`
+- `frontend/src/components/LogPanel.vue`
+- `frontend/src/components/InputPanel.vue`
+- `frontend/src/components/ConfirmButton.vue`
+- `frontend/src/styles/main.css`
+
+前端侧关键变化：
+
+- `MapStage.vue` 将 `START / INTENT / SKELETON / RECALL / VALIDATE / PACK / CONFIRM / EXECUTE / DONE / DEGRADE / FAILED` 翻译成“等待你的想法 / 理解需求 / 搭时间线 / 寻找地点 / 校验可行性 / 方案出炉 / 执行预订 / 行程就绪 / 需要降级 / 需要重试”等用户感知阶段。
+- `App.vue` 已移除旧 `NGrid` 双栏工作台，改成地图舞台和规划抽屉；原有 F1 组件仍按业务链路嵌入抽屉。
+- `PlanCard.vue` 改为生成前骨架时间轴、生成后横向行程卡，并继续展示 Plan B 原因、执行包和分享文案。
+- `LogPanel.vue` 改为“Agent 思考进程”气泡 + 保留 `role=log` / 自动滚动日志。
+- `main.css` 负责地图背景、pin、路线、桌面右抽屉、移动底部抽屉、低成本动画和 `prefers-reduced-motion` 降级。
+- 本轮没有修改 `docs/api-contract.md`，没有新增后端 API，没有新增真实地图 SDK / key，也没有新增 snake_case 兼容层。
+
+独立 evaluator Einstein (`019e8867-5d6d-7763-b69d-eccc8af47e34`) 验证结果：
+
+- 前端 fast verify 通过：`pnpm verify:fixtures`、`docs/fixtures/sse-events.jsonl -> 28 JSONL events`、`pnpm typecheck` 和 `Verify passed.`。
+- `npm run build` 通过：`vue-tsc --noEmit && vite build` 成功。
+- 禁止 snake_case 字段搜索无命中：`plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no` 未出现在 `frontend\src frontend\scripts docs\fixtures`。
+- `feature_list.json` 可解析。
+- Chrome DevTools MCP mock path 通过：提交 family 输入 -> `CLARIFY` -> 点击 `4-6小时` -> `CONFIRM` -> 可见地图舞台、规划抽屉、Plan B、横向行程卡、Agent 思考进程、终态轨道 -> 点击 `确认全部并生成行程单` -> `DONE`。
+- Chrome DevTools MCP 诊断：console error / warn 为 0；mock mode fetch / xhr 为空，没有真实 `/api/plan/*`；移动端无横向 overflow，底部抽屉、输入框和提交按钮可见且未被遮挡。
+- QA 报告：`docs/qa/F1-009-map-centric-ui-redesign.md`；截图：`docs/qa/F1-009-devtools-mock.png`、`docs/qa/F1-009-devtools-mobile.png`。
+
+Generator 追加真实后端 smoke：
+
+- 后端启动在 `http://127.0.0.1:8000`，健康检查通过。
+- 前端以 `VITE_API_MODE=real` 启动在 `http://127.0.0.1:5173`，页面显示 mode `real`。
+- Chrome DevTools MCP real mode path 通过：提交 family 输入 -> 后端返回 `plan_13b98173cf56` -> `CLARIFY` -> 点击 `4-6小时` -> `CONFIRM` -> 可见真实 plan timeline `小小科学工坊` / `四季家庭小厨` -> 点击 `确认全部并生成行程单` -> `DONE`。
+- 页面执行证据包含 ExecutionTracker `2 / 2`、确认号 `MOCK-TBL-63910`、`MOCK-MSG-13073`、done summary `2 个动作已完成，行程执行包已生成`。
+- Chrome DevTools MCP diagnostics：console error / warn 为 0；network 包含 `POST /api/plan [202]`、三段 SSE stream `[200]`、`POST /clarify [200]`、`POST /execute [200]`。
+- 证据：`docs/qa/F1-009-real-backend-smoke.md`、`docs/qa/F1-009-devtools-real.png`、`docs/qa/F1-009-real-planning-initial.network-response`、`docs/qa/F1-009-real-planning-after-clarify.network-response`、`docs/qa/F1-009-real-execution.network-response`。
+
 ## 2026-06-02 QA-001 21 Golden Cases list and execution record
 
 QA-001 已完成并 verified。本轮没有修改前端 UI，也没有新增 Chrome DevTools MCP 截图；QA evaluator 使用真实后端 API / SSE 执行 21 条 Golden Cases，单独补齐了 family / friends / boundary 的执行记录。
@@ -202,11 +250,12 @@ INT-001 已完成并 verified。真实 real mode 链路已经由独立 evaluator
 
 ## 当前状态
 
-F1-001、F1-002、F1-003、F1-004、F1-005、F1-006、F1-007、F1-008 已完成并验证；INT-001 最小真实联调、INT-002 family 完整路径和 INT-003 friends 完整路径也已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端骨架，`pnpm dev` 默认监听 `127.0.0.1:5173`。
+F1-001、F1-002、F1-003、F1-004、F1-005、F1-006、F1-007、F1-008、F1-009 已完成并验证；INT-001 最小真实联调、INT-002 family 完整路径和 INT-003 friends 完整路径也已完成并验证。`frontend/` 现在是 Vue 3 + Vite + Pinia + Naive UI 前端，`pnpm dev` 默认监听 `127.0.0.1:5173`。
 
-当前前端具备骨架、API client、mock fixture mode、正式 `InputPanel`、`useSSE`、实时日志面板、PlanCard、ConfirmButton、ExecutionTracker 和 ClarifyBubble：
-- 已有首页工作台骨架。
+当前前端具备地图舞台、规划抽屉、API client、mock fixture mode、正式 `InputPanel`、`useSSE`、Agent 思考进程日志、PlanCard、ConfirmButton、ExecutionTracker、ClarifyBubble、AdjustPanel 和 StateSummaryPanel：
+- 当前首页是 `MapStage` + `planner-drawer`，不再是旧的开发者后台式双栏。
 - 已有家庭 / 朋友两个 Demo 场景切换。
+- 已有 `frontend/src/components/MapStage.vue`，展示当前位置、候选 POI、路线、搜索半径、Plan B 替换卡，并把 Agent 状态翻译成用户可理解的阶段。
 - 已有正式 `frontend/src/components/InputPanel.vue`，包含自然语言输入、origin 输入、场景选择、提交按钮和提交状态提示。
 - real mode 下提交会调用 `POST /api/plan`，读取 camelCase `planId` / `status`，并把 `planId` 交给 `useSSE` 连接 `/api/plan/{planId}/stream`。
 - 已接入 Pinia store。
@@ -214,13 +263,13 @@ F1-001、F1-002、F1-003、F1-004、F1-005、F1-006、F1-007、F1-008 已完成�
 - 已有 `frontend/src/api/client.ts`，默认 `mock` mode，可用 `VITE_API_MODE=real` 切换真实 API mode。
 - 已有 `frontend/src/api/fixtures.ts` 和 `frontend/scripts/verify-fixtures.mjs`，可解析 `docs/fixtures/plan-ready-family.json`、`docs/fixtures/plan-ready-friends.json`、`docs/fixtures/sse-events.jsonl`。
 - 已有 `frontend/src/composables/useSSE.ts`，mock mode 逐条回放 fixture SSE，real mode 通过 `openPlanStream(planId)` 连接 `/api/plan/{planId}/stream`。
-- 已有 `frontend/src/components/LogPanel.vue`，可以展示 `heartbeat`、`state_change`、`tool_call`、`tool_result`、`replan`、`clarification_request`、`adjust_result`、`plan_ready`、`execute_result`、`done`、`error`，并自动滚动到最新事件。
+- 已有 `frontend/src/components/LogPanel.vue`，以“Agent 思考进程”气泡展示最新事件，并继续展示 `heartbeat`、`state_change`、`tool_call`、`tool_result`、`replan`、`clarification_request`、`adjust_result`、`plan_ready`、`execute_result`、`done`、`error`，保留 `role=log` 与自动滚动。
 - real mode 已通过 INT-001 验证：提交后页面能显示真实后端 `planId`，并在 LogPanel 渲染后端 SSE `state_change START -> INTENT`。
 - real mode 已通过 INT-002 验证：默认 family 输入可完成 `CLARIFY -> plan_ready / CONFIRM -> execute_result -> done -> DONE`，ExecutionTracker 可显示真实执行结果和 mock confirmationNo。
 - real mode 已通过 INT-003 验证：friends 输入可完成 `plan_ready / CONFIRM -> execute_result -> done -> DONE`，PlanCard 可显示 `activity + cafe + restaurant` 三段 timeline，ExecutionTracker 可显示 `2 / 2` 与 mock confirmationNo。
-- 点击“提交规划”后，mock client 会创建 fixture plan，`useSSE` 逐条回放 `docs/fixtures/sse-events.jsonl`；当前 fixture 会先停在 `CLARIFY` 并显示 ClarifyBubble，用户回答后继续到 `CONFIRM`；页面可见 PlanCard、Plan B、timeline、执行包和分享消息。
+- 点击“生成路线方案”后，mock client 会创建 fixture plan，`useSSE` 逐条回放 `docs/fixtures/sse-events.jsonl`；当前 fixture 会先停在 `CLARIFY` 并显示 ClarifyBubble，用户回答后继续到 `CONFIRM`；页面可见地图路线、Plan B、横向行程卡、执行包和分享消息。
 - ClarifyBubble 基于 `pendingClarification` 渲染唯一一个反问气泡，包含问题、`durationHours` 和 3 个快捷选项；回答后调用 `clarifyPlan(planId, { reply })`。
-- 点击“确认执行”后，前端调用 `executePlan`，mock mode 继续播放 fixture execution 事件，ExecutionTracker 会按 action 显示完成状态和确认号。
+- 点击“确认全部并生成行程单”后，前端调用 `executePlan`，mock mode 继续播放 fixture execution 事件，ExecutionTracker 会按 action 显示完成状态和确认号。
 - 已实现 `frontend/src/components/AdjustPanel.vue`，仅在 `CONFIRM` 状态出现，最多允许 3 次微调；mock mode 下提交微调会消费 `adjust_result` 并更新方案卡，real mode 下调用 `PATCH /api/plan/{planId}/adjust`。
 
 ## 已完成文件
@@ -232,6 +281,8 @@ F1-001、F1-002、F1-003、F1-004、F1-005、F1-006、F1-007、F1-008 已完成�
 - `docs/contracts/F1-005-plan-card-execution.md`
 - `docs/contracts/F1-006-clarify-bubble.md`
 - `docs/contracts/F1-007-adjust-panel.md`
+- `docs/contracts/F1-008-plan-b-error-states.md`
+- `docs/contracts/F1-009-map-centric-ui-redesign.md`
 - `docs/contracts/INT-001-one-input-sse.md`
 - `docs/qa/F1-002-api-client-fixtures.md`
 - `docs/qa/F1-002-devtools-confirm.png`
@@ -255,6 +306,12 @@ F1-001、F1-002、F1-003、F1-004、F1-005、F1-006、F1-007、F1-008 已完成�
 - `docs/qa/F1-007-adjust-panel.md`
 - `docs/qa/F1-007-devtools-mock.png`
 - `docs/qa/F1-007-generator-devtools-mock.png`
+- `docs/qa/F1-008-plan-b-error-states.md`
+- `docs/qa/F1-008-devtools-mock.png`
+- `docs/qa/F1-008-generator-devtools-mock.png`
+- `docs/qa/F1-009-map-centric-ui-redesign.md`
+- `docs/qa/F1-009-devtools-mock.png`
+- `docs/qa/F1-009-devtools-mobile.png`
 - `docs/qa/INT-001-one-input-sse.md`
 - `frontend/package.json`
 - `frontend/pnpm-lock.yaml`
@@ -267,6 +324,7 @@ F1-001、F1-002、F1-003、F1-004、F1-005、F1-006、F1-007、F1-008 已完成�
 - `frontend/src/api/fixtures.ts`
 - `frontend/src/composables/useSSE.ts`
 - `frontend/src/components/InputPanel.vue`
+- `frontend/src/components/MapStage.vue`
 - `frontend/src/components/LogPanel.vue`
 - `frontend/src/components/PlanCard.vue`
 - `frontend/src/components/ConfirmButton.vue`
@@ -286,6 +344,7 @@ F1-001、F1-002、F1-003、F1-004、F1-005、F1-006、F1-007、F1-008 已完成�
 - 应用入口：`frontend/src/main.ts`
 - 页面入口：`frontend/src/App.vue`
 - 状态入口：`frontend/src/stores/planner.ts`
+- 地图舞台：`frontend/src/components/MapStage.vue`
 - SSE composable：`frontend/src/composables/useSSE.ts`
 - 日志面板：`frontend/src/components/LogPanel.vue`
 - API client：`frontend/src/api/client.ts`

@@ -31,7 +31,7 @@ function handleScenarioUpdate(value: string | number) {
 <template>
   <NCard
     class="input-panel"
-    title="输入需求"
+    title="告诉我怎么安排"
     :bordered="false"
   >
     <template #header-extra>
@@ -66,7 +66,7 @@ function handleScenarioUpdate(value: string | number) {
           v-model:value="planner.userInput"
           type="textarea"
           :autosize="{ minRows: 5, maxRows: 7 }"
-          placeholder="说一句你想怎么安排这个下午"
+          placeholder="比如：今天下午想和家人出去玩几个小时，别太远，顺便吃点轻松的"
           show-count
           :maxlength="240"
           clearable
@@ -89,7 +89,7 @@ function handleScenarioUpdate(value: string | number) {
           :loading="planner.isSubmitting"
           block
         >
-          提交规划
+          生成路线方案
         </NButton>
 
         <NAlert

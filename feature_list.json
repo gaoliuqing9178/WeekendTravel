@@ -483,6 +483,30 @@
       ]
     },
     {
+      "id": "F1-009",
+      "track": "frontend",
+      "owner": "F1",
+      "title": "Map-centric UI redesign",
+      "status": "verified",
+      "priority": "P1",
+      "dependsOn": ["F1-004", "F1-005", "F1-006", "F1-007", "F1-008"],
+      "contract": "docs/contracts/F1-009-map-centric-ui-redesign.md",
+      "acceptance": [
+        "Map-centric stage replaces the old two-column developer workbench",
+        "Drawer layout renders input, clarify, itinerary, Plan B, execute, terminal states, and Agent thought bubble",
+        "Chrome DevTools mock flow reaches CONFIRM and DONE with no console errors or real /api/plan/* calls",
+        "Mobile viewport shows the bottom drawer and primary controls without overlap or horizontal page scroll"
+      ],
+      "evidence": [
+        "2026-06-02: Generator added contract docs/contracts/F1-009-map-centric-ui-redesign.md and rebuilt the front-end shell around a map stage, planner drawer, horizontal itinerary cards, Plan B map hint, and Agent thought bubble.",
+        "2026-06-02: Generator verification passed: frontend fast verify -> pnpm verify:fixtures passed with docs/fixtures/sse-events.jsonl -> 28 JSONL events; pnpm typecheck passed; npm run build passed; forbidden snake_case field search had no matches.",
+        "2026-06-02: Generator Chrome DevTools MCP smoke confirmed mock flow START -> CLARIFY -> CONFIRM -> DONE, visible map stage / planner drawer / Plan B / horizontal cards / Agent thought bubble / terminal rail, console error/warn 0, and no real /api/plan/* requests in mock mode.",
+        "2026-06-02: Independent evaluator Einstein (019e8867-5d6d-7763-b69d-eccc8af47e34) verified contract/NewUi/code, frontend fast verify, npm run build, forbidden field scan, feature_list.json parse, and Chrome DevTools MCP mock plus mobile interaction; conclusion: PASS.",
+        "2026-06-02: Evaluator evidence written to docs/qa/F1-009-map-centric-ui-redesign.md with screenshots docs/qa/F1-009-devtools-mock.png and docs/qa/F1-009-devtools-mobile.png; generator supplemental screenshots are docs/qa/F1-redesign-generator-devtools-mock.png and docs/qa/F1-redesign-generator-mobile-top.png.",
+        "2026-06-02: Generator supplemental real backend smoke passed after UI redesign with backend 8000 and VITE_API_MODE=real frontend 5173: POST /api/plan -> CLARIFY -> POST /clarify -> CONFIRM -> POST /execute -> DONE; evidence written to docs/qa/F1-009-real-backend-smoke.md with screenshot docs/qa/F1-009-devtools-real.png and raw SSE responses."
+      ]
+    },
+    {
       "id": "INT-001",
       "track": "integration",
       "owner": "B1/F1",

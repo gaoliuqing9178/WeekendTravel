@@ -34,7 +34,7 @@ const disabledReason = computed(() => {
   <NCard class="confirm-panel" :bordered="false">
     <template #header>
       <div class="confirm-panel-header">
-        <span class="section-title">确认执行</span>
+        <span class="section-title">一键执行</span>
         <NTag
           :bordered="false"
           :type="agentState === 'CONFIRM' ? 'success' : 'default'"
@@ -53,7 +53,7 @@ const disabledReason = computed(() => {
       :aria-disabled="!canConfirm || loading"
       @click="emit('confirm')"
     >
-      确认执行
+      确认全部并生成行程单
     </NButton>
 
     <p v-if="disabledReason && !loading" class="confirm-disabled-reason">

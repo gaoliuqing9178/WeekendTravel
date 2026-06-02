@@ -1,5 +1,52 @@
 # Progress
 
+## 2026-06-02 F1-009 Map-centric UI redesign
+
+### 已完成
+
+- 新增 `docs/contracts/F1-009-map-centric-ui-redesign.md`，明确本轮按 `docs/NewUi.md` 将旧的开发者后台式双栏重做为“地图舞台 + 规划抽屉”，并保留 CLARIFY、Plan B、微调、确认执行、ExecutionTracker、DONE / DEGRADE / FAILED 可见入口。
+- 新增 `frontend/src/components/MapStage.vue`，用本地 CSS / SVG 地图示意可视化当前位置、候选 POI、路线、搜索半径、Plan B 替换卡和用户可理解的 Agent 阶段。
+- 重写 `frontend/src/App.vue`，移除旧的 `NGrid` 双栏工作台，将页面改为桌面右侧抽屉、移动端底部抽屉；继续接入 `InputPanel`、`ClarifyBubble`、`PlanCard`、`LogPanel`、`StateSummaryPanel`、`AdjustPanel`、`ConfirmButton` 和 `ExecutionTracker`。
+- 重写 `frontend/src/components/PlanCard.vue`，把方案展示改为生成前骨架时间轴、生成后横向行程卡、Plan A / Plan B 分段提示、执行包和分享文案。
+- 更新 `frontend/src/components/LogPanel.vue`，将标题和首条状态改为“Agent 思考进程”气泡，同时保留 `role=log`、`aria-live` 和自动滚动能力。
+- 更新 `frontend/src/components/InputPanel.vue` 与 `ConfirmButton.vue` 的面向用户文案。
+- 重写 `frontend/src/styles/main.css`，补齐地图舞台、抽屉、路线、pin、横向 itinerary、Agent 气泡、移动端底部抽屉和 `prefers-reduced-motion` 动画降级。
+- `feature_list.json` 已将 `F1-009` 标记为 `verified`，并写入 generator 与 independent evaluator 证据。
+
+### 验证记录
+
+- Generator 前端 fast verify：`.\verify.ps1 -Target frontend -Mode fast` 通过，覆盖 `pnpm verify:fixtures`、`docs/fixtures/sse-events.jsonl -> 28 JSONL events`、`pnpm typecheck` 和 `Verify passed.`。
+- Generator 构建检查：`npm run build` 在 `frontend/` 下通过，Vite production build 成功。
+- Generator 禁止字段检查：`rg -n "plan_id|latency_ms|affected_slots|replan_count|action_id|action_type|confirmation_no" frontend\src frontend\scripts docs\fixtures` 无命中。
+- Generator Chrome DevTools MCP 冒烟确认 mock flow：`START -> CLARIFY -> CONFIRM -> DONE`；页面可见地图舞台、规划抽屉、Plan B、横向行程卡、Agent 思考进程、终态轨道、执行完成进度和 mock 确认号；console error / warn 为 0；mock mode 未访问真实 `/api/plan/*`。
+- Generator 补充截图：
+  - `docs/qa/F1-redesign-generator-devtools-mock.png`
+  - `docs/qa/F1-redesign-generator-mobile-top.png`
+- 独立 evaluator Einstein (`019e8867-5d6d-7763-b69d-eccc8af47e34`) 已完成正式验收并放行，结论：`PASS`。
+- Evaluator 前端 fast verify 通过，`npm run build` 通过，禁止字段扫描无命中，`feature_list.json` 可解析。
+- Evaluator Chrome DevTools MCP browser path 通过：打开 `http://127.0.0.1:5173/` -> 提交 mock family 输入 -> `CLARIFY` -> 点击 `4-6小时` -> `CONFIRM` -> 确认地图舞台 / 规划抽屉 / Plan B / 横向行程卡 / Agent 思考进程 / 终态轨道 -> 点击 `确认全部并生成行程单` -> `DONE`。
+- Evaluator Chrome DevTools MCP diagnostics：console error / warn 为 0；mock mode fetch / xhr 为空，没有真实 `/api/plan/*`；移动端无横向 overflow，底部抽屉、输入框和提交按钮可见且未被遮挡。
+- Evaluator 证据：
+  - `docs/qa/F1-009-map-centric-ui-redesign.md`
+  - `docs/qa/F1-009-devtools-mock.png`
+  - `docs/qa/F1-009-devtools-mobile.png`
+- Generator 追加真实后端 smoke：启动后端 `8000` 与 `VITE_API_MODE=real` 前端 `5173`，Chrome DevTools MCP 跑通 family real mode：`POST /api/plan` -> `CLARIFY` -> `POST /clarify` -> `CONFIRM` -> `POST /execute` -> execution SSE -> `DONE`。
+- 真实后端 smoke 页面证据：`plan_13b98173cf56`，timeline `小小科学工坊` / `四季家庭小厨`，ExecutionTracker `2 / 2`，确认号 `MOCK-TBL-63910`、`MOCK-MSG-13073`，console error / warn 为 0。
+- 真实后端 smoke network 证据：`POST /api/plan [202]`、planning stream `[200]`、`POST /clarify [200]`、post-clarify stream `[200]`、`POST /execute [200]`、execution stream `[200]`。
+- Generator 真实后端 smoke 证据：
+  - `docs/qa/F1-009-real-backend-smoke.md`
+  - `docs/qa/F1-009-devtools-real.png`
+  - `docs/qa/F1-009-real-planning-initial.network-response`
+  - `docs/qa/F1-009-real-planning-after-clarify.network-response`
+  - `docs/qa/F1-009-real-execution.network-response`
+
+### 当前状态
+
+- `F1-009` 已完成并 verified。
+- 本轮不修改 `docs/api-contract.md`，不新增后端 API，不新增真实地图 SDK / key，不新增 snake_case 兼容层。
+- 旧的开发者后台式双栏已经被地图舞台和抽屉式行程界面替换；既有 F1 / INT 已验证行为链路保持可用。
+- 追加真实后端 smoke 已通过；它是 generator supplemental evidence，不替代独立 evaluator 的正式 F1-009 PASS 证据。
+
 ## 2026-06-02 QA-001 21 Golden Cases list and execution record
 
 ### 已完成
