@@ -5,3 +5,4 @@ backend/target/
 node_modules/
 .vscode/
 .github/
+.kagent/
